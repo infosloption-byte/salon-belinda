@@ -10,9 +10,13 @@ const links = [
   { to: '/services', label: 'Services' },
   { to: '/gallery', label: 'Gallery' },
   { to: '/reviews', label: 'Reviews' },
-  { to: '/shop', label: 'Shop' },
   { to: '/contact', label: 'Contact' },
 ];
+
+// The shop is a separate app on its own subdomain, so it isn't part of the
+// router — it always opens in a new tab. Set VITE_SHOP_URL per environment
+// (e.g. http://localhost:5174 locally, https://shop.salonbelinda.com in prod).
+const shopUrl = import.meta.env.VITE_SHOP_URL || 'http://localhost:5174';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -64,6 +68,14 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
+          <a
+            href={shopUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm tracking-wide transition-colors text-[var(--color-ink)]/75 hover:text-[var(--color-maroon)]"
+          >
+            Shop
+          </a>
         </nav>
 
         <div className="hidden lg:flex items-center gap-4">
@@ -109,6 +121,14 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
+          <a
+            href={shopUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-3 text-base border-b border-[rgba(38,34,32,0.06)] text-[var(--color-ink)]/80"
+          >
+            Shop
+          </a>
           <Link
             to="/booking"
             className="mt-4 text-center px-6 py-3 text-sm tracking-wide uppercase"
