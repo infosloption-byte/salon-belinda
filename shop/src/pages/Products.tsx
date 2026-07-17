@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { products, categories, type Category } from '../data/products';
+import { categories, type Category } from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import ProductCard from '../components/product/ProductCard';
 
 type SortKey = 'featured' | 'price-asc' | 'price-desc' | 'rating';
@@ -14,6 +15,7 @@ const sortOptions: { value: SortKey; label: string }[] = [
 ];
 
 export default function Products() {
+  const { products } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -54,7 +56,7 @@ export default function Products() {
         list.sort((a, b) => Number(b.bestSeller) - Number(a.bestSeller));
     }
     return list;
-  }, [activeCategory, query, sort, inStockOnly]);
+  }, [products, activeCategory, query, sort, inStockOnly]);
 
   const FilterPanel = (
     <div className="space-y-8">

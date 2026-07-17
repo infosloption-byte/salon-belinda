@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ChevronLeft, Minus, Plus, ShoppingBag, Check, Truck } from 'lucide-react';
-import { getProductBySlug, getRelatedProducts } from '../data/products';
+import { useProduct, useRelatedProducts } from '../context/ProductsContext';
 import { formatLKR } from '../data/site';
 import { useCart } from '../context/CartContext';
 import StarRating from '../components/ui/StarRating';
@@ -11,15 +11,17 @@ import { Button } from '../components/ui/Button';
 
 export default function ProductDetail() {
   const { slug } = useParams();
-  const product = slug ? getProductBySlug(slug) : undefined;
+  const { product, loading } = useProduct(slug);
+  const related = useRelatedProducts(product);
   const { add } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
-  if (!product) return <Navigate to="/products" replace />;
-
-  const related = getRelatedProducts(product);
+  if (!product) {
+    if (loading) return null;
+    return <Navigate to="/products" replace />;
+  }
 
   const handleAdd = () => {
     add(product, quantity);

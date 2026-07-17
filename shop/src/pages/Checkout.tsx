@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Truck, Store, Banknote, Landmark } from 'lucide-react';
+import { Check, Truck, Store, Banknote, Landmark, CreditCard } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { shopSettings, formatLKR } from '../data/site';
+import { createOrder } from '../lib/api';
 import { Button } from '../components/ui/Button';
 
 type Step = 'details' | 'payment' | 'review';
 type FulfilmentMethod = 'delivery' | 'pickup';
-type PaymentMethod = 'cod' | 'bank';
+type PaymentMethod = 'cod' | 'bank' | 'card';
 
 interface ShippingDetails {
   fullName: string;
@@ -40,6 +41,7 @@ export default function Checkout() {
     notes: '',
   });
   const [placing, setPlacing] = useState(false);
+  const [placeError, setPlaceError] = useState('');
 
   const deliveryFee =
     method === 'pickup' || subtotal >= shopSettings.freeDeliveryThreshold ? 0 : shopSettings.deliveryFee;
@@ -57,16 +59,41 @@ export default function Checkout() {
     setStep('payment');
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     setPlacing(true);
-    // Frontend-only for now. Once the Laravel API is wired up, this will
-    // POST { details, method, payment, lines, total } to /api/orders and
-    // navigate using the returned order number.
-    setTimeout(() => {
-      const orderNumber = `SB-${Math.floor(100000 + Math.random() * 900000)}`;
+    setPlaceError('');
+
+    try {
+      const order = await createOrder({
+        lines: lines.map((l) => ({ productId: Number(l.product.id), quantity: l.quantity })),
+        fulfilment: method,
+        payment,
+        customer: {
+          fullName: details.fullName,
+          phone: details.phone,
+          email: details.email || undefined,
+          address: method === 'delivery' ? details.address : undefined,
+          city: method === 'delivery' ? details.city : undefined,
+          notes: details.notes || undefined,
+        },
+      });
+
       clear();
-      navigate('/order-confirmation', { state: { orderNumber, total, method, details } });
-    }, 700);
+      navigate('/order-confirmation', {
+        state: {
+          orderNumber: order.orderNumber,
+          total: order.total,
+          method,
+          payment,
+          paymentStatus: order.paymentStatus,
+          transactionId: order.transactionId,
+          details,
+        },
+      });
+    } catch (err) {
+      setPlaceError(err instanceof Error ? err.message : 'Could not place your order. Please try again.');
+      setPlacing(false);
+    }
   };
 
   return (
@@ -246,6 +273,20 @@ export default function Checkout() {
                     </span>
                   </span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPayment('card')}
+                  className="w-full flex items-start gap-3 p-4 border text-left transition-colors"
+                  style={{ borderColor: payment === 'card' ? 'var(--color-gold)' : 'rgba(38,34,32,0.2)' }}
+                >
+                  <CreditCard size={18} style={{ color: 'var(--color-gold)' }} className="mt-0.5 shrink-0" />
+                  <span>
+                    <span className="block text-sm font-medium" style={{ color: 'var(--color-ink)' }}>Pay by Card</span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--color-ink)', opacity: 0.6 }}>
+                      Card checkout is in test mode right now — no real charge is made
+                    </span>
+                  </span>
+                </button>
               </div>
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setStep('details')}>Back</Button>
@@ -270,7 +311,9 @@ export default function Checkout() {
               <div>
                 <p className="eyebrow mb-3" style={{ color: 'var(--color-gold)' }}>Payment</p>
                 <div className="p-4 text-sm" style={{ backgroundColor: 'var(--color-ivory-dim)', color: 'var(--color-ink)' }}>
-                  {payment === 'cod' ? `Cash on ${method === 'pickup' ? 'Pickup' : 'Delivery'}` : 'Bank Transfer'}
+                  {payment === 'cod' && `Cash on ${method === 'pickup' ? 'Pickup' : 'Delivery'}`}
+                  {payment === 'bank' && 'Bank Transfer'}
+                  {payment === 'card' && 'Card (test mode)'}
                 </div>
               </div>
               <div className="flex gap-3">
@@ -279,6 +322,11 @@ export default function Checkout() {
                   {placing ? 'Placing Order…' : 'Place Order'}
                 </Button>
               </div>
+              {placeError && (
+                <p className="text-sm px-4 py-3" style={{ backgroundColor: 'var(--color-blush-light)', color: 'var(--color-maroon)' }}>
+                  {placeError}
+                </p>
+              )}
             </div>
           )}
         </div>

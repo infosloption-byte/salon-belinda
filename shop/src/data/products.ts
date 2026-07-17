@@ -1,7 +1,7 @@
 export type Category = 'Hair Care' | 'Skin Care' | 'Makeup' | 'Bridal Accessories';
 
 export interface Product {
-  id: string;
+  id: string | number;
   slug: string;
   name: string;
   category: Category;

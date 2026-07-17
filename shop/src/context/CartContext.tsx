@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { products, type Product } from '../data/products';
+import type { Product } from '../data/products';
 
 export interface CartLine {
   product: Product;
@@ -9,39 +9,36 @@ export interface CartLine {
 interface CartContextValue {
   lines: CartLine[];
   add: (product: Product, quantity?: number) => void;
-  remove: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  remove: (productId: Product['id']) => void;
+  setQuantity: (productId: Product['id'], quantity: number) => void;
   clear: () => void;
   count: number;
   subtotal: number;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = 'salonbelinda_shop_cart_v1';
+const STORAGE_KEY = 'salonbelinda_shop_cart_v2';
 
 function loadInitialLines(): CartLine[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    const savedIds: { productId: string; quantity: number }[] = JSON.parse(raw);
-    // Re-hydrate against the live product catalog so prices/stock stay current.
-    return savedIds
-      .map(({ productId, quantity }) => {
-        const product = products.find((p) => p.id === productId);
-        return product ? { product, quantity } : null;
-      })
-      .filter((l): l is CartLine => l !== null);
+    const saved = JSON.parse(raw) as CartLine[];
+    return Array.isArray(saved) ? saved : [];
   } catch {
     return [];
   }
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  // Cart lines store a snapshot of the product alongside quantity, so the
+  // cart survives page reloads regardless of whether products came from the
+  // live API or the bundled fallback catalog. Prices/stock are re-validated
+  // server-side anyway when the order is actually placed.
   const [lines, setLines] = useState<CartLine[]>(() => loadInitialLines());
 
   useEffect(() => {
-    const toSave = lines.map((l) => ({ productId: l.product.id, quantity: l.quantity }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
   }, [lines]);
 
   const add = (product: Product, quantity = 1) => {
@@ -50,19 +47,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existing) {
         return prev.map((l) =>
           l.product.id === product.id
-            ? { ...l, quantity: Math.min(l.quantity + quantity, product.stockCount) }
+            ? { ...l, quantity: Math.min(l.quantity + quantity, product.stockCount || l.quantity + quantity) }
             : l
         );
       }
-      return [...prev, { product, quantity: Math.min(quantity, product.stockCount) }];
+      return [...prev, { product, quantity: Math.min(quantity, product.stockCount || quantity) }];
     });
   };
 
-  const remove = (productId: string) => {
+  const remove = (productId: Product['id']) => {
     setLines((prev) => prev.filter((l) => l.product.id !== productId));
   };
 
-  const setQuantity = (productId: string, quantity: number) => {
+  const setQuantity = (productId: Product['id'], quantity: number) => {
     setLines((prev) =>
       quantity <= 0
         ? prev.filter((l) => l.product.id !== productId)

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Truck, Store, ShieldCheck } from 'lucide-react';
-import { products, categories } from '../data/products';
+import { categories } from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import { shopSettings, formatLKR } from '../data/site';
 import ProductCard from '../components/product/ProductCard';
 import { LinkButton } from '../components/ui/Button';
@@ -13,6 +14,7 @@ const categoryImages: Record<string, string> = {
 };
 
 export default function Home() {
+  const { products } = useProducts();
   const bestSellers = products.filter((p) => p.bestSeller).slice(0, 4);
   const newArrivals = products.filter((p) => p.isNew).slice(0, 4);
 
