@@ -15,7 +15,9 @@ Route::redirect('/', '/admin');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::post('login', [AuthController::class, 'login'])
+        ->middleware('throttle:6,1')
+        ->name('login.attempt');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::middleware(['auth', 'admin'])->group(function () {
