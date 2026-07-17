@@ -44,7 +44,7 @@ export default function Services() {
 
       {/* Quick-jump category nav */}
       <div
-        className="sticky top-20 z-30 border-b"
+        className="sticky top-20 md:top-[116px] z-30 border-b"
         style={{ backgroundColor: 'var(--color-ivory)', borderColor: 'rgba(38,34,32,0.08)' }}
       >
         <div className="max-w-5xl mx-auto px-5 md:px-8 py-3 flex gap-2 overflow-x-auto no-scrollbar">
@@ -75,7 +75,7 @@ export default function Services() {
         {serviceCategories.map((cat, catIndex) => {
           const Icon = categoryIcons[cat.id] ?? Sparkles;
           return (
-            <section key={cat.id} id={cat.id} className="scroll-mt-36">
+            <section key={cat.id} id={cat.id} className="scroll-mt-32 md:scroll-mt-44">
               <div className="flex items-start gap-4 mb-4">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
@@ -94,16 +94,21 @@ export default function Services() {
                 {cat.intro}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {cat.services.map((s, i) => (
                   <div
                     key={s.id}
                     className="group relative p-6 pt-8 rounded-lg border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl overflow-hidden"
                     style={{
                       borderColor: 'rgba(38,34,32,0.08)',
-                      backgroundColor: 'var(--color-ivory)',
+                      backgroundImage: 'linear-gradient(160deg, var(--color-rose-light) 0%, var(--color-ivory) 60%)',
                     }}
                   >
+                    <div
+                      className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-25 blur-2xl pointer-events-none transition-opacity duration-300 group-hover:opacity-40"
+                      style={{ backgroundImage: 'var(--gradient-brand)' }}
+                      aria-hidden="true"
+                    />
                     <div
                       className="absolute left-0 right-0 top-0 h-1.5"
                       style={{ backgroundImage: 'var(--gradient-brand)' }}
