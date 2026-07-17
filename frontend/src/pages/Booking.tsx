@@ -3,18 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import SectionHeading from '../components/ui/SectionHeading';
 import { Button } from '../components/ui/Button';
-import { serviceCategories } from '../data/services';
 import { site } from '../data/site';
-
-const allServices = serviceCategories.flatMap((c) =>
-  c.services.map((s) => ({ ...s, category: c.title }))
-);
+import { fetchServiceCategories, createAppointment, type ApiServiceCategory } from '../lib/api';
 
 interface BookingForm {
   name: string;
   phone: string;
   email: string;
-  serviceId: string;
+  serviceId: string; // kept as string for the <select>, converted to number on submit
   date: string;
   time: string;
   notes: string;
@@ -34,7 +30,20 @@ export default function Booking() {
   const [params] = useSearchParams();
   const [form, setForm] = useState<BookingForm>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof BookingForm, string>>>({});
-  const [confirmed, setConfirmed] = useState<BookingForm | null>(null);
+  const [confirmed, setConfirmed] = useState<{ form: BookingForm; serviceName: string; message: string } | null>(
+    null
+  );
+  const [categories, setCategories] = useState<ApiServiceCategory[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    fetchServiceCategories()
+      .then(setCategories)
+      .catch(() => setSubmitError('Could not load services right now. Please call us directly or try again shortly.'))
+      .finally(() => setLoadingServices(false));
+  }, []);
 
   useEffect(() => {
     const preselect = params.get('service');
@@ -44,6 +53,8 @@ export default function Booking() {
   }, [params]);
 
   const update = (key: keyof BookingForm, value: string) => setForm((f) => ({ ...f, [key]: value }));
+
+  const allServices = categories.flatMap((c) => c.services.map((s) => ({ ...s, category: c.title })));
 
   const validate = () => {
     const next: Partial<Record<keyof BookingForm, string>> = {};
@@ -56,17 +67,34 @@ export default function Booking() {
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError('');
     if (!validate()) return;
-    // Frontend-only for now — once the backend is built, this will POST to
-    // /api/appointments so it appears in the salon's admin dashboard.
-    setConfirmed(form);
-    setForm(emptyForm);
+
+    setSubmitting(true);
+    try {
+      const result = await createAppointment({
+        name: form.name,
+        phone: form.phone,
+        email: form.email || undefined,
+        service_id: Number(form.serviceId),
+        date: form.date,
+        time: form.time,
+        notes: form.notes || undefined,
+      });
+
+      const service = allServices.find((s) => String(s.id) === form.serviceId);
+      setConfirmed({ form, serviceName: service?.name ?? 'your selected service', message: result.message });
+      setForm(emptyForm);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Could not submit your request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (confirmed) {
-    const service = allServices.find((s) => s.id === confirmed.serviceId);
     return (
       <div className="max-w-xl mx-auto px-5 py-28 text-center">
         <CheckCircle2 size={48} color="var(--color-gold)" className="mx-auto mb-6" />
@@ -74,13 +102,13 @@ export default function Booking() {
           Request Received
         </h1>
         <p className="text-sm leading-relaxed mb-2" style={{ color: 'var(--color-ink)', opacity: 0.7 }}>
-          Thank you, {confirmed.name}. We've noted your request for{' '}
-          <strong>{service?.name ?? 'your selected service'}</strong> on{' '}
-          {new Date(confirmed.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} at{' '}
-          {confirmed.time}.
+          Thank you, {confirmed.form.name}. We've noted your request for{' '}
+          <strong>{confirmed.serviceName}</strong> on{' '}
+          {new Date(confirmed.form.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} at{' '}
+          {confirmed.form.time}.
         </p>
         <p className="text-sm mb-9" style={{ color: 'var(--color-ink)', opacity: 0.7 }}>
-          Shanika's team will call you at {confirmed.phone} to confirm availability.
+          Shanika's team will call you at {confirmed.form.phone} to confirm availability.
         </p>
         <Button onClick={() => setConfirmed(null)} variant="outline">
           Book Another Appointment
@@ -142,9 +170,10 @@ export default function Booking() {
               value={form.serviceId}
               onChange={(e) => update('serviceId', e.target.value)}
               className="input"
+              disabled={loadingServices}
             >
-              <option value="">Select a service</option>
-              {serviceCategories.map((cat) => (
+              <option value="">{loadingServices ? 'Loading services…' : 'Select a service'}</option>
+              {categories.map((cat) => (
                 <optgroup key={cat.id} label={cat.title}>
                   {cat.services.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -185,8 +214,17 @@ export default function Booking() {
             />
           </Field>
 
-          <Button type="submit" className="w-full mt-2">
-            Request Appointment
+          {submitError && (
+            <p
+              className="text-sm px-4 py-3"
+              style={{ backgroundColor: 'var(--color-blush-light, #F3DEDB)', color: 'var(--color-maroon)' }}
+            >
+              {submitError}
+            </p>
+          )}
+
+          <Button type="submit" className="w-full mt-2" disabled={submitting}>
+            {submitting ? 'Submitting…' : 'Request Appointment'}
           </Button>
         </form>
       </div>
