@@ -23,7 +23,7 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
   useEffect(() => {
     setOpen(false);
     setSearchOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,6 +148,7 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
           <NavLink
             to="/products"
             end
+            onClick={() => setOpen(false)}
             className={({ isActive }) =>
               `py-3 text-base border-b border-[rgba(38,34,32,0.06)] ${
                 isActive ? 'text-[var(--color-maroon)]' : 'text-[var(--color-ink)]/80'
@@ -160,6 +161,7 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
             <NavLink
               key={c}
               to={`/products?category=${encodeURIComponent(c)}`}
+              onClick={() => setOpen(false)}
               className="py-3 text-base border-b border-[rgba(38,34,32,0.06)] text-[var(--color-ink)]/80"
             >
               {c}
@@ -167,6 +169,7 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
           ))}
           <a
             href={mainSiteUrl}
+            onClick={() => setOpen(false)}
             className="mt-4 flex items-center gap-1.5 text-sm"
             style={{ color: 'var(--color-ink)', opacity: 0.6 }}
           >
