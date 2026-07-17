@@ -50,7 +50,7 @@ export default function Home() {
           <div className="flex items-center gap-3 justify-center sm:justify-start">
             <Store size={20} style={{ color: 'var(--color-gold)' }} />
             <p className="text-sm" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>
-              Or pick up in-salon at Ratgama
+              Or pick up in-salon at Galle
             </p>
           </div>
           <div className="flex items-center gap-3 justify-center sm:justify-start">

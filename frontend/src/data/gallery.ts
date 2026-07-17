@@ -12,7 +12,7 @@ export const galleryItems: GalleryItem[] = [
   {
     id: 'g1',
     category: 'Bridal',
-    title: 'Kandyan Bridal Look, Ratgama',
+    title: 'Kandyan Bridal Look, Galle',
     image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80',
   },
   {

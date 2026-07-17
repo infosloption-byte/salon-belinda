@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import Seal from '../ui/Seal';
 import { site } from '../../data/site';
 
 const links = [
@@ -41,16 +40,12 @@ export default function Navbar() {
       style={{ backgroundColor: 'var(--color-ivory)' }}
     >
       <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20">
-        <Link to="/" className="flex items-center gap-3 group">
-          <Seal size={46} />
-          <span className="flex flex-col leading-none">
-            <span className="font-display italic text-2xl" style={{ color: 'var(--color-deep)' }}>
-              Salon Belinda
-            </span>
-            <span className="eyebrow mt-1" style={{ color: 'var(--color-magenta)', fontSize: '0.6rem' }}>
-              Bridal &amp; Ladies Salon
-            </span>
-          </span>
+        <Link to="/" className="flex items-center group">
+          <img
+            src="/brand/logo.png"
+            alt="Salon Belinda — Bridal & Ladies Salon"
+            className="h-14 md:h-16 w-auto object-contain"
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">

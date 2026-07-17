@@ -1,6 +1,37 @@
 import SectionHeading from '../components/ui/SectionHeading';
 import PortfolioImage from '../components/ui/PortfolioImage';
 import { LinkButton } from '../components/ui/Button';
+import { Sparkles, Heart, ShieldCheck, Users } from 'lucide-react';
+
+const stats = [
+  { value: '12+', label: 'Years Styling' },
+  { value: '400+', label: 'Brides Styled' },
+  { value: '2,000+', label: 'Happy Clients' },
+  { value: '4.9★', label: 'Average Rating' },
+];
+
+const whyUs = [
+  {
+    icon: Sparkles,
+    title: 'Trial-first bridal process',
+    text: "Every bridal booking starts with a trial, so your wedding-day look is never a surprise — it's confirmed and photographed weeks ahead.",
+  },
+  {
+    icon: Heart,
+    title: 'One stylist, start to finish',
+    text: 'Shanika personally oversees every bridal booking from consultation to the final pin, so nothing is handed off along the way.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Safe, tested products',
+    text: 'Ammonia-friendly colour and dermatologically tested skincare are used across every service — bridal or everyday.',
+  },
+  {
+    icon: Users,
+    title: 'Built for the whole bridal party',
+    text: 'Bridesmaids, mothers, and family are styled alongside the bride, so everyone in the photos looks and feels their best.',
+  },
+];
 
 const values = [
   {
@@ -18,7 +49,7 @@ const values = [
 ];
 
 const milestones = [
-  { year: '2013', text: 'Shanika Madushani began styling from a small home studio in Ratgama.' },
+  { year: '2013', text: 'Shanika Madushani began styling from a small home studio in Galle.' },
   { year: '2017', text: 'Salon Belinda opened its doors on Galle Road as a full ladies\' salon.' },
   { year: '2021', text: 'Bridal packages expanded to include full-day, on-location styling.' },
   { year: '2026', text: 'Salon Belinda online — bookings, gallery, and shop all in one place.' },
@@ -50,7 +81,7 @@ export default function About() {
             Led by Shanika Madushani
           </h1>
           <p className="text-base leading-relaxed mb-4" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>
-            Salon Belinda started as a one-chair studio in Ratgama and grew, one wedding at a
+            Salon Belinda started as a one-chair studio in Galle and grew, one wedding at a
             time, into a full bridal and ladies' salon on Galle Road. Shanika still personally
             styles every bridal trial — she believes the calmest bride is the best-prepared one.
           </p>
@@ -62,6 +93,21 @@ export default function About() {
           <div className="mt-9">
             <LinkButton to="/booking">Book a Consultation</LinkButton>
           </div>
+        </div>
+      </section>
+
+      <section className="py-14" style={{ backgroundImage: 'var(--gradient-brand)' }}>
+        <div className="max-w-5xl mx-auto px-5 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <p className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
+                {s.value}
+              </p>
+              <p className="eyebrow mt-2" style={{ color: 'var(--color-ivory)', opacity: 0.85 }}>
+                {s.label}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -77,6 +123,32 @@ export default function About() {
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--color-ink)', opacity: 0.65 }}>
                   {v.text}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24">
+        <div className="max-w-6xl mx-auto px-5 md:px-8">
+          <SectionHeading eyebrow="Why Choose Us" title="What Sets Us Apart" align="center" className="mb-14" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            {whyUs.map((w) => (
+              <div key={w.title} className="flex gap-4 p-6 rounded-lg" style={{ backgroundColor: 'var(--color-ivory-dim)' }}>
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundImage: 'var(--gradient-brand)' }}
+                >
+                  <w.icon size={18} color="var(--color-ivory)" />
+                </div>
+                <div>
+                  <h3 className="font-display text-xl mb-1.5" style={{ color: 'var(--color-ink)' }}>
+                    {w.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-ink)', opacity: 0.65 }}>
+                    {w.text}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -101,6 +173,18 @@ export default function About() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="py-20 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
+        <div className="max-w-2xl mx-auto px-5">
+          <h2 className="font-display text-3xl md:text-4xl mb-4" style={{ color: 'var(--color-ivory)' }}>
+            Ready to meet the team?
+          </h2>
+          <p className="mb-8" style={{ color: 'var(--color-ivory)', opacity: 0.8 }}>
+            Come by the salon in Galle, or book a consultation and we'll take it from there.
+          </p>
+          <LinkButton to="/booking">Book Your Visit</LinkButton>
+        </div>
       </section>
     </div>
   );

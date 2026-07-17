@@ -38,7 +38,7 @@
                 <p class="text-sm opacity-70">{{ $order->customer_phone }}</p>
                 @if ($order->customer_email)<p class="text-sm opacity-70">{{ $order->customer_email }}</p>@endif
                 <p class="text-sm mt-3">
-                    {{ $order->fulfilment_method === 'pickup' ? 'Pickup at Salon Belinda, Ratgama' : "Delivery to {$order->address}, {$order->city}" }}
+                    {{ $order->fulfilment_method === 'pickup' ? 'Pickup at Salon Belinda, Galle' : "Delivery to {$order->address}, {$order->city}" }}
                 </p>
                 @if ($order->notes)<p class="text-sm opacity-70 mt-2">Note: {{ $order->notes }}</p>@endif
             </div>

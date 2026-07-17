@@ -23,7 +23,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="order-2 lg:order-1">
             <p className="eyebrow mb-5" style={{ color: 'var(--color-amber-light)' }}>
-              Ratgama · Galle Road · Est. Bridal &amp; Ladies Salon
+              Havelock Rd · Galle · Est. Bridal &amp; Ladies Salon
             </p>
             <h1
               className="font-display text-5xl md:text-6xl lg:text-[4rem] leading-[1.05]"
@@ -97,7 +97,7 @@ export default function Home() {
               "{site.ownerQuote}"
             </p>
             <p className="text-base leading-relaxed max-w-lg" style={{ color: 'var(--color-ink)', opacity: 0.7 }}>
-              I started styling from a small home studio in Ratgama in 2013, and I still take
+              I started styling from a small home studio in Galle in 2013, and I still take
               every bridal trial myself. Salon Belinda grew one wedding, one homecoming, one
               quiet Tuesday blow-dry at a time — and that's still exactly the pace I like it at.
             </p>

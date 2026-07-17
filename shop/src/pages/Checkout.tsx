@@ -157,7 +157,7 @@ export default function Checkout() {
                     <span>
                       <span className="block text-sm font-medium" style={{ color: 'var(--color-ink)' }}>Pickup at Salon</span>
                       <span className="block text-xs mt-0.5" style={{ color: 'var(--color-ink)', opacity: 0.6 }}>
-                        Free — collect at Ratgama, ready same day
+                        Free — collect at Galle, ready same day
                       </span>
                     </span>
                   </button>
@@ -303,7 +303,7 @@ export default function Checkout() {
                   <p>{details.fullName} · {details.phone}</p>
                   {details.email && <p style={{ opacity: 0.7 }}>{details.email}</p>}
                   <p style={{ opacity: 0.7 }}>
-                    {method === 'delivery' ? `Delivery to ${details.address}, ${details.city}` : 'Pickup at Salon Belinda, Ratgama'}
+                    {method === 'delivery' ? `Delivery to ${details.address}, ${details.city}` : 'Pickup at Salon Belinda, Galle'}
                   </p>
                   {details.notes && <p style={{ opacity: 0.7 }}>Note: {details.notes}</p>}
                 </div>

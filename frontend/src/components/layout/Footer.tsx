@@ -31,7 +31,7 @@ export default function Footer() {
             <span className="font-display italic text-2xl">Salon Belinda</span>
           </div>
           <p className="text-sm leading-relaxed text-[var(--color-ivory)]/70">
-            Bridal artistry and ladies' salon services on Galle Road, Ratgama — led by Shanika
+            Bridal artistry and ladies' salon services on Havelock Rd, Galle — led by Shanika
             Madushani.
           </p>
           <div className="flex gap-4 mt-5">

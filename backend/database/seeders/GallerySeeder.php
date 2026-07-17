@@ -10,7 +10,7 @@ class GallerySeeder extends Seeder
     public function run(): void
     {
         $items = [
-            ['Bridal', 'Kandyan Bridal Look, Ratgama', 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80'],
+            ['Bridal', 'Kandyan Bridal Look, Galle', 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80'],
             ['Bridal', 'Beachside Wedding, Galle Road', 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=900&q=80'],
             ['Bridal', 'Bridal Trial — Soft Glam', 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=900&q=80'],
             ['Bridal', 'Homecoming Saree Draping', 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=900&q=80'],

@@ -5,7 +5,7 @@ export const site = {
   ownerTitle: 'Founder & Lead Stylist',
   ownerQuote:
     "A bride should recognise herself in the mirror — just the most rested, most certain version. That's the whole job.",
-  address: 'Galle Road, Ratgama, Sri Lanka',
+  address: '82 Havelock Rd, Galle 80000, Sri Lanka',
   email: 'info.salonbelinda@gmail.com',
   phone: '070 244 4393',
   phoneHref: 'tel:+94702444393',

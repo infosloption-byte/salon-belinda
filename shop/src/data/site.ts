@@ -1,7 +1,7 @@
 export const site = {
   name: 'Salon Belinda',
   shopTagline: 'Bridal & Ladies Salon — Shop',
-  address: 'Galle Road, Ratgama, Sri Lanka',
+  address: '82 Havelock Rd, Galle 80000, Sri Lanka',
   email: 'info.salonbelinda@gmail.com',
   phone: '070 244 4393',
   phoneHref: 'tel:+94702444393',

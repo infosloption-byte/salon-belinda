@@ -142,7 +142,7 @@ export default function ProductDetail() {
           <div className="flex items-center gap-2.5 mt-6 pt-6 border-t" style={{ borderColor: 'rgba(38,34,32,0.1)' }}>
             <Truck size={16} style={{ color: 'var(--color-gold)' }} />
             <p className="text-xs" style={{ color: 'var(--color-ink)', opacity: 0.6 }}>
-              Delivery island-wide, or free pickup at our Ratgama salon.
+              Delivery island-wide, or free pickup at our Galle salon.
             </p>
           </div>
         </div>

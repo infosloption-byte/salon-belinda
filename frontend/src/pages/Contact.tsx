@@ -51,7 +51,7 @@ export default function Contact() {
               className="w-full h-full"
               style={{ border: 0 }}
               loading="lazy"
-              src="https://www.google.com/maps?q=Galle+Road,+Ratgama,+Sri+Lanka&output=embed"
+              src="https://www.google.com/maps?q=82+Havelock+Rd,+Galle+80000,+Sri+Lanka&output=embed"
             />
           </div>
         </div>

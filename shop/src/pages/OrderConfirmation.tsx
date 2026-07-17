@@ -47,7 +47,7 @@ export default function OrderConfirmation() {
           <Truck size={18} style={{ color: 'var(--color-gold)' }} />
         )}
         <span className="text-sm" style={{ color: 'var(--color-ink)' }}>
-          {state.method === 'pickup' ? 'Pickup at Salon Belinda, Ratgama' : `Delivery to ${state.details.address}, ${state.details.city}`}
+          {state.method === 'pickup' ? 'Pickup at Salon Belinda, Galle' : `Delivery to ${state.details.address}, ${state.details.city}`}
         </span>
       </div>
 
