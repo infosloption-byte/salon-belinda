@@ -32,6 +32,7 @@ class OrderController extends Controller
 
         $order = DB::transaction(function () use ($data, $gateway) {
             $products = Product::whereIn('id', collect($data['lines'])->pluck('productId'))
+                ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
