@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, Sparkles, Scissors, Droplet, Palette } from 'lucide-react';
 import CornerFrame from '../components/ui/CornerFrame';
 import SectionHeading from '../components/ui/SectionHeading';
 import PortfolioImage from '../components/ui/PortfolioImage';
@@ -11,6 +11,13 @@ import { testimonials } from '../data/testimonials';
 import { site } from '../data/site';
 
 const heroSlides = galleryItems.filter((g) => g.category === 'Bridal').map((g) => g.image);
+
+const categoryIcons: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  bridal: Sparkles,
+  hair: Scissors,
+  skin: Droplet,
+  makeup: Palette,
+};
 
 export default function Home() {
   const featuredServices = serviceCategories.filter((c) =>
@@ -152,30 +159,44 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-24">
         <SectionHeading eyebrow="What We Do" title="Signature Services" align="center" className="mb-14" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredServices.map((cat) => (
-            <Link
-              key={cat.id}
-              to="/services"
-              className="group block p-7 border transition-colors"
-              style={{ borderColor: 'rgba(38,34,32,0.1)' }}
-            >
-              <p className="eyebrow mb-3" style={{ color: 'var(--color-amber)' }}>
-                {cat.title === 'Bridal Packages' ? 'Most Booked' : cat.title}
-              </p>
-              <h3 className="font-display text-2xl mb-3" style={{ color: 'var(--color-ink)' }}>
-                {cat.title}
-              </h3>
-              <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--color-ink)', opacity: 0.65 }}>
-                {cat.intro}
-              </p>
-              <span
-                className="inline-flex items-center gap-1 text-sm group-hover:gap-2 transition-all"
-                style={{ color: 'var(--color-magenta)' }}
+          {featuredServices.map((cat) => {
+            const Icon = categoryIcons[cat.id] ?? Sparkles;
+            return (
+              <Link
+                key={cat.id}
+                to="/services"
+                className="group relative block p-7 pt-8 rounded-lg border overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
+                style={{ borderColor: 'rgba(38,34,32,0.08)', backgroundColor: 'var(--color-ivory)' }}
               >
-                See services <ArrowRight size={14} />
-              </span>
-            </Link>
-          ))}
+                <div
+                  className="absolute left-0 right-0 top-0 h-1.5"
+                  style={{ backgroundImage: 'var(--gradient-brand)' }}
+                  aria-hidden="true"
+                />
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center mb-4"
+                  style={{ backgroundImage: 'var(--gradient-brand)' }}
+                >
+                  <Icon size={18} color="var(--color-ivory)" />
+                </div>
+                <p className="eyebrow mb-3" style={{ color: 'var(--color-magenta)' }}>
+                  {cat.title === 'Bridal Packages' ? 'Most Booked' : cat.title}
+                </p>
+                <h3 className="font-display text-2xl mb-3" style={{ color: 'var(--color-ink)' }}>
+                  {cat.title}
+                </h3>
+                <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--color-ink)', opacity: 0.65 }}>
+                  {cat.intro}
+                </p>
+                <span
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs uppercase tracking-wide transition-transform group-hover:scale-[1.03]"
+                  style={{ backgroundImage: 'var(--gradient-brand)', color: 'var(--color-ivory)' }}
+                >
+                  See services <ArrowRight size={13} />
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
