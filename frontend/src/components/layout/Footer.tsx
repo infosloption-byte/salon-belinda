@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Mail, Phone } from 'lucide-react';
 import Seal from '../ui/Seal';
+import Logo from '../ui/Logo';
 import { site } from '../../data/site';
 
 function FacebookIcon() {
@@ -28,7 +29,7 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-3 mb-4">
             <Seal size={38} />
-            <span className="font-display italic text-2xl">Salon Belinda</span>
+            <Logo variant="light" />
           </div>
           <p className="text-sm leading-relaxed text-[var(--color-ivory)]/70">
             Bridal artistry and ladies' salon services on Havelock Rd, Galle — led by Shanika

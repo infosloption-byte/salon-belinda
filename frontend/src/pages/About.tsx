@@ -2,6 +2,7 @@ import SectionHeading from '../components/ui/SectionHeading';
 import PortfolioImage from '../components/ui/PortfolioImage';
 import { LinkButton } from '../components/ui/Button';
 import { Sparkles, Heart, ShieldCheck, Users } from 'lucide-react';
+import { site } from '../data/site';
 
 const stats = [
   { value: '12+', label: 'Years Styling' },
@@ -48,11 +49,11 @@ const values = [
   },
 ];
 
-const milestones = [
-  { year: '2013', text: 'Shanika Madushani began styling from a small home studio in Galle.' },
-  { year: '2017', text: 'Salon Belinda opened its doors on Galle Road as a full ladies\' salon.' },
-  { year: '2021', text: 'Bridal packages expanded to include full-day, on-location styling.' },
-  { year: '2026', text: 'Salon Belinda online — bookings, gallery, and shop all in one place.' },
+const process = [
+  { step: '01', title: 'Consultation', text: 'Tell us your date, venue, and vision. We recommend a package and timeline that fits.' },
+  { step: '02', title: 'Trial Session', text: 'A full rehearsal of your look — hair, makeup, and draping — photographed so you can compare options.' },
+  { step: '03', title: 'Confirmation', text: 'Once you approve the trial, we lock in your date, timing, and any final adjustments.' },
+  { step: '04', title: 'The Big Day', text: 'Shanika and the team arrive on time and styled-ready, so all you have to do is enjoy it.' },
 ];
 
 export default function About() {
@@ -155,24 +156,48 @@ export default function About() {
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-5 md:px-8 py-24">
-        <SectionHeading eyebrow="Milestones" title="Along the Way" align="center" className="mb-14" />
-        <ol className="relative border-l pl-8 space-y-10" style={{ borderColor: 'var(--color-amber)' }}>
-          {milestones.map((m) => (
-            <li key={m.year} className="relative">
-              <span
-                className="absolute -left-[2.55rem] top-0 w-3 h-3 rounded-full"
-                style={{ backgroundColor: 'var(--color-amber)' }}
-              />
-              <p className="font-display italic text-xl mb-1" style={{ color: 'var(--color-magenta)' }}>
-                {m.year}
+      <section className="py-24 relative overflow-hidden" style={{ backgroundColor: 'var(--color-deep)' }}>
+        <div
+          className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-20 blur-3xl"
+          style={{ backgroundImage: 'var(--gradient-brand)' }}
+          aria-hidden="true"
+        />
+        <div className="max-w-3xl mx-auto px-5 text-center relative">
+          <p className="eyebrow mb-6" style={{ color: 'var(--color-amber-light)' }}>
+            Our Philosophy
+          </p>
+          <p
+            className="font-display italic text-2xl md:text-3xl leading-snug"
+            style={{ color: 'var(--color-ivory)' }}
+          >
+            "{site.ownerQuote}"
+          </p>
+          <p className="mt-6 text-sm" style={{ color: 'var(--color-ivory)', opacity: 0.6 }}>
+            — {site.ownerFirstName}, {site.ownerTitle}
+          </p>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-5 md:px-8 py-24">
+        <SectionHeading eyebrow="How It Works" title="Your Bridal Journey" align="center" className="mb-14" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {process.map((p) => (
+            <div key={p.step} className="relative text-center px-4">
+              <p
+                className="font-display text-5xl mb-4 text-gradient-brand"
+                style={{ opacity: 0.9 }}
+              >
+                {p.step}
               </p>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>
-                {m.text}
+              <h3 className="font-display text-xl mb-2" style={{ color: 'var(--color-ink)' }}>
+                {p.title}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-ink)', opacity: 0.65 }}>
+                {p.text}
               </p>
-            </li>
+            </div>
           ))}
-        </ol>
+        </div>
       </section>
 
       <section className="py-20 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>

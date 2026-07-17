@@ -4,7 +4,7 @@ import { Clock, ArrowRight, Sparkles, Scissors, Droplet, Palette, Hand } from 'l
 import SectionHeading from '../components/ui/SectionHeading';
 import { serviceCategories } from '../data/services';
 
-const categoryIcons: Record<string, React.ComponentType<{ size?: number }>> = {
+const categoryIcons: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   bridal: Sparkles,
   hair: Scissors,
   skin: Droplet,
@@ -98,25 +98,31 @@ export default function Services() {
                 {cat.services.map((s, i) => (
                   <div
                     key={s.id}
-                    className="group relative p-6 rounded-lg border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    className="group relative p-6 pt-8 rounded-lg border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl overflow-hidden"
                     style={{
-                      borderColor: 'rgba(38,34,32,0.1)',
+                      borderColor: 'rgba(38,34,32,0.08)',
                       backgroundColor: 'var(--color-ivory)',
                     }}
                   >
+                    <div
+                      className="absolute left-0 right-0 top-0 h-1.5"
+                      style={{ backgroundImage: 'var(--gradient-brand)' }}
+                      aria-hidden="true"
+                    />
                     {catIndex === 0 && i === 0 && (
                       <span
-                        className="absolute -top-3 left-5 px-3 py-1 text-[0.65rem] uppercase tracking-widest rounded-full"
+                        className="absolute top-3 right-3 px-3 py-1 text-[0.65rem] uppercase tracking-widest rounded-full"
                         style={{ backgroundImage: 'var(--gradient-brand)', color: 'var(--color-ivory)' }}
                       >
                         Most Requested
                       </span>
                     )}
                     <div
-                      className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="w-9 h-9 rounded-full flex items-center justify-center mb-3"
                       style={{ backgroundImage: 'var(--gradient-brand)' }}
-                      aria-hidden="true"
-                    />
+                    >
+                      <Icon size={16} color="var(--color-ivory)" />
+                    </div>
                     <h3 className="font-display text-xl mb-2 pr-2" style={{ color: 'var(--color-ink)' }}>
                       {s.name}
                     </h3>
@@ -125,8 +131,8 @@ export default function Services() {
                     </p>
                     <div className="flex items-center justify-between">
                       <span
-                        className="inline-flex items-center gap-1 text-xs"
-                        style={{ color: 'var(--color-ink)', opacity: 0.5 }}
+                        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
+                        style={{ backgroundColor: 'var(--color-ivory-dim)', color: 'var(--color-ink)', opacity: 0.75 }}
                       >
                         <Clock size={13} /> {s.duration}
                       </span>
@@ -136,8 +142,8 @@ export default function Services() {
                     </div>
                     <Link
                       to={`/booking?service=${s.id}`}
-                      className="mt-4 flex items-center justify-center gap-1.5 py-2.5 text-xs uppercase tracking-wide rounded transition-colors"
-                      style={{ backgroundColor: 'var(--color-ivory-dim)', color: 'var(--color-ink)' }}
+                      className="mt-4 flex items-center justify-center gap-1.5 py-2.5 text-xs uppercase tracking-wide rounded transition-transform group-hover:scale-[1.02]"
+                      style={{ backgroundImage: 'var(--gradient-brand)', color: 'var(--color-ivory)' }}
                     >
                       Book This <ArrowRight size={12} />
                     </Link>

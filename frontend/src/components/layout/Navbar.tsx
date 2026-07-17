@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Phone, Mail, Clock } from 'lucide-react';
+import Seal from '../ui/Seal';
+import Logo from '../ui/Logo';
 import { site } from '../../data/site';
 
 const links = [
@@ -37,15 +39,28 @@ export default function Navbar() {
       className={`sticky top-0 z-50 transition-shadow duration-300 ${
         scrolled ? 'shadow-[0_1px_0_0_rgba(38,34,32,0.08)]' : ''
       }`}
-      style={{ backgroundColor: 'var(--color-ivory)' }}
     >
-      <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20">
-        <Link to="/" className="flex items-center group">
-          <img
-            src="/brand/logo.png"
-            alt="Salon Belinda — Bridal & Ladies Salon"
-            className="h-14 md:h-16 w-auto object-contain"
-          />
+      {/* Top contact strip */}
+      <div className="hidden md:block" style={{ backgroundImage: 'var(--gradient-brand)' }}>
+        <div className="max-w-7xl mx-auto px-5 md:px-8 h-9 flex items-center justify-between text-xs" style={{ color: 'var(--color-ivory)' }}>
+          <div className="flex items-center gap-6 opacity-95">
+            <a href={site.phoneHref} className="flex items-center gap-1.5 hover:opacity-80">
+              <Phone size={12} /> {site.phone}
+            </a>
+            <a href={`mailto:${site.email}`} className="flex items-center gap-1.5 hover:opacity-80">
+              <Mail size={12} /> {site.email}
+            </a>
+          </div>
+          <div className="flex items-center gap-1.5 opacity-95">
+            <Clock size={12} /> {site.hours[0].day}: {site.hours[0].time}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20" style={{ backgroundColor: 'var(--color-ivory)' }}>
+        <Link to="/" className="flex items-center gap-3 group">
+          <Seal size={44} />
+          <Logo />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
