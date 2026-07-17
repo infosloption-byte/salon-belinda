@@ -1,129 +1,184 @@
-import { useState } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import CornerFrame from '../components/ui/CornerFrame';
-import PortfolioImage from '../components/ui/PortfolioImage';
-import { galleryItems, galleryCategories, type GalleryItem } from '../data/gallery';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Search, MapPin, Calendar, Images } from 'lucide-react';
+import { fetchAlbums, fetchAlbumCategories, type AlbumSummary } from '../lib/api';
 
-type Filter = 'All' | GalleryItem['category'];
+function formatDate(d: string | null) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 export default function Gallery() {
-  const [filter, setFilter] = useState<Filter>('All');
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [albums, setAlbums] = useState<AlbumSummary[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filtered = filter === 'All' ? galleryItems : galleryItems.filter((g) => g.category === filter);
+  useEffect(() => {
+    fetchAlbumCategories()
+      .then(setCategories)
+      .catch(() => {});
+  }, []);
 
-  const openAt = (item: GalleryItem) => {
-    setActiveIndex(filtered.findIndex((g) => g.id === item.id));
-  };
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    const timeout = setTimeout(() => {
+      fetchAlbums({ q: search || undefined, category: activeCategory || undefined })
+        .then(setAlbums)
+        .catch(() => setError('Could not load albums right now. Please try again shortly.'))
+        .finally(() => setLoading(false));
+    }, 250); // debounce search typing
 
-  const close = () => setActiveIndex(null);
-  const step = (dir: 1 | -1) => {
-    if (activeIndex === null) return;
-    setActiveIndex((activeIndex + dir + filtered.length) % filtered.length);
-  };
+    return () => clearTimeout(timeout);
+  }, [search, activeCategory]);
 
-  const active = activeIndex !== null ? filtered[activeIndex] : null;
+  const hasFilters = search || activeCategory;
 
   return (
     <div>
-      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
+      <section className="py-24 md:py-28 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-3xl mx-auto px-5">
           <p className="eyebrow mb-4" style={{ color: 'var(--color-amber-light)' }}>
-            Portfolio
+            Real Weddings
           </p>
-          <h1 className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
-            Gallery
+          <h1 className="font-display text-4xl md:text-6xl leading-tight" style={{ color: 'var(--color-ivory)' }}>
+            Every Couple, <span className="text-gradient-brand italic">Their Own Story</span>
           </h1>
-          <p className="mt-5" style={{ color: 'var(--color-ivory)', opacity: 0.75 }}>
-            Bridal work, first and foremost — alongside hair, makeup, nails, and special
-            occasion styling.
+          <p className="mt-6 text-base" style={{ color: 'var(--color-ivory)', opacity: 0.8 }}>
+            Browse complete photoshoots from real Salon Belinda brides — search by name, date, or
+            venue, and step inside each album for the full set.
           </p>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-5 md:px-8 py-16">
-        <div className="flex flex-wrap gap-3 justify-center mb-12">
-          {(['All', ...galleryCategories] as Filter[]).map((c) => (
+      <div className="max-w-6xl mx-auto px-5 md:px-8 py-16">
+        {/* Search + filter bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-10">
+          <div className="relative flex-1 max-w-md">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by couple name, venue..."
+              className="w-full pl-10 pr-4 py-3 text-sm border rounded-full"
+              style={{ borderColor: 'rgba(38,34,32,0.15)' }}
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
             <button
-              key={c}
-              onClick={() => setFilter(c)}
-              className="px-5 py-2 text-xs uppercase tracking-wide border transition-colors"
+              onClick={() => setActiveCategory(null)}
+              className="shrink-0 px-4 py-2 text-xs uppercase tracking-wide rounded-full transition-colors"
               style={
-                filter === c
-                  ? { backgroundColor: 'var(--color-magenta)', color: 'var(--color-ivory)', borderColor: 'var(--color-magenta)' }
-                  : { borderColor: 'rgba(38,34,32,0.2)', color: 'var(--color-ink)' }
+                !activeCategory
+                  ? { backgroundImage: 'var(--gradient-brand)', color: 'var(--color-ivory)' }
+                  : { backgroundColor: 'var(--color-ivory-dim)', color: 'var(--color-ink)', opacity: 0.75 }
               }
             >
-              {c}
+              All Albums
             </button>
-          ))}
-        </div>
-
-        <div className="columns-2 md:columns-3 gap-5 [column-fill:_balance]">
-          {filtered.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => openAt(item)}
-              className="relative block w-full mb-5 break-inside-avoid p-1.5 group text-left"
-            >
-              <PortfolioImage
-                src={item.image}
-                alt={item.title}
-                className="w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              />
-              <CornerFrame />
-              <span
-                className="absolute bottom-3 left-3 right-3 text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ backgroundColor: 'rgba(38,34,32,0.75)', color: 'var(--color-ivory)' }}
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setActiveCategory(c)}
+                className="shrink-0 px-4 py-2 text-xs uppercase tracking-wide rounded-full transition-colors"
+                style={
+                  activeCategory === c
+                    ? { backgroundImage: 'var(--gradient-brand)', color: 'var(--color-ivory)' }
+                    : { backgroundColor: 'var(--color-ivory-dim)', color: 'var(--color-ink)', opacity: 0.75 }
+                }
               >
-                {item.title}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {active && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-          style={{ backgroundColor: 'rgba(38,34,32,0.92)' }}
-          onClick={close}
-          role="dialog"
-          aria-modal="true"
-        >
-          <button
-            className="absolute top-6 right-6 p-2"
-            onClick={close}
-            aria-label="Close"
-          >
-            <X color="var(--color-ivory)" size={26} />
-          </button>
-          <button
-            className="absolute left-3 md:left-8 p-2"
-            onClick={(e) => { e.stopPropagation(); step(-1); }}
-            aria-label="Previous image"
-          >
-            <ChevronLeft color="var(--color-ivory)" size={32} />
-          </button>
-          <button
-            className="absolute right-3 md:right-8 p-2"
-            onClick={(e) => { e.stopPropagation(); step(1); }}
-            aria-label="Next image"
-          >
-            <ChevronRight color="var(--color-ivory)" size={32} />
-          </button>
-          <div
-            className="relative max-w-2xl w-full aspect-[4/5] p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <PortfolioImage src={active.image} alt={active.title} className="w-full h-full object-cover" />
-            <CornerFrame />
-            <p className="text-center mt-4 font-display italic text-xl" style={{ color: 'var(--color-ivory)' }}>
-              {active.title}
-            </p>
+                {c}
+              </button>
+            ))}
           </div>
         </div>
-      )}
+
+        {error && (
+          <p className="text-sm px-4 py-3 mb-8" style={{ backgroundColor: '#F3DEDB', color: '#7A2E3A' }}>
+            {error}
+          </p>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="aspect-[4/3] animate-pulse" style={{ backgroundColor: 'var(--color-ivory-dim)' }} />
+            ))}
+          </div>
+        ) : albums.length === 0 ? (
+          <div className="text-center py-24">
+            <Images size={32} className="mx-auto mb-4 opacity-30" />
+            <p className="text-sm opacity-60">
+              {hasFilters ? 'No albums match your search.' : 'No albums published yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {albums.map((album) => (
+              <Link
+                key={album.id}
+                to={`/gallery/${album.slug}`}
+                className="group block rounded-lg overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                style={{ borderColor: 'rgba(38,34,32,0.08)', backgroundColor: 'var(--color-ivory)' }}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: 'var(--color-ivory-dim)' }}>
+                  {album.cover_image && (
+                    <img
+                      src={album.cover_image}
+                      alt={album.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  )}
+                  <div
+                    className="absolute inset-0 flex items-end p-4"
+                    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent 55%)' }}
+                  >
+                    <span
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] uppercase tracking-widest"
+                      style={{ backgroundColor: 'rgba(251,247,243,0.9)', color: 'var(--color-ink)' }}
+                    >
+                      <Images size={11} /> {album.photos_count} photos
+                    </span>
+                  </div>
+                  {album.category && (
+                    <span
+                      className="absolute top-3 left-3 px-3 py-1 rounded-full text-[0.65rem] uppercase tracking-widest"
+                      style={{ backgroundImage: 'var(--gradient-brand)', color: 'var(--color-ivory)' }}
+                    >
+                      {album.category}
+                    </span>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display text-xl mb-1.5" style={{ color: 'var(--color-ink)' }}>
+                    {album.couple_names || album.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: 'var(--color-ink)', opacity: 0.55 }}>
+                    {album.event_date && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar size={12} /> {formatDate(album.event_date)}
+                      </span>
+                    )}
+                    {album.location && (
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin size={12} /> {album.location}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }

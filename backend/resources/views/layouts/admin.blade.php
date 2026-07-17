@@ -66,6 +66,7 @@
                 <a href="{{ route('admin.appointments.index') }}" class="nav-link {{ str_starts_with($route, 'admin.appointments') ? 'active' : '' }}">Appointments</a>
                 <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ str_starts_with($route, 'admin.testimonials') ? 'active' : '' }}">Reviews</a>
                 <a href="{{ route('admin.gallery.index') }}" class="nav-link {{ str_starts_with($route, 'admin.gallery') ? 'active' : '' }}">Gallery</a>
+                <a href="{{ route('admin.albums.index') }}" class="nav-link {{ str_starts_with($route, 'admin.albums') ? 'active' : '' }}">Wedding Albums</a>
                 <a href="{{ route('admin.services.index') }}" class="nav-link {{ str_starts_with($route, 'admin.services') ? 'active' : '' }}">Services</a>
                 <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Shop</p>
                 <a href="{{ route('admin.products.index') }}" class="nav-link {{ str_starts_with($route, 'admin.products') ? 'active' : '' }}">Products</a>

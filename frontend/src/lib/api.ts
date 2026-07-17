@@ -70,3 +70,42 @@ export function createAppointment(payload: AppointmentPayload): Promise<Appointm
     body: JSON.stringify(payload),
   });
 }
+
+export interface AlbumSummary {
+  id: number;
+  title: string;
+  slug: string;
+  couple_names: string | null;
+  event_date: string | null;
+  location: string | null;
+  category: string | null;
+  cover_image: string | null;
+  photos_count: number;
+}
+
+export interface AlbumPhoto {
+  id: number;
+  image: string;
+  caption: string | null;
+}
+
+export interface AlbumDetail extends AlbumSummary {
+  description: string | null;
+  photos: AlbumPhoto[];
+}
+
+export function fetchAlbums(params?: { q?: string; category?: string }): Promise<AlbumSummary[]> {
+  const search = new URLSearchParams();
+  if (params?.q) search.set('q', params.q);
+  if (params?.category) search.set('category', params.category);
+  const qs = search.toString();
+  return request<AlbumSummary[]>(`/albums${qs ? `?${qs}` : ''}`);
+}
+
+export function fetchAlbumCategories(): Promise<string[]> {
+  return request<string[]>('/albums/categories');
+}
+
+export function fetchAlbum(slug: string): Promise<AlbumDetail> {
+  return request<AlbumDetail>(`/albums/${slug}`);
+}

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -37,6 +38,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
         Route::post('gallery', [GalleryController::class, 'store'])->name('gallery.store');
         Route::delete('gallery/{galleryItem}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
+
+        // Wedding Albums
+        Route::get('albums', [AlbumController::class, 'index'])->name('albums.index');
+        Route::get('albums/create', [AlbumController::class, 'create'])->name('albums.create');
+        Route::post('albums', [AlbumController::class, 'store'])->name('albums.store');
+        Route::get('albums/{album}/edit', [AlbumController::class, 'edit'])->name('albums.edit');
+        Route::put('albums/{album}', [AlbumController::class, 'update'])->name('albums.update');
+        Route::delete('albums/{album}', [AlbumController::class, 'destroy'])->name('albums.destroy');
+        Route::delete('albums/{album}/photos/{photo}', [AlbumController::class, 'destroyPhoto'])->name('albums.photos.destroy');
 
         // Services (menu)
         Route::get('services', [ServiceController::class, 'index'])->name('services.index');
