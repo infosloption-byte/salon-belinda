@@ -34,7 +34,6 @@ services:
       - APP_NAME=Salon Belinda
       - APP_ENV=production
       - APP_DEBUG=false
-      - APP_KEY=${APP_KEY:-}
       - APP_URL=${APP_URL:-https://belinda.ycusriya.online}
       - APP_TIMEZONE=Asia/Colombo
       - DB_CONNECTION=mysql
