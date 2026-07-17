@@ -57,59 +57,61 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20" style={{ backgroundColor: 'var(--color-ivory)' }}>
-        <Link to="/" className="flex items-center gap-3 group">
-          <Seal size={44} />
-          <Logo />
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-8">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
-              className={({ isActive }) =>
-                `text-sm tracking-wide transition-colors ${
-                  isActive ? 'text-[var(--color-magenta)]' : 'text-[var(--color-ink)]/75 hover:text-[var(--color-magenta)]'
-                }`
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
-          <a
-            href={shopUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm tracking-wide transition-colors text-[var(--color-ink)]/75 hover:text-[var(--color-magenta)]"
-          >
-            Shop
-          </a>
-        </nav>
-
-        <div className="hidden lg:flex items-center gap-4">
-          <Link
-            to="/booking"
-            className="px-6 py-2.5 text-sm tracking-wide uppercase transition-colors border"
-            style={{
-              backgroundColor: 'var(--color-magenta)',
-              color: 'var(--color-ivory)',
-              borderColor: 'var(--color-magenta)',
-            }}
-          >
-            Book Appointment
+      <div style={{ backgroundColor: 'var(--color-ivory)' }}>
+        <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20">
+          <Link to="/" className="flex items-center gap-3 group">
+            <Seal size={44} />
+            <Logo />
           </Link>
-        </div>
 
-        <button
-          className="lg:hidden p-2"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-        >
-          {open ? <X color="var(--color-ink)" /> : <Menu color="var(--color-ink)" />}
-        </button>
+          <nav className="hidden lg:flex items-center gap-8">
+            {links.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                end={l.to === '/'}
+                className={({ isActive }) =>
+                  `text-sm tracking-wide transition-colors ${
+                    isActive ? 'text-[var(--color-magenta)]' : 'text-[var(--color-ink)]/75 hover:text-[var(--color-magenta)]'
+                  }`
+                }
+              >
+                {l.label}
+              </NavLink>
+            ))}
+            <a
+              href={shopUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm tracking-wide transition-colors text-[var(--color-ink)]/75 hover:text-[var(--color-magenta)]"
+            >
+              Shop
+            </a>
+          </nav>
+
+          <div className="hidden lg:flex items-center gap-4">
+            <Link
+              to="/booking"
+              className="px-6 py-2.5 text-sm tracking-wide uppercase transition-colors border"
+              style={{
+                backgroundColor: 'var(--color-magenta)',
+                color: 'var(--color-ivory)',
+                borderColor: 'var(--color-magenta)',
+              }}
+            >
+              Book Appointment
+            </Link>
+          </div>
+
+          <button
+            className="lg:hidden p-2"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+          >
+            {open ? <X color="var(--color-ink)" /> : <Menu color="var(--color-ink)" />}
+          </button>
+        </div>
       </div>
 
       {open && (
