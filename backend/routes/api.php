@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/services', [ServiceController::class, 'index']);
 Route::get('/gallery', [GalleryController::class, 'index']);
 Route::get('/testimonials', [TestimonialController::class, 'index']);
-Route::post('/testimonials', [TestimonialController::class, 'store']);
-Route::post('/appointments', [AppointmentController::class, 'store']);
-Route::post('/contact', [ContactMessageController::class, 'store']);
+Route::post('/testimonials', [TestimonialController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/appointments', [AppointmentController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/contact', [ContactMessageController::class, 'store'])->middleware('throttle:5,1');
 
 // --- Shop ---
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
-Route::post('/orders', [OrderController::class, 'store']);
+Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
 Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
