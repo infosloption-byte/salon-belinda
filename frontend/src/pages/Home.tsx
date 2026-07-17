@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star } from 'lucide-react';
 import CornerFrame from '../components/ui/CornerFrame';
@@ -9,6 +10,8 @@ import { galleryItems } from '../data/gallery';
 import { testimonials } from '../data/testimonials';
 import { site } from '../data/site';
 
+const heroSlides = galleryItems.filter((g) => g.category === 'Bridal').map((g) => g.image);
+
 export default function Home() {
   const featuredServices = serviceCategories.filter((c) =>
     ['bridal', 'hair', 'makeup', 'skin'].includes(c.id)
@@ -16,12 +19,40 @@ export default function Home() {
   const bridalShots = galleryItems.filter((g) => g.category === 'Bridal').slice(0, 4);
   const featuredReview = testimonials[0];
 
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+    const id = setInterval(() => setSlide((s) => (s + 1) % heroSlides.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div>
       {/* Hero */}
       <section className="relative overflow-hidden" style={{ backgroundColor: 'var(--color-deep)' }}>
-        <div className="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-          <div className="order-2 lg:order-1">
+        {/* Background slider */}
+        <div className="absolute inset-0" aria-hidden="true">
+          {heroSlides.map((src, i) => (
+            <div
+              key={src}
+              className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
+              style={{ opacity: i === slide ? 1 : 0 }}
+            >
+              <img src={src} alt="" className="w-full h-full object-cover" />
+            </div>
+          ))}
+          {/* Dark gradient overlay so the text stays readable over any photo */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(100deg, rgba(38,20,32,0.94) 0%, rgba(38,20,32,0.86) 38%, rgba(38,20,32,0.55) 65%, rgba(38,20,32,0.35) 100%)',
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-36">
+          <div className="max-w-xl">
             <p className="eyebrow mb-5" style={{ color: 'var(--color-amber-light)' }}>
               Havelock Rd · Galle · Est. Bridal &amp; Ladies Salon
             </p>
@@ -35,7 +66,7 @@ export default function Home() {
                 born by the shore.
               </span>
             </h1>
-            <p className="mt-6 text-base md:text-lg max-w-md leading-relaxed" style={{ color: 'var(--color-ivory)', opacity: 0.8 }}>
+            <p className="mt-6 text-base md:text-lg max-w-md leading-relaxed" style={{ color: 'var(--color-ivory)', opacity: 0.85 }}>
               Salon Belinda is Shanika Madushani's studio for brides, homecomings, and every
               occasion in between — hair, makeup, skin, and nails, styled with a steady hand.
             </p>
@@ -49,16 +80,23 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="order-1 lg:order-2 relative">
-            <div className="relative aspect-[4/5] max-w-md mx-auto p-4">
-              <PortfolioImage
-                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80"
-                alt="Bridal makeup and hair styling at Salon Belinda"
-                className="w-full h-full object-cover"
-              />
-              <CornerFrame />
+          {/* Slide indicator dots */}
+          {heroSlides.length > 1 && (
+            <div className="flex gap-2 mt-16">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  aria-label={`Show slide ${i + 1}`}
+                  onClick={() => setSlide(i)}
+                  className="h-1.5 rounded-full transition-all"
+                  style={{
+                    width: i === slide ? '1.75rem' : '0.5rem',
+                    backgroundColor: i === slide ? 'var(--color-amber-light)' : 'rgba(251,247,243,0.35)',
+                  }}
+                />
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </section>
 
