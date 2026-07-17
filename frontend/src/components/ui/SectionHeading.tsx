@@ -17,7 +17,7 @@ export default function SectionHeading({
     <div className={`${align === 'center' ? 'text-center' : 'text-left'} ${className}`}>
       <p
         className="eyebrow mb-3"
-        style={{ color: light ? 'var(--color-gold-light)' : 'var(--color-maroon)' }}
+        style={{ color: light ? 'var(--color-amber-light)' : 'var(--color-magenta)' }}
       >
         {eyebrow}
       </p>
@@ -27,10 +27,7 @@ export default function SectionHeading({
       >
         {title}
       </h2>
-      <div
-        className={`h-px w-16 mt-5 ${align === 'center' ? 'mx-auto' : ''}`}
-        style={{ backgroundColor: 'var(--color-gold)' }}
-      />
+      <span className={`swoosh mt-5 ${align === 'center' ? 'mx-auto' : ''}`} />
     </div>
   );
 }

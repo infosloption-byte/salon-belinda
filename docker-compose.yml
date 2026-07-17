@@ -5,6 +5,7 @@ services:
       args:
         - VITE_SHOP_URL=${VITE_SHOP_URL:-https://shop.belinda.ycusriya.online}
         - VITE_API_URL=${VITE_API_URL:-https://belinda.ycusriya.online/api}
+        - VITE_API_URL=${VITE_API_URL:-https://belinda.ycusriya.online/api}
     container_name: belinda_frontend
     restart: unless-stopped
     ports:

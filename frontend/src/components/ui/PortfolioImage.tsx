@@ -21,11 +21,11 @@ export default function PortfolioImage({ src, alt, className = '' }: PortfolioIm
       <div
         className={`flex flex-col items-center justify-center gap-2 ${className}`}
         style={{
-          background: 'linear-gradient(135deg, var(--color-blush-light), var(--color-ivory-dim))',
+          background: 'linear-gradient(135deg, var(--color-rose-light), var(--color-ivory-dim))',
         }}
       >
-        <Sparkles size={22} color="var(--color-gold)" />
-        <span className="eyebrow" style={{ color: 'var(--color-maroon)' }}>
+        <Sparkles size={22} color="var(--color-amber)" />
+        <span className="eyebrow" style={{ color: 'var(--color-magenta)' }}>
           Photo coming soon
         </span>
       </div>

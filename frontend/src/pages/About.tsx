@@ -1,4 +1,3 @@
-import CornerFrame from '../components/ui/CornerFrame';
 import SectionHeading from '../components/ui/SectionHeading';
 import PortfolioImage from '../components/ui/PortfolioImage';
 import { LinkButton } from '../components/ui/Button';
@@ -29,16 +28,22 @@ export default function About() {
   return (
     <div>
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-        <div className="relative aspect-[4/5] max-w-md p-4">
-          <PortfolioImage
-            src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=900&q=80"
-            alt="Shanika Madushani, owner of Salon Belinda, at work"
-            className="w-full h-full object-cover"
+        <div className="relative max-w-sm mx-auto lg:mx-0">
+          <div
+            className="absolute -top-5 -left-5 w-full h-full"
+            style={{ backgroundImage: 'var(--gradient-brand)' }}
+            aria-hidden="true"
           />
-          <CornerFrame />
+          <div className="relative aspect-[4/5]">
+            <PortfolioImage
+              src="/brand/shani.jpg"
+              alt="Shanika Madushani (Shani), owner of Salon Belinda"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
         <div>
-          <p className="eyebrow mb-4" style={{ color: 'var(--color-maroon)' }}>
+          <p className="eyebrow mb-4" style={{ color: 'var(--color-magenta)' }}>
             Our Story
           </p>
           <h1 className="font-display text-4xl md:text-5xl leading-tight mb-6" style={{ color: 'var(--color-ink)' }}>
@@ -80,14 +85,14 @@ export default function About() {
 
       <section className="max-w-4xl mx-auto px-5 md:px-8 py-24">
         <SectionHeading eyebrow="Milestones" title="Along the Way" align="center" className="mb-14" />
-        <ol className="relative border-l pl-8 space-y-10" style={{ borderColor: 'var(--color-gold)' }}>
+        <ol className="relative border-l pl-8 space-y-10" style={{ borderColor: 'var(--color-amber)' }}>
           {milestones.map((m) => (
             <li key={m.year} className="relative">
               <span
                 className="absolute -left-[2.55rem] top-0 w-3 h-3 rounded-full"
-                style={{ backgroundColor: 'var(--color-gold)' }}
+                style={{ backgroundColor: 'var(--color-amber)' }}
               />
-              <p className="font-display italic text-xl mb-1" style={{ color: 'var(--color-maroon)' }}>
+              <p className="font-display italic text-xl mb-1" style={{ color: 'var(--color-magenta)' }}>
                 {m.year}
               </p>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>

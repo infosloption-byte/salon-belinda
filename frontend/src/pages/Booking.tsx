@@ -97,7 +97,7 @@ export default function Booking() {
   if (confirmed) {
     return (
       <div className="max-w-xl mx-auto px-5 py-28 text-center">
-        <CheckCircle2 size={48} color="var(--color-gold)" className="mx-auto mb-6" />
+        <CheckCircle2 size={48} color="var(--color-amber)" className="mx-auto mb-6" />
         <h1 className="font-display text-3xl mb-4" style={{ color: 'var(--color-ink)' }}>
           Request Received
         </h1>
@@ -119,9 +119,9 @@ export default function Booking() {
 
   return (
     <div>
-      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-green)' }}>
+      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-3xl mx-auto px-5">
-          <p className="eyebrow mb-4" style={{ color: 'var(--color-gold-light)' }}>
+          <p className="eyebrow mb-4" style={{ color: 'var(--color-amber-light)' }}>
             Reserve Your Time
           </p>
           <h1 className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
@@ -217,7 +217,7 @@ export default function Booking() {
           {submitError && (
             <p
               className="text-sm px-4 py-3"
-              style={{ backgroundColor: 'var(--color-blush-light, #F3DEDB)', color: 'var(--color-maroon)' }}
+              style={{ backgroundColor: 'var(--color-rose-light, #F3DEDB)', color: 'var(--color-magenta)' }}
             >
               {submitError}
             </p>
@@ -239,7 +239,7 @@ export default function Booking() {
           color: var(--color-ink);
         }
         .input:focus {
-          border-color: var(--color-gold);
+          border-color: var(--color-amber);
           outline: none;
         }
       `}</style>
@@ -263,7 +263,7 @@ function Field({
       </span>
       {children}
       {error && (
-        <span className="text-xs mt-1 block" style={{ color: 'var(--color-maroon)' }}>
+        <span className="text-xs mt-1 block" style={{ color: 'var(--color-magenta)' }}>
           {error}
         </span>
       )}

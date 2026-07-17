@@ -16,9 +16,9 @@ export default function Contact() {
 
   return (
     <div>
-      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-green)' }}>
+      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-3xl mx-auto px-5">
-          <p className="eyebrow mb-4" style={{ color: 'var(--color-gold-light)' }}>
+          <p className="eyebrow mb-4" style={{ color: 'var(--color-amber-light)' }}>
             Get In Touch
           </p>
           <h1 className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
@@ -32,15 +32,15 @@ export default function Contact() {
           <SectionHeading eyebrow="Visit The Salon" title="Find Us" className="mb-8" />
           <ul className="space-y-5 mb-10">
             <li className="flex gap-4">
-              <MapPin size={20} color="var(--color-gold)" className="shrink-0" />
+              <MapPin size={20} color="var(--color-amber)" className="shrink-0" />
               <span style={{ color: 'var(--color-ink)', opacity: 0.75 }}>{site.address}</span>
             </li>
             <li className="flex gap-4">
-              <Phone size={20} color="var(--color-gold)" className="shrink-0" />
+              <Phone size={20} color="var(--color-amber)" className="shrink-0" />
               <a href={site.phoneHref} style={{ color: 'var(--color-ink)', opacity: 0.75 }}>{site.phone}</a>
             </li>
             <li className="flex gap-4">
-              <Mail size={20} color="var(--color-gold)" className="shrink-0" />
+              <Mail size={20} color="var(--color-amber)" className="shrink-0" />
               <a href={`mailto:${site.email}`} style={{ color: 'var(--color-ink)', opacity: 0.75 }}>{site.email}</a>
             </li>
           </ul>
@@ -66,7 +66,7 @@ export default function Contact() {
 
           {sent ? (
             <div className="flex flex-col items-center text-center py-10">
-              <CheckCircle2 size={40} color="var(--color-gold)" className="mb-4" />
+              <CheckCircle2 size={40} color="var(--color-amber)" className="mb-4" />
               <p style={{ color: 'var(--color-ink)' }}>
                 Thank you — we've received your message and will reply soon.
               </p>
@@ -92,7 +92,7 @@ export default function Contact() {
           font-size: 0.9rem;
           color: var(--color-ink);
         }
-        .contact-input:focus { outline: none; border-color: var(--color-gold); }
+        .contact-input:focus { outline: none; border-color: var(--color-amber); }
       `}</style>
     </div>
   );

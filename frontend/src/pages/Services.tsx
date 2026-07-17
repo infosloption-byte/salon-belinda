@@ -6,9 +6,9 @@ import { serviceCategories } from '../data/services';
 export default function Services() {
   return (
     <div>
-      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-green)' }}>
+      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-3xl mx-auto px-5">
-          <p className="eyebrow mb-4" style={{ color: 'var(--color-gold-light)' }}>
+          <p className="eyebrow mb-4" style={{ color: 'var(--color-amber-light)' }}>
             Service Menu
           </p>
           <h1 className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
@@ -47,7 +47,7 @@ export default function Services() {
                     </span>
                   </div>
                   <div className="flex items-center gap-5 sm:flex-col sm:items-end shrink-0">
-                    <span className="font-display italic text-lg" style={{ color: 'var(--color-maroon)' }}>
+                    <span className="font-display italic text-lg" style={{ color: 'var(--color-magenta)' }}>
                       {s.price}
                     </span>
                     <Link

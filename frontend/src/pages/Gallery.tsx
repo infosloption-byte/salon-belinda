@@ -26,9 +26,9 @@ export default function Gallery() {
 
   return (
     <div>
-      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-green)' }}>
+      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-3xl mx-auto px-5">
-          <p className="eyebrow mb-4" style={{ color: 'var(--color-gold-light)' }}>
+          <p className="eyebrow mb-4" style={{ color: 'var(--color-amber-light)' }}>
             Portfolio
           </p>
           <h1 className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
@@ -50,7 +50,7 @@ export default function Gallery() {
               className="px-5 py-2 text-xs uppercase tracking-wide border transition-colors"
               style={
                 filter === c
-                  ? { backgroundColor: 'var(--color-maroon)', color: 'var(--color-ivory)', borderColor: 'var(--color-maroon)' }
+                  ? { backgroundColor: 'var(--color-magenta)', color: 'var(--color-ivory)', borderColor: 'var(--color-magenta)' }
                   : { borderColor: 'rgba(38,34,32,0.2)', color: 'var(--color-ink)' }
               }
             >
@@ -117,7 +117,7 @@ export default function Gallery() {
             onClick={(e) => e.stopPropagation()}
           >
             <PortfolioImage src={active.image} alt={active.title} className="w-full h-full object-cover" />
-            <CornerFrame color="var(--color-gold-light)" />
+            <CornerFrame />
             <p className="text-center mt-4 font-display italic text-xl" style={{ color: 'var(--color-ivory)' }}>
               {active.title}
             </p>

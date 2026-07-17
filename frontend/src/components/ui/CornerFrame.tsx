@@ -1,68 +1,44 @@
+import { useId } from 'react';
+
 interface CornerFrameProps {
-  color?: string;
-  size?: number;
-  inset?: number;
   className?: string;
 }
 
 /**
- * The site's signature motif: a hand-drawn-style botanical corner flourish,
- * echoing the gold-foil corners of a wedding invitation card. Used on the
- * hero image, gallery cards, and testimonial cards.
+ * The site's signature motif on portfolio imagery: a dotted arc in the
+ * brand gradient, echoing the ring around the logo's monogram. Quieter
+ * than a full frame — it marks a corner rather than boxing the photo in.
  */
-function Flourish({ color = 'var(--color-gold)' }: { color?: string }) {
+function Arc({ gradientId }: { gradientId: string }) {
+  const dots = Array.from({ length: 7 });
+  const cx = 56;
+  const cy = 56;
+  const r = 40;
   return (
-    <svg
-      width="72"
-      height="72"
-      viewBox="0 0 72 72"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <path
-        d="M4 4 L4 30"
-        stroke={color}
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M4 4 L30 4"
-        stroke={color}
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M4 18 C 20 16, 24 22, 20 30 C 17 36, 8 34, 10 27"
-        stroke={color}
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 4 C 16 20, 22 24, 30 20 C 36 17, 34 8, 27 10"
-        stroke={color}
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="12" r="1.6" fill={color} />
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="56" x2="56" y2="0">
+          <stop offset="0%" stopColor="#7A2560" />
+          <stop offset="50%" stopColor="#C23056" />
+          <stop offset="100%" stopColor="#F5A623" />
+        </linearGradient>
+      </defs>
+      {dots.map((_, i) => {
+        const angle = Math.PI * (1 + 0.5 * (i / (dots.length - 1))); // 180deg -> 270deg
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+        return <circle key={i} cx={x} cy={y} r="1.7" fill={`url(#${gradientId})`} />;
+      })}
     </svg>
   );
 }
 
-export default function CornerFrame({ color, className = '' }: CornerFrameProps) {
+export default function CornerFrame({ className = '' }: CornerFrameProps) {
+  const id = useId();
   return (
     <div className={`pointer-events-none absolute inset-0 ${className}`} aria-hidden="true">
-      <div className="absolute top-0 left-0">
-        <Flourish color={color} />
-      </div>
-      <div className="absolute top-0 right-0 -scale-x-100">
-        <Flourish color={color} />
-      </div>
-      <div className="absolute bottom-0 left-0 -scale-y-100">
-        <Flourish color={color} />
-      </div>
-      <div className="absolute bottom-0 right-0 -scale-x-100 -scale-y-100">
-        <Flourish color={color} />
+      <div className="absolute bottom-0 right-0">
+        <Arc gradientId={`corner-arc-${id}`} />
       </div>
     </div>
   );

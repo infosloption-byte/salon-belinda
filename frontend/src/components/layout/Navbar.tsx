@@ -42,12 +42,12 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20">
         <Link to="/" className="flex items-center gap-3 group">
-          <Seal size={40} />
+          <Seal size={46} />
           <span className="flex flex-col leading-none">
-            <span className="font-display italic text-2xl" style={{ color: 'var(--color-green)' }}>
+            <span className="font-display italic text-2xl" style={{ color: 'var(--color-deep)' }}>
               Salon Belinda
             </span>
-            <span className="eyebrow mt-1" style={{ color: 'var(--color-maroon)', fontSize: '0.6rem' }}>
+            <span className="eyebrow mt-1" style={{ color: 'var(--color-magenta)', fontSize: '0.6rem' }}>
               Bridal &amp; Ladies Salon
             </span>
           </span>
@@ -61,7 +61,7 @@ export default function Navbar() {
               end={l.to === '/'}
               className={({ isActive }) =>
                 `text-sm tracking-wide transition-colors ${
-                  isActive ? 'text-[var(--color-maroon)]' : 'text-[var(--color-ink)]/75 hover:text-[var(--color-maroon)]'
+                  isActive ? 'text-[var(--color-magenta)]' : 'text-[var(--color-ink)]/75 hover:text-[var(--color-magenta)]'
                 }`
               }
             >
@@ -72,7 +72,7 @@ export default function Navbar() {
             href={shopUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm tracking-wide transition-colors text-[var(--color-ink)]/75 hover:text-[var(--color-maroon)]"
+            className="text-sm tracking-wide transition-colors text-[var(--color-ink)]/75 hover:text-[var(--color-magenta)]"
           >
             Shop
           </a>
@@ -83,9 +83,9 @@ export default function Navbar() {
             to="/booking"
             className="px-6 py-2.5 text-sm tracking-wide uppercase transition-colors border"
             style={{
-              backgroundColor: 'var(--color-maroon)',
+              backgroundColor: 'var(--color-magenta)',
               color: 'var(--color-ivory)',
-              borderColor: 'var(--color-maroon)',
+              borderColor: 'var(--color-magenta)',
             }}
           >
             Book Appointment
@@ -114,7 +114,7 @@ export default function Navbar() {
               end={l.to === '/'}
               className={({ isActive }) =>
                 `py-3 text-base border-b border-[rgba(38,34,32,0.06)] ${
-                  isActive ? 'text-[var(--color-maroon)]' : 'text-[var(--color-ink)]/80'
+                  isActive ? 'text-[var(--color-magenta)]' : 'text-[var(--color-ink)]/80'
                 }`
               }
             >
@@ -132,7 +132,7 @@ export default function Navbar() {
           <Link
             to="/booking"
             className="mt-4 text-center px-6 py-3 text-sm tracking-wide uppercase"
-            style={{ backgroundColor: 'var(--color-maroon)', color: 'var(--color-ivory)' }}
+            style={{ backgroundColor: 'var(--color-magenta)', color: 'var(--color-ivory)' }}
           >
             Book Appointment
           </Link>

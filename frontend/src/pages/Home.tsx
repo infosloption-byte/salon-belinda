@@ -19,10 +19,10 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden" style={{ backgroundColor: 'var(--color-green)' }}>
+      <section className="relative overflow-hidden" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="order-2 lg:order-1">
-            <p className="eyebrow mb-5" style={{ color: 'var(--color-gold-light)' }}>
+            <p className="eyebrow mb-5" style={{ color: 'var(--color-amber-light)' }}>
               Ratgama · Galle Road · Est. Bridal &amp; Ladies Salon
             </p>
             <h1
@@ -31,7 +31,7 @@ export default function Home() {
             >
               Bridal artistry,
               <br />
-              <span className="italic" style={{ color: 'var(--color-gold-light)' }}>
+              <span className="italic" style={{ color: 'var(--color-amber-light)' }}>
                 born by the shore.
               </span>
             </h1>
@@ -40,7 +40,7 @@ export default function Home() {
               occasion in between — hair, makeup, skin, and nails, styled with a steady hand.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
-              <LinkButton to="/booking" variant="primary">
+              <LinkButton to="/booking" variant="gradient">
                 Book Appointment <ArrowRight size={16} />
               </LinkButton>
               <LinkButton to="/gallery" variant="ghost">
@@ -62,6 +62,54 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Meet the owner */}
+      <section className="max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-14 lg:gap-20 items-center">
+          <div className="relative max-w-sm mx-auto lg:mx-0">
+            <div
+              className="absolute -top-5 -left-5 w-full h-full"
+              style={{ backgroundImage: 'var(--gradient-brand)' }}
+              aria-hidden="true"
+            />
+            <div className="relative aspect-[4/5]">
+              <PortfolioImage
+                src="/brand/shani.jpg"
+                alt="Shani, founder and lead stylist of Salon Belinda"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          <div>
+            <p className="eyebrow mb-4" style={{ color: 'var(--color-magenta)' }}>
+              Meet the Artist
+            </p>
+            <h2 className="font-display text-4xl md:text-5xl leading-tight mb-2" style={{ color: 'var(--color-ink)' }}>
+              Hi, I'm {site.ownerFirstName}.
+            </h2>
+            <p className="eyebrow mb-7" style={{ color: 'var(--color-ink)', opacity: 0.5, letterSpacing: '0.18em' }}>
+              {site.ownerTitle}
+            </p>
+            <p
+              className="font-display italic text-2xl md:text-[1.7rem] leading-snug mb-7"
+              style={{ color: 'var(--color-ink)' }}
+            >
+              "{site.ownerQuote}"
+            </p>
+            <p className="text-base leading-relaxed max-w-lg" style={{ color: 'var(--color-ink)', opacity: 0.7 }}>
+              I started styling from a small home studio in Ratgama in 2013, and I still take
+              every bridal trial myself. Salon Belinda grew one wedding, one homecoming, one
+              quiet Tuesday blow-dry at a time — and that's still exactly the pace I like it at.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <LinkButton to="/about" variant="outline">
+                My Story <ArrowRight size={16} />
+              </LinkButton>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Signature services */}
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-24">
         <SectionHeading eyebrow="What We Do" title="Signature Services" align="center" className="mb-14" />
@@ -73,7 +121,7 @@ export default function Home() {
               className="group block p-7 border transition-colors"
               style={{ borderColor: 'rgba(38,34,32,0.1)' }}
             >
-              <p className="eyebrow mb-3" style={{ color: 'var(--color-gold)' }}>
+              <p className="eyebrow mb-3" style={{ color: 'var(--color-amber)' }}>
                 {cat.title === 'Bridal Packages' ? 'Most Booked' : cat.title}
               </p>
               <h3 className="font-display text-2xl mb-3" style={{ color: 'var(--color-ink)' }}>
@@ -84,7 +132,7 @@ export default function Home() {
               </p>
               <span
                 className="inline-flex items-center gap-1 text-sm group-hover:gap-2 transition-all"
-                style={{ color: 'var(--color-maroon)' }}
+                style={{ color: 'var(--color-magenta)' }}
               >
                 See services <ArrowRight size={14} />
               </span>
@@ -98,7 +146,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
             <SectionHeading eyebrow="Bridal Portfolio" title="Recent Brides" />
-            <Link to="/gallery" className="text-sm underline underline-offset-4" style={{ color: 'var(--color-maroon)' }}>
+            <Link to="/gallery" className="text-sm underline underline-offset-4" style={{ color: 'var(--color-magenta)' }}>
               View full gallery
             </Link>
           </div>
@@ -117,13 +165,13 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-5 md:px-8 py-24 text-center">
         <div className="flex justify-center gap-1 mb-6">
           {Array.from({ length: featuredReview.rating }).map((_, i) => (
-            <Star key={i} size={18} fill="var(--color-gold)" stroke="var(--color-gold)" />
+            <Star key={i} size={18} fill="var(--color-amber)" stroke="var(--color-amber)" />
           ))}
         </div>
         <p className="font-display italic text-2xl md:text-3xl leading-snug" style={{ color: 'var(--color-ink)' }}>
           "{featuredReview.message}"
         </p>
-        <p className="mt-6 eyebrow" style={{ color: 'var(--color-maroon)' }}>
+        <p className="mt-6 eyebrow" style={{ color: 'var(--color-magenta)' }}>
           {featuredReview.name} — {featuredReview.service}
         </p>
         <Link
@@ -136,7 +184,7 @@ export default function Home() {
       </section>
 
       {/* CTA banner */}
-      <section className="relative" style={{ backgroundColor: 'var(--color-maroon)' }}>
+      <section className="relative" style={{ backgroundColor: 'var(--color-magenta)' }}>
         <div className="max-w-5xl mx-auto px-5 md:px-8 py-16 text-center">
           <h2 className="font-display text-3xl md:text-4xl mb-4" style={{ color: 'var(--color-ivory)' }}>
             Planning your big day?

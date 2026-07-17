@@ -23,7 +23,7 @@ function InstagramIcon() {
 
 export default function Footer() {
   return (
-    <footer style={{ backgroundColor: 'var(--color-green)', color: 'var(--color-ivory)' }}>
+    <footer style={{ backgroundColor: 'var(--color-deep)', color: 'var(--color-ivory)' }}>
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div>
           <div className="flex items-center gap-3 mb-4">
@@ -45,19 +45,19 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="eyebrow mb-4 text-[var(--color-gold-light)]">Explore</p>
+          <p className="eyebrow mb-4 text-[var(--color-amber-light)]">Explore</p>
           <ul className="space-y-2 text-sm text-[var(--color-ivory)]/85">
-            <li><Link to="/about" className="hover:text-[var(--color-gold-light)]">About</Link></li>
-            <li><Link to="/services" className="hover:text-[var(--color-gold-light)]">Services</Link></li>
-            <li><Link to="/gallery" className="hover:text-[var(--color-gold-light)]">Gallery</Link></li>
-            <li><Link to="/reviews" className="hover:text-[var(--color-gold-light)]">Reviews</Link></li>
-            <li><Link to="/shop" className="hover:text-[var(--color-gold-light)]">Shop</Link></li>
-            <li><Link to="/booking" className="hover:text-[var(--color-gold-light)]">Book Appointment</Link></li>
+            <li><Link to="/about" className="hover:text-[var(--color-amber-light)]">About</Link></li>
+            <li><Link to="/services" className="hover:text-[var(--color-amber-light)]">Services</Link></li>
+            <li><Link to="/gallery" className="hover:text-[var(--color-amber-light)]">Gallery</Link></li>
+            <li><Link to="/reviews" className="hover:text-[var(--color-amber-light)]">Reviews</Link></li>
+            <li><Link to="/shop" className="hover:text-[var(--color-amber-light)]">Shop</Link></li>
+            <li><Link to="/booking" className="hover:text-[var(--color-amber-light)]">Book Appointment</Link></li>
           </ul>
         </div>
 
         <div>
-          <p className="eyebrow mb-4 text-[var(--color-gold-light)]">Visit</p>
+          <p className="eyebrow mb-4 text-[var(--color-amber-light)]">Visit</p>
           <ul className="space-y-3 text-sm text-[var(--color-ivory)]/85">
             <li className="flex gap-2"><MapPin size={16} className="shrink-0 mt-0.5" /> {site.address}</li>
             <li className="flex gap-2"><Phone size={16} className="shrink-0 mt-0.5" /> <a href={site.phoneHref}>{site.phone}</a></li>
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="eyebrow mb-4 text-[var(--color-gold-light)]">Hours</p>
+          <p className="eyebrow mb-4 text-[var(--color-amber-light)]">Hours</p>
           <ul className="space-y-2 text-sm text-[var(--color-ivory)]/85">
             {site.hours.map((h) => (
               <li key={h.day} className="flex justify-between gap-4">

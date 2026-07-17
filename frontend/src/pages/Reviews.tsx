@@ -44,9 +44,9 @@ export default function Reviews() {
 
   return (
     <div>
-      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-green)' }}>
+      <section className="py-20 md:py-24 text-center" style={{ backgroundColor: 'var(--color-deep)' }}>
         <div className="max-w-3xl mx-auto px-5">
-          <p className="eyebrow mb-4" style={{ color: 'var(--color-gold-light)' }}>
+          <p className="eyebrow mb-4" style={{ color: 'var(--color-amber-light)' }}>
             Client Voices
           </p>
           <h1 className="font-display text-4xl md:text-5xl" style={{ color: 'var(--color-ivory)' }}>
@@ -58,8 +58,8 @@ export default function Reviews() {
                 <Star
                   key={i}
                   size={20}
-                  fill={i < Math.round(average) ? 'var(--color-gold)' : 'transparent'}
-                  stroke="var(--color-gold)"
+                  fill={i < Math.round(average) ? 'var(--color-amber)' : 'transparent'}
+                  stroke="var(--color-amber)"
                 />
               ))}
             </div>
@@ -81,7 +81,7 @@ export default function Reviews() {
                     <p className="font-display text-lg" style={{ color: 'var(--color-ink)' }}>
                       {t.name}
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--color-maroon)' }}>
+                    <p className="text-xs" style={{ color: 'var(--color-magenta)' }}>
                       {t.service}
                     </p>
                   </div>
@@ -110,13 +110,13 @@ export default function Reviews() {
             {submitted && (
               <p
                 className="mb-5 text-sm px-4 py-3"
-                style={{ backgroundColor: 'var(--color-blush-light)', color: 'var(--color-maroon)' }}
+                style={{ backgroundColor: 'var(--color-rose-light)', color: 'var(--color-magenta)' }}
               >
                 Thank you — your review has been added.
               </p>
             )}
             {error && (
-              <p className="mb-5 text-sm" style={{ color: 'var(--color-maroon)' }}>
+              <p className="mb-5 text-sm" style={{ color: 'var(--color-magenta)' }}>
                 {error}
               </p>
             )}
