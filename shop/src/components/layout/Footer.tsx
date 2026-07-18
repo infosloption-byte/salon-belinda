@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { site, mainSiteUrl } from '../../data/site';
 import { categories } from '../../data/products';
+import Seal from '../ui/Seal';
+import Logo from '../ui/Logo';
 
 function FacebookIcon() {
   return (
@@ -25,9 +27,10 @@ export default function Footer() {
     <footer className="mt-24 border-t" style={{ borderColor: 'rgba(38,34,32,0.1)', backgroundColor: 'var(--color-green)' }}>
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
         <div>
-          <span className="font-display italic text-2xl" style={{ color: 'var(--color-ivory)' }}>
-            {site.name}
-          </span>
+          <div className="flex items-center gap-3 mb-3">
+            <Seal size={36} />
+            <Logo variant="light" />
+          </div>
           <p className="text-sm mt-3 leading-relaxed" style={{ color: 'var(--color-ivory)', opacity: 0.65 }}>
             The hair, skin, makeup, and bridal essentials from our treatments — for pickup at the
             salon or island-wide delivery.

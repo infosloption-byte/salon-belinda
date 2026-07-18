@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Search, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { categories } from '../../data/products';
-import { site, mainSiteUrl } from '../../data/site';
+import { mainSiteUrl } from '../../data/site';
 import { useCart } from '../../context/CartContext';
+import Seal from '../ui/Seal';
+import Logo from '../ui/Logo';
 
 export default function Header({ onCartClick }: { onCartClick: () => void }) {
   const [open, setOpen] = useState(false);
@@ -49,14 +51,8 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
 
       <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20 gap-4">
         <Link to="/" className="flex items-center gap-3 shrink-0">
-          <span className="flex flex-col leading-none">
-            <span className="font-display italic text-2xl" style={{ color: 'var(--color-green)' }}>
-              {site.name}
-            </span>
-            <span className="eyebrow mt-1" style={{ color: 'var(--color-maroon)', fontSize: '0.58rem' }}>
-              Online Shop
-            </span>
-          </span>
+          <Seal size={40} />
+          <Logo />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7">

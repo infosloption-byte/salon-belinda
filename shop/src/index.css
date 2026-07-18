@@ -5,17 +5,26 @@
   --font-display: "Cormorant Garamond", "Georgia", serif;
   --font-body: "Jost", "Helvetica Neue", sans-serif;
 
-  --color-ivory: #FBF6F1;
-  --color-ivory-dim: #F3ECE3;
-  --color-ink: #262220;
-  --color-green: #2F3E2E;
-  --color-green-light: #4A5C45;
-  --color-gold: #B98A4A;
-  --color-gold-light: #D6B076;
+  --color-ivory: #FBF7F3;
+  --color-ivory-dim: #F3ECE9;
+  --color-ink: #241A21;
+  --color-green: #331A2C;
+  --color-green-light: #55273F;
+  --color-gold: #E8622F;
+  --color-gold-light: #F5A623;
   --color-blush: #E8C4C0;
   --color-blush-light: #F3DEDB;
-  --color-maroon: #7A2E3A;
-  --color-maroon-light: #9A4353;
+  --color-maroon: #C23056;
+  --color-maroon-light: #DD5468;
+
+  /* Aliases matching the main site's naming, for shared components/utilities */
+  --color-deep: #331A2C;
+  --color-deep-light: #55273F;
+  --color-magenta: #C23056;
+  --color-magenta-light: #DD5468;
+  --color-amber: #E8622F;
+  --color-amber-light: #F5A623;
+  --gradient-brand: linear-gradient(100deg, #7A2560 0%, #C23056 32%, #E8622F 66%, #F5A623 100%);
 }
 
 html {
@@ -30,6 +39,13 @@ body {
 
 .font-display {
   font-family: var(--font-display);
+}
+
+.text-gradient-brand {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .eyebrow {
