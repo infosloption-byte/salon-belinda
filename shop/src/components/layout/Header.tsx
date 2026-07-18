@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Search, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, ArrowLeft, Phone, Mail } from 'lucide-react';
 import { categories } from '../../data/products';
-import { mainSiteUrl } from '../../data/site';
+import { site, mainSiteUrl } from '../../data/site';
 import { useCart } from '../../context/CartContext';
 import Seal from '../ui/Seal';
 import Logo from '../ui/Logo';
@@ -41,13 +41,19 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
       }`}
     >
       <div className="hidden md:block" style={{ backgroundImage: 'var(--gradient-brand)' }}>
-        <a
-          href={mainSiteUrl}
-          className="flex items-center gap-1.5 max-w-7xl mx-auto px-5 md:px-8 h-9 text-[0.68rem] tracking-wide uppercase hover:opacity-80"
-          style={{ color: 'var(--color-ivory)' }}
-        >
-          <ArrowLeft size={11} /> Back to main site
-        </a>
+        <div className="max-w-7xl mx-auto px-5 md:px-8 h-9 flex items-center justify-between text-[0.68rem] tracking-wide" style={{ color: 'var(--color-ivory)' }}>
+          <a href={mainSiteUrl} className="flex items-center gap-1.5 uppercase hover:opacity-80">
+            <ArrowLeft size={11} /> Back to main site
+          </a>
+          <div className="flex items-center gap-5 opacity-95">
+            <a href={site.phoneHref} className="flex items-center gap-1.5 hover:opacity-80">
+              <Phone size={11} /> Hotline: {site.phone}
+            </a>
+            <a href={`mailto:${site.email}`} className="flex items-center gap-1.5 hover:opacity-80">
+              <Mail size={11} /> {site.email}
+            </a>
+          </div>
+        </div>
       </div>
 
       <div style={{ backgroundColor: 'var(--color-ivory)' }}>
