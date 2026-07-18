@@ -9,8 +9,9 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN { \
-    echo "upload_max_filesize=64M"; \
-    echo "post_max_size=64M"; \
+    echo "upload_max_filesize=16M"; \
+    echo "post_max_size=256M"; \
+    echo "max_file_uploads=60"; \
 } > /usr/local/etc/php/conf.d/uploads.ini
 
 WORKDIR /var/www/html

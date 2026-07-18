@@ -5,12 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Album;
 use App\Models\AlbumPhoto;
+use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
 
 class AlbumController extends Controller
 {
+    public function __construct(private readonly ImageUploadService $uploads)
+    {
+    }
+
     public function index(Request $request): View
     {
         $albums = Album::query()
@@ -42,10 +48,19 @@ class AlbumController extends Controller
             'location' => ['nullable', 'string', 'max:150'],
             'category' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'cover_image_file' => ['nullable', 'image', 'max:8192'],
             'cover_image' => ['nullable', 'url', 'max:500'],
             'is_published' => ['nullable', 'boolean'],
+            'photo_files' => ['nullable', 'array'],
+            'photo_files.*' => ['image', 'max:8192'],
             'photo_urls' => ['nullable', 'string'],
         ]);
+
+        if ($request->hasFile('cover_image_file')) {
+            $data['cover_image'] = $this->uploads->store($request->file('cover_image_file'), 'albums');
+        }
+        $photoUrls = $data['photo_urls'] ?? '';
+        unset($data['cover_image_file'], $data['photo_files'], $data['photo_urls']);
 
         $album = Album::create([
             ...$data,
@@ -53,7 +68,8 @@ class AlbumController extends Controller
             'is_published' => $request->boolean('is_published', true),
         ]);
 
-        $this->attachPhotosFromText($album, $data['photo_urls'] ?? '');
+        $this->attachUploadedPhotos($album, $request->file('photo_files', []));
+        $this->attachPhotosFromText($album, $photoUrls);
 
         // If no cover image was set explicitly, use the first uploaded photo.
         if (! $album->cover_image) {
@@ -82,23 +98,40 @@ class AlbumController extends Controller
             'location' => ['nullable', 'string', 'max:150'],
             'category' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'cover_image_file' => ['nullable', 'image', 'max:8192'],
             'cover_image' => ['nullable', 'url', 'max:500'],
             'is_published' => ['nullable', 'boolean'],
+            'photo_files' => ['nullable', 'array'],
+            'photo_files.*' => ['image', 'max:8192'],
             'photo_urls' => ['nullable', 'string'],
         ]);
+
+        if ($request->hasFile('cover_image_file')) {
+            // Replacing an old self-hosted cover image — clean up the orphaned file.
+            $this->uploads->delete($album->cover_image);
+            $data['cover_image'] = $this->uploads->store($request->file('cover_image_file'), 'albums');
+        }
+        $photoUrls = $data['photo_urls'] ?? '';
+        unset($data['cover_image_file'], $data['photo_files'], $data['photo_urls']);
 
         $album->update([
             ...$data,
             'is_published' => $request->boolean('is_published', true),
         ]);
 
-        $this->attachPhotosFromText($album, $data['photo_urls'] ?? '');
+        $this->attachUploadedPhotos($album, $request->file('photo_files', []));
+        $this->attachPhotosFromText($album, $photoUrls);
 
         return back()->with('success', 'Album updated.');
     }
 
     public function destroy(Album $album): RedirectResponse
     {
+        $this->uploads->delete($album->cover_image);
+        foreach ($album->photos as $photo) {
+            $this->uploads->delete($photo->image);
+        }
+
         $album->delete();
 
         return redirect()->route('admin.albums.index')->with('success', 'Album deleted.');
@@ -108,9 +141,36 @@ class AlbumController extends Controller
     {
         abort_unless($photo->album_id === $album->id, 404);
 
+        $this->uploads->delete($photo->image);
         $photo->delete();
 
         return back()->with('success', 'Photo removed.');
+    }
+
+    /**
+     * Store uploaded photo files and attach them to the album.
+     *
+     * @param  array<UploadedFile>  $files
+     */
+    private function attachUploadedPhotos(Album $album, array $files): void
+    {
+        if (empty($files)) {
+            return;
+        }
+
+        $nextOrder = (int) $album->photos()->max('sort_order') + 1;
+
+        foreach ($files as $file) {
+            if (! $file instanceof UploadedFile || ! $file->isValid()) {
+                continue;
+            }
+
+            AlbumPhoto::create([
+                'album_id' => $album->id,
+                'image' => $this->uploads->store($file, 'albums'),
+                'sort_order' => $nextOrder++,
+            ]);
+        }
     }
 
     /**

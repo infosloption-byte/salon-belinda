@@ -37,16 +37,30 @@ Seeded login:
 - **Password:** password
 
 Change this password (or create your own admin user and delete the seeded
-one) before deploying anywhere public.
+one) before deploying anywhere public — see **Admin Users** below for how
+to do that from the dashboard itself, no terminal needed.
 
 From the dashboard you can manage:
 - **Appointments** — view bookings from the site, update status, delete
 - **Reviews** — approve/reject testimonials before they show publicly
 - **Gallery** — add/remove portfolio photos by category
+- **Wedding Albums** — full albums with cover photo, multiple photos, captions
 - **Services** — manage categories and the service menu/pricing
 - **Products** — full CRUD for the shop catalog, stock counts, badges
 - **Orders** — view orders, change status, mark COD/Bank orders as paid
 - **Messages** — the contact form inbox
+- **My Account** — change your own name, email, or password
+- **Admin Users** — add or remove other admin accounts (at least one must
+  always remain, and you can't delete the account you're currently using)
+
+### Photo uploads
+
+Gallery photos, wedding album covers/photos, and product photos can all be
+uploaded directly from the admin forms — no need to host images elsewhere
+first. Files are stored under `storage/app/public/{gallery,albums,products}`
+(served via the `storage:link` symlink) and are automatically deleted when
+the photo/product/album they belong to is removed. Pasting an external
+image URL is still supported as a fallback in every one of those forms.
 
 ## Public API
 
@@ -111,9 +125,8 @@ class.
 
 - CORS origins for the frontend/shop dev servers are set in `.env` via
   `CORS_ALLOWED_ORIGINS` (see `config/cors.php`).
-- Gallery/product images are stored as plain URLs for now (upload to your
-  own storage/CDN and paste the link into the admin forms). Swapping to
-  direct file uploads later just means adding a file input + `Storage::disk
-  ('public')` calls in `GalleryController`/`ProductController`.
+- Gallery, album, and product images are uploaded directly through the admin
+  forms and stored on the `public` disk (see **Photo uploads** above); an
+  external URL is always accepted too, as a fallback.
 - `php artisan migrate:fresh --seed` resets and reseeds everything from
   scratch if you want to start over.

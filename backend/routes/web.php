@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
@@ -75,5 +76,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('contact-messages/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contact-messages.read');
         Route::post('contact-messages/{contactMessage}/replied', [ContactMessageController::class, 'markReplied'])->name('contact-messages.replied');
         Route::delete('contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+
+        // My Account — every admin can manage their own name/email/password here
+        Route::get('account', [UserController::class, 'account'])->name('account');
+        Route::put('account', [UserController::class, 'updateAccount'])->name('account.update');
+
+        // Admin Users — managing other admin accounts
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 });

@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="bg-white p-6 max-w-3xl mb-8">
-        <form method="POST" action="{{ route('admin.albums.update', $album) }}" class="space-y-5">
+        <form method="POST" action="{{ route('admin.albums.update', $album) }}" enctype="multipart/form-data" class="space-y-5">
             @csrf @method('PUT')
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
@@ -35,13 +35,46 @@
             </div>
 
             <div>
-                <label class="text-xs uppercase tracking-wide block mb-1.5 opacity-60">Cover Image URL</label>
-                <input name="cover_image" type="url" value="{{ old('cover_image', $album->cover_image) }}" class="w-full border px-3 py-2.5 text-sm" style="border-color: rgba(38,34,32,0.2);">
+                <label class="text-xs uppercase tracking-wide block mb-1.5 opacity-60">Cover Photo</label>
+                <div class="flex items-center gap-4 mb-2">
+                    @if ($album->cover_image)
+                        <img src="{{ $album->cover_image }}" alt="Current cover" class="w-20 h-20 object-cover" style="background:#F3ECE3;" onerror="this.style.opacity=0.2">
+                    @endif
+                    <label
+                        for="cover-image-input"
+                        class="flex-1 flex flex-col items-center justify-center gap-1 border-2 border-dashed px-4 py-4 text-sm cursor-pointer hover:bg-black/[0.02]"
+                        style="border-color: rgba(38,34,32,0.25);"
+                    >
+                        <span id="cover-image-label" class="opacity-60">Click to replace cover photo</span>
+                    </label>
+                </div>
+                <input
+                    id="cover-image-input" type="file" name="cover_image_file" accept="image/*" class="hidden"
+                    onchange="document.getElementById('cover-image-label').textContent = this.files[0] ? this.files[0].name : 'Click to replace cover photo';"
+                >
+                <details>
+                    <summary class="text-xs uppercase tracking-wide opacity-60 cursor-pointer select-none">Or use an image URL instead</summary>
+                    <input name="cover_image" type="url" value="{{ old('cover_image', $album->cover_image) }}" class="w-full border px-3 py-2.5 text-sm mt-2" style="border-color: rgba(38,34,32,0.2);">
+                </details>
             </div>
 
             <div>
                 <label class="text-xs uppercase tracking-wide block mb-1.5 opacity-60">Add More Photos</label>
-                <textarea name="photo_urls" rows="4" placeholder="One photo URL per line, optional caption after a pipe: https://... | Caption" class="w-full border px-3 py-2.5 text-sm font-mono" style="border-color: rgba(38,34,32,0.2);"></textarea>
+                <label
+                    for="photo-files-input"
+                    class="flex flex-col items-center justify-center gap-2 border-2 border-dashed px-4 py-6 text-sm cursor-pointer hover:bg-black/[0.02]"
+                    style="border-color: rgba(38,34,32,0.25);"
+                >
+                    <span id="photo-files-label" class="opacity-60">Click to choose photos from your phone or computer — select multiple at once</span>
+                </label>
+                <input
+                    id="photo-files-input" type="file" name="photo_files[]" accept="image/*" multiple class="hidden"
+                    onchange="document.getElementById('photo-files-label').textContent = this.files.length ? this.files.length + ' photo(s) selected' : 'Click to choose photos from your phone or computer — select multiple at once';"
+                >
+                <details class="mt-3">
+                    <summary class="text-xs uppercase tracking-wide opacity-60 cursor-pointer select-none">Or add photo URLs instead</summary>
+                    <textarea name="photo_urls" rows="4" placeholder="One photo URL per line, optional caption after a pipe: https://... | Caption" class="w-full border px-3 py-2.5 text-sm font-mono mt-2" style="border-color: rgba(38,34,32,0.2);"></textarea>
+                </details>
             </div>
 
             <label class="flex items-center gap-2 text-sm">
