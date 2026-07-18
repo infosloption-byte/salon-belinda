@@ -57,7 +57,7 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
       <div style={{ backgroundColor: 'var(--color-ivory)' }}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20 gap-4">
         <Link to="/" className="flex items-center shrink-0">
-          <img src="/brand/wordmark.png" alt="Salon Belinda" className="h-14 w-auto object-contain" />
+          <img src="/brand/wordmark.png" alt="Salon Belinda" className="h-16 md:h-20 w-auto object-contain" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7">

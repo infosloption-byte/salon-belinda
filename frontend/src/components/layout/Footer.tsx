@@ -25,7 +25,7 @@ export default function Footer() {
     <footer style={{ backgroundColor: 'var(--color-deep)', color: 'var(--color-ivory)' }}>
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div>
-          <img src="/brand/wordmark.png" alt="Salon Belinda" className="h-14 w-auto object-contain mb-4" />
+          <img src="/brand/wordmark.png" alt="Salon Belinda" className="h-16 w-auto object-contain mb-4" />
           <p className="text-sm leading-relaxed text-[var(--color-ivory)]/70">
             Bridal artistry and ladies' salon services on Havelock Rd, Galle — led by Shanika
             Madushani.
