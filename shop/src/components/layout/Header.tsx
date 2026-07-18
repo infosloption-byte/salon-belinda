@@ -39,17 +39,19 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
       className={`sticky top-0 z-50 transition-shadow duration-300 ${
         scrolled ? 'shadow-[0_1px_0_0_rgba(38,34,32,0.08)]' : ''
       }`}
-      style={{ backgroundColor: 'var(--color-ivory)' }}
     >
-      <a
-        href={mainSiteUrl}
-        className="hidden md:flex items-center gap-1.5 max-w-7xl mx-auto px-5 md:px-8 pt-2 text-[0.68rem] tracking-wide uppercase"
-        style={{ color: 'var(--color-ink)', opacity: 0.55 }}
-      >
-        <ArrowLeft size={11} /> Back to salonbelinda.com
-      </a>
+      <div className="hidden md:block" style={{ backgroundImage: 'var(--gradient-brand)' }}>
+        <a
+          href={mainSiteUrl}
+          className="flex items-center gap-1.5 max-w-7xl mx-auto px-5 md:px-8 h-9 text-[0.68rem] tracking-wide uppercase hover:opacity-80"
+          style={{ color: 'var(--color-ivory)' }}
+        >
+          <ArrowLeft size={11} /> Back to main site
+        </a>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20 gap-4">
+      <div style={{ backgroundColor: 'var(--color-ivory)' }}>
+        <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20 gap-4">
         <Link to="/" className="flex items-center gap-3 shrink-0">
           <Seal size={40} />
           <Logo />
@@ -113,6 +115,7 @@ export default function Header({ onCartClick }: { onCartClick: () => void }) {
             {open ? <X color="var(--color-ink)" /> : <Menu color="var(--color-ink)" />}
           </button>
         </div>
+      </div>
       </div>
 
       {searchOpen && (
