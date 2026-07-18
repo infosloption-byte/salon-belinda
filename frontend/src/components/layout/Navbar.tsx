@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, Clock } from 'lucide-react';
-import Seal from '../ui/Seal';
-import Logo from '../ui/Logo';
 import { site } from '../../data/site';
 
 const links = [
@@ -59,9 +57,12 @@ export default function Navbar() {
 
       <div style={{ backgroundColor: 'var(--color-ivory)' }}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20">
-          <Link to="/" className="flex items-center gap-3 group">
-            <Seal size={44} />
-            <Logo />
+          <Link to="/" className="flex items-center group">
+            <img
+              src="/brand/wordmark.png"
+              alt="Salon Belinda"
+              className="h-14 md:h-16 w-auto object-contain"
+            />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8">
