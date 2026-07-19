@@ -51,12 +51,12 @@ services:
       - MAIL_MAILER=${MAIL_MAILER:-log}
       - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
       - MAIL_PORT=${MAIL_PORT:-587}
-      - MAIL_USERNAME=${MAIL_USERNAME:-info.salonbelinda@gmail.com}
+      - MAIL_USERNAME=${MAIL_USERNAME:-info.sloption@gmail.com}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       - MAIL_SCHEME=${MAIL_SCHEME:-}
-      - MAIL_FROM_ADDRESS=info.salonbelinda@gmail.com
+      - MAIL_FROM_ADDRESS=info.sloption@gmail.com
       - MAIL_FROM_NAME=Salon Belinda
-      - SALON_NOTIFY_EMAIL=${SALON_NOTIFY_EMAIL:-info.salonbelinda@gmail.com}
+      - SALON_NOTIFY_EMAIL=${SALON_NOTIFY_EMAIL:-info.sloption@gmail.com}
       - PAYMENT_GATEWAY_KEY=${PAYMENT_GATEWAY_KEY:-}
       - PAYMENT_GATEWAY_SECRET=${PAYMENT_GATEWAY_SECRET:-}
     networks:
