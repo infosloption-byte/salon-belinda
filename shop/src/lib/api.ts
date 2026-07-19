@@ -71,7 +71,7 @@ export interface OrderPayload {
   customer: {
     fullName: string;
     phone: string;
-    email?: string;
+    email: string;
     address?: string;
     city?: string;
     notes?: string;

@@ -71,7 +71,7 @@ export default function Checkout() {
         customer: {
           fullName: details.fullName,
           phone: details.phone,
-          email: details.email || undefined,
+          email: details.email,
           address: method === 'delivery' ? details.address : undefined,
           city: method === 'delivery' ? details.city : undefined,
           notes: details.notes || undefined,
@@ -189,9 +189,10 @@ export default function Checkout() {
                     />
                   </div>
                   <div>
-                    <label className="field-label" htmlFor="email">Email (optional)</label>
+                    <label className="field-label" htmlFor="email">Email</label>
                     <input
                       id="email"
+                      required
                       type="email"
                       className="field-input"
                       value={details.email}

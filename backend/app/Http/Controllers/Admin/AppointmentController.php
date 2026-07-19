@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AppointmentCancelled;
+use App\Mail\AppointmentConfirmed;
 use App\Models\Appointment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AppointmentController extends Controller
@@ -28,7 +32,22 @@ class AppointmentController extends Controller
             'status' => ['required', 'in:pending,confirmed,completed,cancelled'],
         ]);
 
+        $previousStatus = $appointment->status;
         $appointment->update(['status' => $request->status]);
+
+        if ($appointment->email && $previousStatus !== $appointment->status) {
+            try {
+                if ($appointment->status === 'confirmed') {
+                    Mail::to($appointment->email)->send(new AppointmentConfirmed($appointment));
+                } elseif ($appointment->status === 'cancelled') {
+                    Mail::to($appointment->email)->send(new AppointmentCancelled($appointment));
+                }
+            } catch (\Throwable $e) {
+                Log::error('Failed to send appointment status email', ['appointment_id' => $appointment->id, 'error' => $e->getMessage()]);
+
+                return back()->with('success', 'Appointment updated, but the notification email failed to send.');
+            }
+        }
 
         return back()->with('success', 'Appointment updated.');
     }

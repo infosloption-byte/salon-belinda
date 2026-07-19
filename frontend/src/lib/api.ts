@@ -41,7 +41,7 @@ export function fetchServiceCategories(): Promise<ApiServiceCategory[]> {
 export interface AppointmentPayload {
   name: string;
   phone: string;
-  email?: string;
+  email: string;
   service_id: number;
   date: string;
   time: string;

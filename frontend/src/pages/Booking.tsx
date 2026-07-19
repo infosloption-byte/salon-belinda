@@ -60,6 +60,8 @@ export default function Booking() {
     const next: Partial<Record<keyof BookingForm, string>> = {};
     if (!form.name.trim()) next.name = 'Please enter your name.';
     if (!form.phone.trim()) next.phone = 'Please enter a contact number.';
+    if (!form.email.trim()) next.email = 'Please enter your email.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) next.email = 'Please enter a valid email address.';
     if (!form.serviceId) next.serviceId = 'Please select a service.';
     if (!form.date) next.date = 'Please choose a preferred date.';
     if (!form.time) next.time = 'Please choose a preferred time.';
@@ -77,7 +79,7 @@ export default function Booking() {
       const result = await createAppointment({
         name: form.name,
         phone: form.phone,
-        email: form.email || undefined,
+        email: form.email,
         service_id: Number(form.serviceId),
         date: form.date,
         time: form.time,
@@ -155,7 +157,7 @@ export default function Booking() {
             </Field>
           </div>
 
-          <Field label="Email (optional)">
+          <Field label="Email" error={errors.email}>
             <input
               type="email"
               value={form.email}

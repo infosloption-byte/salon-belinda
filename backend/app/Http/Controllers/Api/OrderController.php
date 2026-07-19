@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewOrderNotification;
+use App\Mail\OrderReceipt;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -10,6 +12,8 @@ use App\Services\PaymentGatewayStub;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
@@ -24,7 +28,7 @@ class OrderController extends Controller
             'payment' => ['required', 'in:cod,bank,card'],
             'customer.fullName' => ['required', 'string', 'max:120'],
             'customer.phone' => ['required', 'string', 'max:30'],
-            'customer.email' => ['nullable', 'email', 'max:150'],
+            'customer.email' => ['required', 'email', 'max:150'],
             'customer.address' => ['required_if:fulfilment,delivery', 'nullable', 'string', 'max:255'],
             'customer.city' => ['required_if:fulfilment,delivery', 'nullable', 'string', 'max:120'],
             'customer.notes' => ['nullable', 'string', 'max:1000'],
@@ -112,6 +116,15 @@ class OrderController extends Controller
 
             return $order->fresh('items');
         });
+
+        try {
+            Mail::to(config('notifications.salon_email'))->send(new NewOrderNotification($order));
+            Mail::to($order->customer_email)->send(new OrderReceipt($order));
+        } catch (\Throwable $e) {
+            // The order itself is already saved — a mail hiccup shouldn't
+            // turn into a failed checkout for the customer.
+            Log::error('Failed to send order notification emails', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+        }
 
         return response()->json($order, 201);
     }

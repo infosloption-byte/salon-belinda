@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewContactMessageNotification;
 use App\Models\ContactMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ContactMessageController extends Controller
 {
@@ -19,6 +22,12 @@ class ContactMessageController extends Controller
         ]);
 
         $message = ContactMessage::create($data + ['status' => 'new']);
+
+        try {
+            Mail::to(config('notifications.salon_email'))->send(new NewContactMessageNotification($message));
+        } catch (\Throwable $e) {
+            Log::error('Failed to send new contact message notification', ['contact_message_id' => $message->id, 'error' => $e->getMessage()]);
+        }
 
         return response()->json([
             'message' => "Thank you — we've received your message and will reply soon.",
