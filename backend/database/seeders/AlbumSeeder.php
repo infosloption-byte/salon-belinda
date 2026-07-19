@@ -57,6 +57,10 @@ class AlbumSeeder extends Seeder
             $photos = $data['photos'];
             unset($data['photos']);
 
+            if (Album::where('title', $data['title'])->exists()) {
+                continue;
+            }
+
             $album = Album::create([
                 ...$data,
                 'slug' => Album::makeUniqueSlug($data['title']),

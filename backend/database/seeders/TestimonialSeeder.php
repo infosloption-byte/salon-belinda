@@ -18,15 +18,16 @@ class TestimonialSeeder extends Seeder
         ];
 
         foreach ($testimonials as [$name, $service, $rating, $message, $date]) {
-            Testimonial::create([
-                'name' => $name,
-                'service' => $service,
-                'rating' => $rating,
-                'message' => $message,
-                'status' => 'approved',
-                'created_at' => $date,
-                'updated_at' => $date,
-            ]);
+            Testimonial::updateOrCreate(
+                ['name' => $name, 'service' => $service],
+                [
+                    'rating' => $rating,
+                    'message' => $message,
+                    'status' => 'approved',
+                    'created_at' => $date,
+                    'updated_at' => $date,
+                ]
+            );
         }
     }
 }

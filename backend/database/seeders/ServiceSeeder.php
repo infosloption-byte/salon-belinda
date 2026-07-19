@@ -70,23 +70,22 @@ class ServiceSeeder extends Seeder
         ];
 
         foreach ($categories as $sortIndex => $cat) {
-            $category = ServiceCategory::create([
-                'slug' => Str::slug($cat['title']),
-                'title' => $cat['title'],
-                'intro' => $cat['intro'],
-                'sort_order' => $sortIndex,
-            ]);
+            $category = ServiceCategory::updateOrCreate(
+                ['slug' => Str::slug($cat['title'])],
+                ['title' => $cat['title'], 'intro' => $cat['intro'], 'sort_order' => $sortIndex]
+            );
 
             foreach ($cat['services'] as $sIndex => $s) {
-                Service::create([
-                    'service_category_id' => $category->id,
-                    'name' => $s[0],
-                    'description' => $s[1],
-                    'duration' => $s[2],
-                    'price' => $s[3],
-                    'price_prefix' => $s[4] ?? null,
-                    'sort_order' => $sIndex,
-                ]);
+                Service::updateOrCreate(
+                    ['service_category_id' => $category->id, 'name' => $s[0]],
+                    [
+                        'description' => $s[1],
+                        'duration' => $s[2],
+                        'price' => $s[3],
+                        'price_prefix' => $s[4] ?? null,
+                        'sort_order' => $sIndex,
+                    ]
+                );
             }
         }
     }

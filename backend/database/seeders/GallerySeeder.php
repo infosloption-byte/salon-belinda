@@ -25,12 +25,10 @@ class GallerySeeder extends Seeder
         ];
 
         foreach ($items as $i => [$category, $title, $image]) {
-            GalleryItem::create([
-                'category' => $category,
-                'title' => $title,
-                'image' => $image,
-                'sort_order' => $i,
-            ]);
+            GalleryItem::updateOrCreate(
+                ['title' => $title],
+                ['category' => $category, 'image' => $image, 'sort_order' => $i]
+            );
         }
     }
 }

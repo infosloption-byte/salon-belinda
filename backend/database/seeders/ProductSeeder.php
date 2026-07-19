@@ -77,7 +77,10 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $p) {
-            Product::create($p + ['in_stock' => $p['stock_count'] > 0]);
+            Product::updateOrCreate(
+                ['slug' => $p['slug']],
+                $p + ['in_stock' => $p['stock_count'] > 0]
+            );
         }
     }
 }
