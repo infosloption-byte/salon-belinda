@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\AppointmentCancelled;
 use App\Mail\AppointmentConfirmed;
 use App\Models\Appointment;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -18,6 +19,15 @@ class AppointmentController extends Controller
     {
         $appointments = Appointment::query()
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->query('q'), function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->query('date_from'), fn ($q, $date) => $q->whereDate('date', '>=', $date))
+            ->when($request->query('date_to'), fn ($q, $date) => $q->whereDate('date', '<=', $date))
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->paginate(20)
@@ -34,6 +44,15 @@ class AppointmentController extends Controller
 
         $previousStatus = $appointment->status;
         $appointment->update(['status' => $request->status]);
+
+        if ($previousStatus !== $appointment->status) {
+            ActivityLogger::log(
+                'appointment.status_updated',
+                "Changed {$appointment->name}'s appointment from \"{$previousStatus}\" to \"{$appointment->status}\"",
+                $appointment,
+                ['from' => $previousStatus, 'to' => $appointment->status]
+            );
+        }
 
         if ($appointment->email && $previousStatus !== $appointment->status) {
             try {
@@ -54,6 +73,7 @@ class AppointmentController extends Controller
 
     public function destroy(Appointment $appointment): RedirectResponse
     {
+        ActivityLogger::log('appointment.deleted', "Deleted {$appointment->name}'s appointment for {$appointment->date->format('d M Y')}", $appointment);
         $appointment->delete();
 
         return back()->with('success', 'Appointment removed.');

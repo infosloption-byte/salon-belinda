@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Services\ActivityLogger;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,8 +14,6 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    private const CATEGORIES = ['Hair Care', 'Skin Care', 'Makeup', 'Bridal Accessories'];
-
     public function __construct(private readonly ImageUploadService $uploads)
     {
     }
@@ -26,12 +26,12 @@ class ProductController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.products.index', ['products' => $products, 'categories' => self::CATEGORIES]);
+        return view('admin.products.index', ['products' => $products, 'categories' => $this->categoryNames(), 'categoryModels' => ProductCategory::orderBy('sort_order')->get()]);
     }
 
     public function create(): View
     {
-        return view('admin.products.form', ['product' => new Product, 'categories' => self::CATEGORIES]);
+        return view('admin.products.form', ['product' => new Product, 'categories' => $this->categoryNames()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -40,14 +40,15 @@ class ProductController extends Controller
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
         $data['images'] = $this->mergeImages($request, [], $data['images']);
 
-        Product::create($data);
+        $product = Product::create($data);
+        ActivityLogger::log('product.created', "Created product \"{$product->name}\"", $product);
 
         return redirect()->route('admin.products.index')->with('success', 'Product added.');
     }
 
     public function edit(Product $product): View
     {
-        return view('admin.products.form', ['product' => $product, 'categories' => self::CATEGORIES]);
+        return view('admin.products.form', ['product' => $product, 'categories' => $this->categoryNames()]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -57,6 +58,7 @@ class ProductController extends Controller
         $data['images'] = $this->mergeImages($request, $product->images ?? [], $data['images']);
 
         $product->update($data);
+        ActivityLogger::log('product.updated', "Updated product \"{$product->name}\"", $product);
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated.');
     }
@@ -67,6 +69,7 @@ class ProductController extends Controller
             $this->uploads->delete($image);
         }
 
+        ActivityLogger::log('product.deleted', "Deleted product \"{$product->name}\"", $product);
         $product->delete();
 
         return back()->with('success', 'Product removed.');
@@ -77,7 +80,7 @@ class ProductController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:150'],
             'slug' => ['nullable', 'string', 'max:180', 'unique:products,slug,'.($ignoreId ?? 'NULL').',id'],
-            'category' => ['required', 'in:'.implode(',', self::CATEGORIES)],
+            'category' => ['required', 'in:'.implode(',', $this->categoryNames())],
             'price' => ['required', 'integer', 'min:0'],
             'compare_at_price' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -129,5 +132,13 @@ class ProductController extends Controller
         }
 
         return array_values(array_unique([...$kept, ...$pastedUrls, ...$uploaded]));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function categoryNames(): array
+    {
+        return ProductCategory::orderBy('sort_order')->pluck('name')->all();
     }
 }

@@ -3,6 +3,11 @@
 @section('title', 'Order ' . $order->order_number)
 
 @section('content')
+    <div class="flex justify-end gap-3 mb-4">
+        <a href="{{ route('admin.orders.invoice.preview', $order) }}" target="_blank" class="btn btn-outline">Preview Invoice</a>
+        <a href="{{ route('admin.orders.invoice.download', $order) }}" class="btn btn-primary">Download Invoice</a>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 bg-white p-6">
             <h2 class="font-display text-xl mb-4">Items</h2>

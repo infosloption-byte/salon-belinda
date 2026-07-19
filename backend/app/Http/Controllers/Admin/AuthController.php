@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +38,7 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+        ActivityLogger::log('auth.login', Auth::user()->name . ' logged in');
 
         return redirect()->intended(route('admin.dashboard'));
     }

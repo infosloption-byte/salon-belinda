@@ -73,6 +73,8 @@
                 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ str_starts_with($route, 'admin.orders') ? 'active' : '' }}">Orders</a>
                 <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Site</p>
                 <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ str_starts_with($route, 'admin.contact-messages') ? 'active' : '' }}">Messages</a>
+                <a href="{{ route('admin.reports.index') }}" class="nav-link {{ str_starts_with($route, 'admin.reports') ? 'active' : '' }}">Reports</a>
+                <a href="{{ route('admin.activity-log.index') }}" class="nav-link {{ str_starts_with($route, 'admin.activity-log') ? 'active' : '' }}">Activity Log</a>
                 <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Account</p>
                 <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ str_starts_with($route, 'admin.users') ? 'active' : '' }}">Admin Users</a>

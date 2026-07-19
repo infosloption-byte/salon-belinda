@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,12 +70,13 @@ class UserController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        User::create([
+        $newUser = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
             'is_admin' => true,
         ]);
+        ActivityLogger::log('user.created', "Created admin account for {$newUser->name} ({$newUser->email})", $newUser);
 
         return redirect()->route('admin.users.index')->with('success', 'Admin account created.');
     }
@@ -100,6 +102,7 @@ class UserController extends Controller
         }
 
         $user->save();
+        ActivityLogger::log('user.updated', "Updated admin account for {$user->name} ({$user->email})", $user);
 
         return redirect()->route('admin.users.index')->with('success', 'Admin account updated.');
     }
@@ -114,6 +117,7 @@ class UserController extends Controller
             return back()->withErrors(['user' => 'At least one admin account must remain — add another admin before removing this one.']);
         }
 
+        ActivityLogger::log('user.deleted', "Deleted admin account for {$user->name} ({$user->email})", $user);
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('success', 'Admin account removed.');

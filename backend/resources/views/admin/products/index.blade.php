@@ -3,6 +3,32 @@
 @section('title', 'Products')
 
 @section('content')
+    <details class="bg-white p-6 mb-6">
+        <summary class="font-display text-xl cursor-pointer select-none">Manage Categories</summary>
+        <div class="mt-5">
+            <form method="POST" action="{{ route('admin.products.categories.store') }}" class="flex flex-wrap gap-3 mb-5">
+                @csrf
+                <input name="name" placeholder="e.g. Nail Care" required class="border px-3 py-2 text-sm" style="border-color: rgba(38,34,32,0.2);">
+                <button class="btn btn-primary">Add Category</button>
+            </form>
+            <div class="space-y-2">
+                @foreach ($categoryModels as $cat)
+                    <div class="flex items-center gap-3">
+                        <form method="POST" action="{{ route('admin.products.categories.update', $cat) }}" class="flex items-center gap-2 flex-1">
+                            @csrf @method('PUT')
+                            <input name="name" value="{{ $cat->name }}" class="border px-3 py-1.5 text-sm flex-1 max-w-xs" style="border-color: rgba(38,34,32,0.2);">
+                            <button class="text-xs underline">Save</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.products.categories.destroy', $cat) }}" onsubmit="return confirm('Delete this category? Products using it must be reassigned first.')">
+                            @csrf @method('DELETE')
+                            <button class="text-xs" style="color:#7A2E3A;">Delete</button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </details>
+
     <div class="flex items-center justify-between mb-6">
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('admin.products.index') }}" class="btn {{ !request('category') ? 'btn-primary' : 'btn-outline' }}">All</a>

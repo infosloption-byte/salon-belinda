@@ -1,13 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GalleryCategoryController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\UserController;
@@ -39,6 +43,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
         Route::post('gallery', [GalleryController::class, 'store'])->name('gallery.store');
         Route::delete('gallery/{galleryItem}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
+        Route::post('gallery/categories', [GalleryCategoryController::class, 'store'])->name('gallery.categories.store');
+        Route::put('gallery/categories/{galleryCategory}', [GalleryCategoryController::class, 'update'])->name('gallery.categories.update');
+        Route::delete('gallery/categories/{galleryCategory}', [GalleryCategoryController::class, 'destroy'])->name('gallery.categories.destroy');
 
         // Wedding Albums
         Route::get('albums', [AlbumController::class, 'index'])->name('albums.index');
@@ -64,18 +71,33 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        Route::post('products/categories', [ProductCategoryController::class, 'store'])->name('products.categories.store');
+        Route::put('products/categories/{productCategory}', [ProductCategoryController::class, 'update'])->name('products.categories.update');
+        Route::delete('products/categories/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('products.categories.destroy');
 
         // Orders
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
         Route::post('orders/{order}/mark-paid', [OrderController::class, 'markPaid'])->name('orders.markPaid');
+        Route::get('orders/{order}/invoice', [OrderController::class, 'invoicePreview'])->name('orders.invoice.preview');
+        Route::get('orders/{order}/invoice/download', [OrderController::class, 'invoiceDownload'])->name('orders.invoice.download');
 
         // Contact messages
         Route::get('contact-messages', [ContactMessageController::class, 'index'])->name('contact-messages.index');
         Route::post('contact-messages/{contactMessage}/read', [ContactMessageController::class, 'markRead'])->name('contact-messages.read');
         Route::post('contact-messages/{contactMessage}/replied', [ContactMessageController::class, 'markReplied'])->name('contact-messages.replied');
         Route::delete('contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+
+        // Reports
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
+        Route::get('reports/best-sellers', [ReportController::class, 'bestSellers'])->name('reports.bestSellers');
+        Route::get('reports/low-stock', [ReportController::class, 'lowStock'])->name('reports.lowStock');
+        Route::get('reports/appointments', [ReportController::class, 'appointments'])->name('reports.appointments');
+
+        // Activity Log
+        Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
         // My Account — every admin can manage their own name/email/password here
         Route::get('account', [UserController::class, 'account'])->name('account');

@@ -61,4 +61,40 @@
             @endforelse
         </div>
     </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <div class="bg-white p-6">
+            <div class="flex items-center justify-between mb-4">
+                <p class="font-display text-xl">Revenue — Last 14 Days</p>
+                <a href="{{ route('admin.reports.revenue') }}" class="text-xs underline">Full report</a>
+            </div>
+            @php $max = max(1, $revenueTrend->max('total')); @endphp
+            <div class="flex items-end gap-1.5" style="height: 120px;">
+                @foreach ($revenueTrend as $point)
+                    <div class="flex-1 flex flex-col items-center justify-end h-full" title="{{ \Carbon\Carbon::parse($point['day'])->format('d M') }}: LKR {{ number_format($point['total']) }}">
+                        <div style="width: 100%; background: #7A2E3A; height: {{ max(2, ($point['total'] / $max) * 100) }}%;"></div>
+                    </div>
+                @endforeach
+            </div>
+            <div class="flex justify-between text-[10px] opacity-50 mt-2">
+                <span>{{ \Carbon\Carbon::parse($revenueTrend->first()['day'])->format('d M') }}</span>
+                <span>{{ \Carbon\Carbon::parse($revenueTrend->last()['day'])->format('d M') }}</span>
+            </div>
+        </div>
+        <div class="bg-white p-6">
+            <div class="flex items-center justify-between mb-4">
+                <p class="font-display text-xl">Best Sellers (All Time)</p>
+                <a href="{{ route('admin.reports.bestSellers') }}" class="text-xs underline">Full report</a>
+            </div>
+            <table class="w-full text-sm">
+                @forelse ($bestSellers as $row)
+                    <tr class="border-b" style="border-color: rgba(38,34,32,0.06);">
+                        <td class="py-2">{{ $row->product_name }}</td>
+                        <td class="py-2 text-right">{{ $row->units_sold }} sold</td>
+                    </tr>
+                @empty
+                    <tr><td class="py-2 opacity-60">No sales yet.</td></tr>
+                @endforelse
+            </table>
+        </div>
+    </div>
 @endsection
