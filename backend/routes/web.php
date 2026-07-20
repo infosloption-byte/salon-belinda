@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SalonJobController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TestimonialController;
@@ -44,6 +45,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // My Account — every logged-in user (admin or staff) manages their own login here
         Route::get('account', [UserController::class, 'account'])->name('account');
         Route::put('account', [UserController::class, 'updateAccount'])->name('account.update');
+
+        // Jobs — the daily salon-operations screen (create/manage in one place)
+        Route::get('jobs', [SalonJobController::class, 'index'])->name('jobs.index');
+        Route::get('jobs/create', [SalonJobController::class, 'create'])->name('jobs.create');
+        Route::post('jobs/quick-register-customer', [SalonJobController::class, 'quickRegisterCustomer'])->name('jobs.quickRegisterCustomer');
+        Route::post('jobs', [SalonJobController::class, 'store'])->name('jobs.store');
+        Route::get('jobs/{job}', [SalonJobController::class, 'show'])->name('jobs.show');
+        Route::patch('jobs/{job}/status', [SalonJobController::class, 'updateStatus'])->name('jobs.status');
+        Route::post('jobs/{job}/items', [SalonJobController::class, 'addItem'])->name('jobs.items.store');
+        Route::delete('jobs/{job}/items/{item}', [SalonJobController::class, 'removeItem'])->name('jobs.items.destroy');
+        Route::post('jobs/{job}/payments', [SalonJobController::class, 'addPayment'])->name('jobs.payments.store');
+        Route::delete('jobs/{job}/payments/{payment}', [SalonJobController::class, 'removePayment'])->name('jobs.payments.destroy');
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {

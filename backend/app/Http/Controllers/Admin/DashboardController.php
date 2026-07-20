@@ -21,7 +21,7 @@ class DashboardController extends Controller
         // login lands here right after logging in, so send them straight
         // on to the area they actually have access to.
         if (! Auth::user()->isAdminRole()) {
-            return redirect()->route('admin.customers.index');
+            return redirect()->route('admin.jobs.index');
         }
 
         $revenueTrend = Order::query()

@@ -8,7 +8,10 @@
             <h2 class="font-display text-2xl mb-1">{{ $customer->name }}</h2>
             <p class="text-sm opacity-60">{{ $customer->phone }} @if($customer->email) &middot; {{ $customer->email }} @endif</p>
         </div>
-        <a href="{{ route('admin.customers.edit', $customer) }}" class="btn btn-outline">Edit</a>
+        <div class="flex gap-3">
+            <a href="{{ route('admin.jobs.create', ['customer_id' => $customer->id]) }}" class="btn btn-primary">+ New Job</a>
+            <a href="{{ route('admin.customers.edit', $customer) }}" class="btn btn-outline">Edit</a>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
@@ -39,6 +42,7 @@
                     <th class="p-4">Subtotal</th>
                     <th class="p-4">Paid</th>
                     <th class="p-4">Balance</th>
+                    <th class="p-4"></th>
                 </tr>
             </thead>
             <tbody>
@@ -49,9 +53,10 @@
                         <td class="p-4">LKR {{ number_format($job->subtotal) }}</td>
                         <td class="p-4">LKR {{ number_format($job->total_paid) }}</td>
                         <td class="p-4" style="{{ $job->balance_due > 0 ? 'color:#7A2E3A;' : '' }}">LKR {{ number_format($job->balance_due) }}</td>
+                        <td class="p-4"><a href="{{ route('admin.jobs.show', $job) }}" class="text-xs underline">Open</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="p-8 text-center opacity-60">No jobs logged yet.</td></tr>
+                    <tr><td colspan="6" class="p-8 text-center opacity-60">No jobs logged yet.</td></tr>
                 @endforelse
             </tbody>
         </table>

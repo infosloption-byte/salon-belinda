@@ -43,6 +43,7 @@
                     <th class="p-4">Contact</th>
                     <th class="p-4">Status</th>
                     <th class="p-4"></th>
+                    <th class="p-4"></th>
                 </tr>
             </thead>
             <tbody>
@@ -66,6 +67,9 @@
                             </form>
                         </td>
                         <td class="p-4">
+                            <a href="{{ route('admin.jobs.create', ['appointment_id' => $a->id, 'q' => $a->phone]) }}" class="text-xs underline" style="color:#7A2E3A;">Start Job</a>
+                        </td>
+                        <td class="p-4">
                             <form method="POST" action="{{ route('admin.appointments.destroy', $a) }}" onsubmit="return confirm('Delete this appointment?')">
                                 @csrf @method('DELETE')
                                 <button class="text-xs" style="color:#7A2E3A;">Delete</button>
@@ -73,7 +77,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="p-8 text-center opacity-60">No appointments found.</td></tr>
+                    <tr><td colspan="7" class="p-8 text-center opacity-60">No appointments found.</td></tr>
                 @endforelse
             </tbody>
         </table>

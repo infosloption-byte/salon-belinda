@@ -70,6 +70,7 @@
                     <a href="{{ route('admin.albums.index') }}" class="nav-link {{ str_starts_with($route, 'admin.albums') ? 'active' : '' }}">Wedding Albums</a>
                     <a href="{{ route('admin.services.index') }}" class="nav-link {{ str_starts_with($route, 'admin.services') ? 'active' : '' }}">Services</a>
                     <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Salon Operations</p>
+                    <a href="{{ route('admin.jobs.index') }}" class="nav-link {{ str_starts_with($route, 'admin.jobs') ? 'active' : '' }}">Jobs</a>
                     <a href="{{ route('admin.customers.index') }}" class="nav-link {{ str_starts_with($route, 'admin.customers') ? 'active' : '' }}">Customers</a>
                     <a href="{{ route('admin.staff.index') }}" class="nav-link {{ str_starts_with($route, 'admin.staff') ? 'active' : '' }}">Staff</a>
                     <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Shop</p>
@@ -83,6 +84,7 @@
                     <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
                     <a href="{{ route('admin.users.index') }}" class="nav-link {{ str_starts_with($route, 'admin.users') ? 'active' : '' }}">Admin Users</a>
                 @else
+                    <a href="{{ route('admin.jobs.index') }}" class="nav-link {{ str_starts_with($route, 'admin.jobs') ? 'active' : '' }}">Jobs</a>
                     <a href="{{ route('admin.customers.index') }}" class="nav-link {{ str_starts_with($route, 'admin.customers') ? 'active' : '' }}">Customers</a>
                     <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Account</p>
                     <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
