@@ -14,6 +14,8 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'role',
+        'staff_id',
     ];
 
     protected $hidden = [
@@ -28,5 +30,20 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
         ];
+    }
+
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
+    }
+
+    public function isAdminRole(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isStaffRole(): bool
+    {
+        return $this->role === 'staff';
     }
 }
