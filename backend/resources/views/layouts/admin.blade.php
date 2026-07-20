@@ -62,22 +62,31 @@
             </div>
             <nav class="flex-1 px-3 space-y-1">
                 @php($route = request()->route()->getName())
-                <a href="{{ route('admin.dashboard') }}" class="nav-link {{ $route === 'admin.dashboard' ? 'active' : '' }}">Dashboard</a>
-                <a href="{{ route('admin.appointments.index') }}" class="nav-link {{ str_starts_with($route, 'admin.appointments') ? 'active' : '' }}">Appointments</a>
-                <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ str_starts_with($route, 'admin.testimonials') ? 'active' : '' }}">Reviews</a>
-                <a href="{{ route('admin.gallery.index') }}" class="nav-link {{ str_starts_with($route, 'admin.gallery') ? 'active' : '' }}">Gallery</a>
-                <a href="{{ route('admin.albums.index') }}" class="nav-link {{ str_starts_with($route, 'admin.albums') ? 'active' : '' }}">Wedding Albums</a>
-                <a href="{{ route('admin.services.index') }}" class="nav-link {{ str_starts_with($route, 'admin.services') ? 'active' : '' }}">Services</a>
-                <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Shop</p>
-                <a href="{{ route('admin.products.index') }}" class="nav-link {{ str_starts_with($route, 'admin.products') ? 'active' : '' }}">Products</a>
-                <a href="{{ route('admin.orders.index') }}" class="nav-link {{ str_starts_with($route, 'admin.orders') ? 'active' : '' }}">Orders</a>
-                <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Site</p>
-                <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ str_starts_with($route, 'admin.contact-messages') ? 'active' : '' }}">Messages</a>
-                <a href="{{ route('admin.reports.index') }}" class="nav-link {{ str_starts_with($route, 'admin.reports') ? 'active' : '' }}">Reports</a>
-                <a href="{{ route('admin.activity-log.index') }}" class="nav-link {{ str_starts_with($route, 'admin.activity-log') ? 'active' : '' }}">Activity Log</a>
-                <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Account</p>
-                <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
-                <a href="{{ route('admin.users.index') }}" class="nav-link {{ str_starts_with($route, 'admin.users') ? 'active' : '' }}">Admin Users</a>
+                @if (auth()->user()->isAdminRole())
+                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ $route === 'admin.dashboard' ? 'active' : '' }}">Dashboard</a>
+                    <a href="{{ route('admin.appointments.index') }}" class="nav-link {{ str_starts_with($route, 'admin.appointments') ? 'active' : '' }}">Appointments</a>
+                    <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ str_starts_with($route, 'admin.testimonials') ? 'active' : '' }}">Reviews</a>
+                    <a href="{{ route('admin.gallery.index') }}" class="nav-link {{ str_starts_with($route, 'admin.gallery') ? 'active' : '' }}">Gallery</a>
+                    <a href="{{ route('admin.albums.index') }}" class="nav-link {{ str_starts_with($route, 'admin.albums') ? 'active' : '' }}">Wedding Albums</a>
+                    <a href="{{ route('admin.services.index') }}" class="nav-link {{ str_starts_with($route, 'admin.services') ? 'active' : '' }}">Services</a>
+                    <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Salon Operations</p>
+                    <a href="{{ route('admin.customers.index') }}" class="nav-link {{ str_starts_with($route, 'admin.customers') ? 'active' : '' }}">Customers</a>
+                    <a href="{{ route('admin.staff.index') }}" class="nav-link {{ str_starts_with($route, 'admin.staff') ? 'active' : '' }}">Staff</a>
+                    <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Shop</p>
+                    <a href="{{ route('admin.products.index') }}" class="nav-link {{ str_starts_with($route, 'admin.products') ? 'active' : '' }}">Products</a>
+                    <a href="{{ route('admin.orders.index') }}" class="nav-link {{ str_starts_with($route, 'admin.orders') ? 'active' : '' }}">Orders</a>
+                    <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Site</p>
+                    <a href="{{ route('admin.contact-messages.index') }}" class="nav-link {{ str_starts_with($route, 'admin.contact-messages') ? 'active' : '' }}">Messages</a>
+                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ str_starts_with($route, 'admin.reports') ? 'active' : '' }}">Reports</a>
+                    <a href="{{ route('admin.activity-log.index') }}" class="nav-link {{ str_starts_with($route, 'admin.activity-log') ? 'active' : '' }}">Activity Log</a>
+                    <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Account</p>
+                    <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
+                    <a href="{{ route('admin.users.index') }}" class="nav-link {{ str_starts_with($route, 'admin.users') ? 'active' : '' }}">Admin Users</a>
+                @else
+                    <a href="{{ route('admin.customers.index') }}" class="nav-link {{ str_starts_with($route, 'admin.customers') ? 'active' : '' }}">Customers</a>
+                    <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Account</p>
+                    <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
+                @endif
             </nav>
             <form method="POST" action="{{ route('admin.logout') }}" class="p-3">
                 @csrf
@@ -106,6 +115,11 @@
                     @if (session('success'))
                         <div class="mb-6 px-4 py-3 text-sm" style="background: var(--blush-light); color: var(--maroon);">
                             {{ session('success') }}
+                        </div>
+                    @endif
+                    @if (session('error'))
+                        <div class="mb-6 px-4 py-3 text-sm" style="background: var(--blush-light); color: var(--maroon);">
+                            {{ session('error') }}
                         </div>
                     @endif
                     @if ($errors->any())

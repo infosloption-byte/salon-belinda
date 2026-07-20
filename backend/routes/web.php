@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GalleryCategoryController;
 use App\Http\Controllers\Admin\GalleryController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,8 +28,33 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('login.attempt');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::middleware(['auth', 'admin'])->group(function () {
+    // Shared area: both admin and staff logins land here / use these.
+    Route::middleware(['auth', 'staff_or_admin'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Customers
+        Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('customers/create', [CustomerController::class, 'create'])->name('customers.create');
+        Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
+        Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+        Route::get('customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
+        Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+        Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+
+        // My Account — every logged-in user (admin or staff) manages their own login here
+        Route::get('account', [UserController::class, 'account'])->name('account');
+        Route::put('account', [UserController::class, 'updateAccount'])->name('account.update');
+    });
+
+    Route::middleware(['auth', 'admin'])->group(function () {
+        // Staff profiles
+        Route::get('staff', [StaffController::class, 'index'])->name('staff.index');
+        Route::get('staff/create', [StaffController::class, 'create'])->name('staff.create');
+        Route::post('staff', [StaffController::class, 'store'])->name('staff.store');
+        Route::get('staff/{staff}/edit', [StaffController::class, 'edit'])->name('staff.edit');
+        Route::put('staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
+        Route::delete('staff/{staff}', [StaffController::class, 'destroy'])->name('staff.destroy');
+        Route::post('staff/{staff}/toggle-active', [StaffController::class, 'toggleActive'])->name('staff.toggleActive');
 
         // Appointments
         Route::get('appointments', [AppointmentController::class, 'index'])->name('appointments.index');
@@ -99,11 +126,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Activity Log
         Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
-        // My Account — every admin can manage their own name/email/password here
-        Route::get('account', [UserController::class, 'account'])->name('account');
-        Route::put('account', [UserController::class, 'updateAccount'])->name('account.update');
-
-        // Admin Users — managing other admin accounts
+        // Admin Users — managing other admin/staff accounts
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::get('users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('users', [UserController::class, 'store'])->name('users.store');

@@ -8,13 +8,22 @@ use App\Models\ContactMessage;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Testimonial;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
+        // The full dashboard is admin-only (revenue, orders, etc.). A staff
+        // login lands here right after logging in, so send them straight
+        // on to the area they actually have access to.
+        if (! Auth::user()->isAdminRole()) {
+            return redirect()->route('admin.customers.index');
+        }
+
         $revenueTrend = Order::query()
             ->where('payment_status', 'paid')
             ->whereDate('created_at', '>=', now()->subDays(13))

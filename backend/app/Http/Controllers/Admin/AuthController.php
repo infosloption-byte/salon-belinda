@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     public function showLogin(): View|RedirectResponse
     {
-        if (Auth::check() && Auth::user()->is_admin) {
+        if (Auth::check()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -31,15 +31,20 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Those credentials don\'t match our records.'])->onlyInput('email');
         }
 
-        if (! Auth::user()->is_admin) {
+        $user = Auth::user();
+
+        if (! $user->isAdminRole() && ! $user->isStaffRole()) {
             Auth::logout();
 
-            return back()->withErrors(['email' => 'This account does not have admin access.']);
+            return back()->withErrors(['email' => 'This account does not have dashboard access.']);
         }
 
         $request->session()->regenerate();
-        ActivityLogger::log('auth.login', Auth::user()->name . ' logged in');
+        ActivityLogger::log('auth.login', $user->name.' logged in');
 
+        // "admin.dashboard" is the single post-login landing route for both
+        // roles — DashboardController sends staff straight on to Customers,
+        // since the full dashboard is admin-only.
         return redirect()->intended(route('admin.dashboard'));
     }
 
