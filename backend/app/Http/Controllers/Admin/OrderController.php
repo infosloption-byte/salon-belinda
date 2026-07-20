@@ -84,7 +84,7 @@ class OrderController extends Controller
     {
         $order->load('items');
 
-        return Pdf::loadView('admin.orders.invoice', ['order' => $order])
+        return Pdf::loadView('admin.orders.invoice', ['order' => $order, 'logo' => $this->invoiceLogo()])
             ->setPaper('a4')
             ->stream("invoice-{$order->order_number}.pdf");
     }
@@ -96,8 +96,23 @@ class OrderController extends Controller
     {
         $order->load('items');
 
-        return Pdf::loadView('admin.orders.invoice', ['order' => $order])
+        return Pdf::loadView('admin.orders.invoice', ['order' => $order, 'logo' => $this->invoiceLogo()])
             ->setPaper('a4')
             ->download("invoice-{$order->order_number}.pdf");
+    }
+
+    /**
+     * Inline the logo as a base64 data URI — dompdf renders this far more
+     * reliably than fetching a remote/relative image URL.
+     */
+    private function invoiceLogo(): ?string
+    {
+        $path = public_path('images/invoice-logo.png');
+
+        if (! file_exists($path)) {
+            return null;
+        }
+
+        return 'data:image/png;base64,'.base64_encode(file_get_contents($path));
     }
 }

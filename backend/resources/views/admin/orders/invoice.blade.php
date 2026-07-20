@@ -30,6 +30,9 @@
     <table class="header-table">
         <tr>
             <td style="width: 60%;">
+                @if ($logo)
+                    <img src="{{ $logo }}" style="height: 46px; margin-bottom: 6px;" alt="Salon Belinda">
+                @endif
                 <div class="brand">Salon Belinda</div>
                 <div class="muted">Galle Road, Ratgama, Sri Lanka</div>
                 <div class="muted">{{ config('notifications.salon_email') }} · 070 244 4393</div>

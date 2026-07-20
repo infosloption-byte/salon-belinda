@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Album;
 use App\Models\AlbumPhoto;
+use App\Services\ActivityLogger;
 use App\Services\ImageUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,6 +80,8 @@ class AlbumController extends Controller
             }
         }
 
+        ActivityLogger::log('album.created', "Created album \"{$album->title}\"", $album);
+
         return redirect()->route('admin.albums.edit', $album)->with('success', 'Album created.');
     }
 
@@ -121,6 +124,7 @@ class AlbumController extends Controller
 
         $this->attachUploadedPhotos($album, $request->file('photo_files', []));
         $this->attachPhotosFromText($album, $photoUrls);
+        ActivityLogger::log('album.updated', "Updated album \"{$album->title}\"", $album);
 
         return back()->with('success', 'Album updated.');
     }
@@ -132,6 +136,7 @@ class AlbumController extends Controller
             $this->uploads->delete($photo->image);
         }
 
+        ActivityLogger::log('album.deleted', "Deleted album \"{$album->title}\"", $album);
         $album->delete();
 
         return redirect()->route('admin.albums.index')->with('success', 'Album deleted.');
