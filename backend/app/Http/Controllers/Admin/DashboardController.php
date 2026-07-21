@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\ContactMessage;
+use App\Models\JobPayment;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\SalonJob;
 use App\Models\Testimonial;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -55,6 +57,9 @@ class DashboardController extends Controller
             'newMessages' => ContactMessage::where('status', 'new')->count(),
             'pendingOrders' => Order::whereIn('status', ['pending', 'processing'])->count(),
             'todayRevenue' => Order::whereDate('created_at', today())->where('payment_status', 'paid')->sum('total'),
+            'todayJobs' => SalonJob::whereDate('job_date', today())->where('status', '!=', 'cancelled')->count(),
+            'todaySalonCash' => (int) JobPayment::whereDate('paid_at', today())->sum('amount'),
+            'outstandingBalance' => (int) SalonJob::where('balance_due', '>', 0)->where('status', '!=', 'cancelled')->sum('balance_due'),
             'recentAppointments' => Appointment::latest()->limit(5)->get(),
             'recentOrders' => Order::latest()->limit(5)->get(),
             'revenueTrend' => $trend,

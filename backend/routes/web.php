@@ -59,6 +59,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('jobs/{job}/payments/{payment}', [SalonJobController::class, 'removePayment'])->name('jobs.payments.destroy');
         Route::get('jobs/{job}/receipt', [SalonJobController::class, 'receiptPreview'])->name('jobs.receipt.preview');
         Route::get('jobs/{job}/receipt/download', [SalonJobController::class, 'receiptDownload'])->name('jobs.receipt.download');
+
+        // Staff commission — shared route, but the controller scopes results
+        // to "only their own" for staff logins and "all staff" for admins.
+        Route::get('reports/staff-commission', [ReportController::class, 'staffCommission'])->name('reports.staffCommission');
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
@@ -137,6 +141,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('reports/best-sellers', [ReportController::class, 'bestSellers'])->name('reports.bestSellers');
         Route::get('reports/low-stock', [ReportController::class, 'lowStock'])->name('reports.lowStock');
         Route::get('reports/appointments', [ReportController::class, 'appointments'])->name('reports.appointments');
+        Route::get('reports/outstanding-balances', [ReportController::class, 'outstandingBalances'])->name('reports.outstandingBalances');
 
         // Activity Log
         Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');

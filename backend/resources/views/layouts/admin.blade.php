@@ -86,6 +86,7 @@
                 @else
                     <a href="{{ route('admin.jobs.index') }}" class="nav-link {{ str_starts_with($route, 'admin.jobs') ? 'active' : '' }}">Jobs</a>
                     <a href="{{ route('admin.customers.index') }}" class="nav-link {{ str_starts_with($route, 'admin.customers') ? 'active' : '' }}">Customers</a>
+                    <a href="{{ route('admin.reports.staffCommission') }}" class="nav-link {{ $route === 'admin.reports.staffCommission' ? 'active' : '' }}">My Commission</a>
                     <p class="text-[0.65rem] uppercase tracking-widest px-3 pt-5 pb-1" style="color: rgba(251,246,241,0.4);">Account</p>
                     <a href="{{ route('admin.account') }}" class="nav-link {{ $route === 'admin.account' ? 'active' : '' }}">My Account</a>
                 @endif

@@ -12,6 +12,9 @@
                 ['label' => 'New Messages', 'value' => $newMessages, 'href' => route('admin.contact-messages.index')],
                 ['label' => 'Open Orders', 'value' => $pendingOrders, 'href' => route('admin.orders.index')],
                 ['label' => "Today's Revenue (Paid)", 'value' => 'LKR ' . number_format($todayRevenue), 'href' => route('admin.orders.index')],
+                ['label' => "Today's Jobs", 'value' => $todayJobs, 'href' => route('admin.jobs.index')],
+                ['label' => "Today's Salon Cash", 'value' => 'LKR ' . number_format($todaySalonCash), 'href' => route('admin.jobs.index')],
+                ['label' => 'Outstanding Balance', 'value' => 'LKR ' . number_format($outstandingBalance), 'href' => route('admin.reports.outstandingBalances')],
             ];
         @endphp
         @foreach ($cards as $card)
