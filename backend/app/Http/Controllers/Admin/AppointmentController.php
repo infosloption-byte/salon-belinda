@@ -18,6 +18,7 @@ class AppointmentController extends Controller
     public function index(Request $request): View
     {
         $appointments = Appointment::query()
+            ->with('jobs')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('q'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {

@@ -126,6 +126,13 @@ class SalonJobController extends Controller
             'created_by' => Auth::id(),
         ]);
 
+        // The appointment's job is done once it's turned into an actual
+        // visit — this keeps it from sitting in the Appointments list
+        // looking unhandled forever.
+        if (! empty($data['appointment_id'])) {
+            Appointment::where('id', $data['appointment_id'])->update(['status' => 'completed']);
+        }
+
         ActivityLogger::log('job.created', "Started job #{$job->id} for {$job->customer->name}", $job);
 
         return redirect()->route('admin.jobs.show', $job)->with('success', 'Job started — add treatments and payments below.');
@@ -135,7 +142,7 @@ class SalonJobController extends Controller
     {
         $this->authorizeJobAccess($job);
 
-        $job->load(['customer', 'items.staff', 'items.service', 'payments.recordedBy']);
+        $job->load(['customer', 'appointment', 'items.staff', 'items.service', 'payments.recordedBy']);
 
         return view('admin.jobs.show', [
             'job' => $job,

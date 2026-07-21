@@ -67,7 +67,11 @@
                             </form>
                         </td>
                         <td class="p-4">
-                            <a href="{{ route('admin.jobs.create', ['appointment_id' => $a->id, 'q' => $a->phone]) }}" class="text-xs underline" style="color:#7A2E3A;">Start Job</a>
+                            @if ($a->jobs->isNotEmpty())
+                                <a href="{{ route('admin.jobs.show', $a->jobs->first()) }}" class="text-xs underline">View Job #{{ $a->jobs->first()->id }}</a>
+                            @else
+                                <a href="{{ route('admin.jobs.create', ['appointment_id' => $a->id, 'q' => $a->phone]) }}" class="text-xs underline" style="color:#7A2E3A;">Start Job</a>
+                            @endif
                         </td>
                         <td class="p-4">
                             <form method="POST" action="{{ route('admin.appointments.destroy', $a) }}" onsubmit="return confirm('Delete this appointment?')">

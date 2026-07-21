@@ -7,6 +7,9 @@
         <div>
             <a href="{{ route('admin.customers.show', $job->customer) }}" class="text-sm underline opacity-70">{{ $job->customer->name }}</a>
             <h2 class="font-display text-2xl mt-1">Job #{{ $job->id }} &middot; {{ $job->job_date->format('d M Y') }}</h2>
+            @if ($job->appointment)
+                <p class="text-xs opacity-50 mt-1">Started from an online booking made {{ $job->appointment->created_at->format('d M Y') }} for {{ $job->appointment->service_name }}.</p>
+            @endif
             @if ($job->notes)<p class="text-sm opacity-60 mt-1">{{ $job->notes }}</p>@endif
         </div>
         <div class="flex items-center gap-3 shrink-0">

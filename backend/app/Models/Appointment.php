@@ -32,4 +32,9 @@ class Appointment extends Model
     {
         return $this->belongsTo(Service::class);
     }
+
+    public function jobs()
+    {
+        return $this->hasMany(SalonJob::class);
+    }
 }
