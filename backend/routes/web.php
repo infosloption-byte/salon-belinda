@@ -57,6 +57,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('jobs/{job}/items/{item}', [SalonJobController::class, 'removeItem'])->name('jobs.items.destroy');
         Route::post('jobs/{job}/payments', [SalonJobController::class, 'addPayment'])->name('jobs.payments.store');
         Route::delete('jobs/{job}/payments/{payment}', [SalonJobController::class, 'removePayment'])->name('jobs.payments.destroy');
+        Route::get('jobs/{job}/receipt', [SalonJobController::class, 'receiptPreview'])->name('jobs.receipt.preview');
+        Route::get('jobs/{job}/receipt/download', [SalonJobController::class, 'receiptDownload'])->name('jobs.receipt.download');
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {

@@ -14,7 +14,7 @@ class StaffController extends Controller
     public function index(Request $request): View
     {
         $staff = Staff::query()
-            ->withCount('jobItems')
+            ->withCount(['jobItems', 'user'])
             ->when($request->query('status') === 'inactive', fn ($q) => $q->where('is_active', false))
             ->when($request->query('status') !== 'inactive', fn ($q) => $q->where('is_active', true))
             ->when($request->query('q'), fn ($q, $search) => $q->where('name', 'like', "%{$search}%"))
@@ -64,6 +64,10 @@ class StaffController extends Controller
     {
         if ($staff->jobItems()->exists()) {
             return back()->with('error', "{$staff->name} has job history and can't be deleted — deactivate them instead so they drop out of \"assign to\" pickers but their records stay intact.");
+        }
+
+        if ($staff->user()->exists()) {
+            return back()->with('error', "{$staff->name} still has a dashboard login linked to this profile. Remove or relink that account first (Admin Users), then delete this staff profile.");
         }
 
         ActivityLogger::log('staff.deleted', "Deleted staff member {$staff->name}", $staff);

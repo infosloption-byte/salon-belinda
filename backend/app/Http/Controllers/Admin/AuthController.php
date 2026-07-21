@@ -33,6 +33,12 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if ($user->isStaffRole() && (! $user->staff_id || ! $user->staff?->is_active)) {
+            Auth::logout();
+
+            return back()->withErrors(['email' => 'This staff account has been deactivated. Contact an admin.']);
+        }
+
         if (! $user->isAdminRole() && ! $user->isStaffRole()) {
             Auth::logout();
 
@@ -43,8 +49,8 @@ class AuthController extends Controller
         ActivityLogger::log('auth.login', $user->name.' logged in');
 
         // "admin.dashboard" is the single post-login landing route for both
-        // roles — DashboardController sends staff straight on to Customers,
-        // since the full dashboard is admin-only.
+        // roles — DashboardController sends staff straight on to Jobs,
+        // since the full stats dashboard is admin-only.
         return redirect()->intended(route('admin.dashboard'));
     }
 

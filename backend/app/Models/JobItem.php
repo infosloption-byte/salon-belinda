@@ -48,7 +48,7 @@ class JobItem extends Model
         $discountValue ??= 0;
 
         return match ($discountType) {
-            'percent' => (int) round($basePrice - ($basePrice * $discountValue / 100)),
+            'percent' => max(0, (int) round($basePrice - ($basePrice * min($discountValue, 100) / 100))),
             'fixed' => max(0, $basePrice - (int) round($discountValue)),
             default => $basePrice,
         };

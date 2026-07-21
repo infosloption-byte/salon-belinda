@@ -11,6 +11,10 @@
         <a href="{{ route('admin.customers.create') }}" class="btn btn-primary">+ Add Customer</a>
     </div>
 
+    @unless ($isAdmin)
+        <p class="text-xs opacity-50 mb-3">"Visits" shown below counts only jobs you were involved in.</p>
+    @endunless
+
     <div class="bg-white overflow-x-auto">
         <table class="w-full text-sm">
             <thead>

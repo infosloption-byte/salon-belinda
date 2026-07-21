@@ -61,7 +61,7 @@
         {{-- Step 2: confirm job details --}}
         <div class="bg-white p-6 max-w-xl">
             <h2 class="font-display text-xl mb-1">{{ $selectedCustomer->name }}</h2>
-            <p class="text-sm opacity-60 mb-6">{{ $selectedCustomer->phone }} &middot; {{ $selectedCustomer->visitCount() }} previous visit(s)</p>
+            <p class="text-sm opacity-60 mb-6">{{ $selectedCustomer->phone }} &middot; {{ $selectedCustomerVisitCount }} previous visit(s){{ auth()->user()->isAdminRole() ? '' : ' with you' }}</p>
 
             <form method="POST" action="{{ route('admin.jobs.store') }}" class="space-y-4">
                 @csrf

@@ -42,7 +42,7 @@
                                 @csrf
                                 <button class="text-xs underline">{{ $s->is_active ? 'Deactivate' : 'Reactivate' }}</button>
                             </form>
-                            @if ($s->job_items_count === 0)
+                            @if ($s->job_items_count === 0 && $s->user_count === 0)
                                 <form method="POST" action="{{ route('admin.staff.destroy', $s) }}" onsubmit="return confirm('Delete this staff member?')">
                                     @csrf @method('DELETE')
                                     <button class="text-xs" style="color:#7A2E3A;">Delete</button>

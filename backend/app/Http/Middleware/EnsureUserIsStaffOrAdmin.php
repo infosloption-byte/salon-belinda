@@ -21,6 +21,10 @@ class EnsureUserIsStaffOrAdmin
             abort(403, 'You do not have access to this area.');
         }
 
+        if ($user->isStaffRole() && (! $user->staff_id || ! $user->staff?->is_active)) {
+            abort(403, 'Your staff account has been deactivated. Contact an admin.');
+        }
+
         return $next($request);
     }
 }

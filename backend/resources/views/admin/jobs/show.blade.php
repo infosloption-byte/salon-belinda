@@ -9,14 +9,18 @@
             <h2 class="font-display text-2xl mt-1">Job #{{ $job->id }} &middot; {{ $job->job_date->format('d M Y') }}</h2>
             @if ($job->notes)<p class="text-sm opacity-60 mt-1">{{ $job->notes }}</p>@endif
         </div>
-        <form method="POST" action="{{ route('admin.jobs.status', $job) }}" class="shrink-0">
-            @csrf @method('PATCH')
-            <select name="status" onchange="this.form.submit()" class="border px-3 py-2 text-sm" style="border-color: rgba(38,34,32,0.2);">
-                @foreach (['scheduled', 'in_progress', 'completed', 'cancelled'] as $status)
-                    <option value="{{ $status }}" @selected($job->status === $status)>{{ str_replace('_', ' ', ucfirst($status)) }}</option>
-                @endforeach
-            </select>
-        </form>
+        <div class="flex items-center gap-3 shrink-0">
+            <a href="{{ route('admin.jobs.receipt.preview', $job) }}" target="_blank" class="btn btn-outline">Print Receipt</a>
+            <a href="{{ route('admin.jobs.receipt.download', $job) }}" class="btn btn-outline">Download</a>
+            <form method="POST" action="{{ route('admin.jobs.status', $job) }}">
+                @csrf @method('PATCH')
+                <select name="status" onchange="this.form.submit()" class="border px-3 py-2 text-sm" style="border-color: rgba(38,34,32,0.2);">
+                    @foreach (['scheduled', 'in_progress', 'completed', 'cancelled'] as $status)
+                        <option value="{{ $status }}" @selected($job->status === $status)>{{ str_replace('_', ' ', ucfirst($status)) }}</option>
+                    @endforeach
+                </select>
+            </form>
+        </div>
     </div>
 
     <div class="grid grid-cols-3 gap-4 mb-8">

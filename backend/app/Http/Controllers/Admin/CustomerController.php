@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -14,6 +15,10 @@ class CustomerController extends Controller
 {
     public function index(Request $request): View
     {
+        $isAdmin = Auth::user()->isAdminRole();
+        $userId = Auth::id();
+        $staffId = Auth::user()->staff_id;
+
         $customers = Customer::query()
             ->when($request->query('q'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
@@ -22,12 +27,21 @@ class CustomerController extends Controller
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })
-            ->withCount('jobs')
+            ->withCount(['jobs' => function ($q) use ($isAdmin, $userId, $staffId) {
+                if (! $isAdmin) {
+                    $q->where(function ($q) use ($userId, $staffId) {
+                        $q->where('created_by', $userId);
+                        if ($staffId) {
+                            $q->orWhereHas('items', fn ($q) => $q->where('staff_id', $staffId));
+                        }
+                    });
+                }
+            }])
             ->orderBy('name')
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.customers.index', ['customers' => $customers, 'q' => $request->query('q')]);
+        return view('admin.customers.index', ['customers' => $customers, 'q' => $request->query('q'), 'isAdmin' => $isAdmin]);
     }
 
     public function create(): View
@@ -51,9 +65,28 @@ class CustomerController extends Controller
 
     public function show(Customer $customer): View
     {
-        $customer->load(['jobs' => fn ($q) => $q->latest('job_date')]);
+        $jobsQuery = $customer->jobs()->latest('job_date');
 
-        return view('admin.customers.show', compact('customer'));
+        // Staff only see the jobs they're assigned to, even here — the
+        // customer registry is shared, but job/revenue visibility isn't.
+        if (! Auth::user()->isAdminRole()) {
+            $user = Auth::user();
+            $jobsQuery->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id);
+                if ($user->staff_id) {
+                    $q->orWhereHas('items', fn ($q) => $q->where('staff_id', $user->staff_id));
+                }
+            });
+        }
+
+        $jobs = $jobsQuery->get();
+
+        return view('admin.customers.show', [
+            'customer' => $customer,
+            'jobs' => $jobs,
+            'visitCount' => $jobs->count(),
+            'totalSpent' => $jobs->sum('total_paid'),
+        ]);
     }
 
     public function edit(Customer $customer): View

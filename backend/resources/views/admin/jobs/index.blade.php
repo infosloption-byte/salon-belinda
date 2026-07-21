@@ -55,7 +55,10 @@
                         <td class="p-4">LKR {{ number_format($job->subtotal) }}</td>
                         <td class="p-4">LKR {{ number_format($job->total_paid) }}</td>
                         <td class="p-4" style="{{ $job->balance_due > 0 ? 'color:#7A2E3A; font-weight:600;' : '' }}">LKR {{ number_format($job->balance_due) }}</td>
-                        <td class="p-4"><a href="{{ route('admin.jobs.show', $job) }}" class="text-xs underline">Open</a></td>
+                        <td class="p-4 flex gap-3 justify-end">
+                            <a href="{{ route('admin.jobs.show', $job) }}" class="text-xs underline">Open</a>
+                            <a href="{{ route('admin.jobs.receipt.preview', $job) }}" target="_blank" class="text-xs underline">Receipt</a>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="7" class="p-8 text-center opacity-60">No jobs found.</td></tr>

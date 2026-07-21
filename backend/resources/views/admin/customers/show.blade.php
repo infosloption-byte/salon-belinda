@@ -17,11 +17,11 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         <div class="bg-white p-5">
             <p class="text-xs uppercase tracking-wide mb-2" style="color:#7A2E3A;">Visits</p>
-            <p class="font-display text-3xl">{{ $customer->visitCount() }}</p>
+            <p class="font-display text-3xl">{{ $visitCount }}</p>
         </div>
         <div class="bg-white p-5">
             <p class="text-xs uppercase tracking-wide mb-2" style="color:#7A2E3A;">Total Spent</p>
-            <p class="font-display text-3xl">LKR {{ number_format($customer->totalSpent()) }}</p>
+            <p class="font-display text-3xl">LKR {{ number_format($totalSpent) }}</p>
         </div>
     </div>
 
@@ -33,6 +33,9 @@
     @endif
 
     <h3 class="font-display text-xl mb-4">Job History</h3>
+    @if (! auth()->user()->isAdminRole())
+        <p class="text-xs opacity-50 mb-3">Showing only jobs you were involved in.</p>
+    @endif
     <div class="bg-white overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
@@ -46,14 +49,17 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($customer->jobs as $job)
+                @forelse ($jobs as $job)
                     <tr class="border-b" style="border-color: rgba(38,34,32,0.06);">
                         <td class="p-4">{{ $job->job_date->format('d M Y') }}</td>
                         <td class="p-4"><span class="badge" style="background:#F3ECE3;">{{ str_replace('_', ' ', $job->status) }}</span></td>
                         <td class="p-4">LKR {{ number_format($job->subtotal) }}</td>
                         <td class="p-4">LKR {{ number_format($job->total_paid) }}</td>
                         <td class="p-4" style="{{ $job->balance_due > 0 ? 'color:#7A2E3A;' : '' }}">LKR {{ number_format($job->balance_due) }}</td>
-                        <td class="p-4"><a href="{{ route('admin.jobs.show', $job) }}" class="text-xs underline">Open</a></td>
+                        <td class="p-4 flex gap-3 justify-end">
+                            <a href="{{ route('admin.jobs.show', $job) }}" class="text-xs underline">Open</a>
+                            <a href="{{ route('admin.jobs.receipt.preview', $job) }}" target="_blank" class="text-xs underline">Receipt</a>
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="p-8 text-center opacity-60">No jobs logged yet.</td></tr>

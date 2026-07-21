@@ -11,10 +11,13 @@ use App\Models\SalonJob;
 use App\Models\Service;
 use App\Models\Staff;
 use App\Services\ActivityLogger;
+use App\Support\InvoiceBranding;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class SalonJobController extends Controller
 {
@@ -59,6 +62,20 @@ class SalonJobController extends Controller
             ? Customer::find($request->query('customer_id'))
             : null;
 
+        $selectedCustomerVisitCount = 0;
+        if ($selectedCustomer) {
+            $visitsQuery = $selectedCustomer->jobs();
+            if (! Auth::user()->isAdminRole()) {
+                $visitsQuery->where(function ($q) {
+                    $q->where('created_by', Auth::id());
+                    if (Auth::user()->staff_id) {
+                        $q->orWhereHas('items', fn ($q) => $q->where('staff_id', Auth::user()->staff_id));
+                    }
+                });
+            }
+            $selectedCustomerVisitCount = $visitsQuery->count();
+        }
+
         $appointment = $request->query('appointment_id')
             ? Appointment::find($request->query('appointment_id'))
             : null;
@@ -66,6 +83,7 @@ class SalonJobController extends Controller
         return view('admin.jobs.create', [
             'customers' => $customers,
             'selectedCustomer' => $selectedCustomer,
+            'selectedCustomerVisitCount' => $selectedCustomerVisitCount,
             'appointment' => $appointment,
             'q' => $request->query('q'),
         ]);
@@ -136,8 +154,16 @@ class SalonJobController extends Controller
             'custom_price' => ['nullable', 'integer', 'min:0'],
             'staff_id' => ['required', 'exists:staff,id'],
             'discount_type' => ['required', 'in:none,percent,fixed'],
-            'discount_value' => ['nullable', 'numeric', 'min:0'],
+            'discount_value' => array_filter([
+                'nullable', 'numeric', 'min:0',
+                $request->input('discount_type') === 'percent' ? 'max:100' : null,
+            ]),
         ]);
+
+        $staff = Staff::find($data['staff_id']);
+        if (! $staff->is_active) {
+            return back()->withErrors(['staff_id' => "{$staff->name} is deactivated and can't be assigned new treatments."])->withInput();
+        }
 
         if ($data['service_id']) {
             $service = Service::find($data['service_id']);
@@ -150,8 +176,6 @@ class SalonJobController extends Controller
             $serviceName = $data['custom_name'];
             $basePrice = $data['custom_price'];
         }
-
-        $staff = Staff::find($data['staff_id']);
 
         $item = JobItem::create([
             'job_id' => $job->id,
@@ -231,6 +255,26 @@ class SalonJobController extends Controller
         ActivityLogger::log('job.status_updated', "Job #{$job->id} marked {$data['status']}", $job);
 
         return back()->with('success', 'Job status updated.');
+    }
+
+    public function receiptPreview(SalonJob $job): Response
+    {
+        $this->authorizeJobAccess($job);
+        $job->load(['customer', 'items.staff', 'payments']);
+
+        return Pdf::loadView('admin.jobs.receipt', ['job' => $job, 'logo' => InvoiceBranding::logo()])
+            ->setPaper('a4')
+            ->stream("receipt-job-{$job->id}.pdf");
+    }
+
+    public function receiptDownload(SalonJob $job): Response
+    {
+        $this->authorizeJobAccess($job);
+        $job->load(['customer', 'items.staff', 'payments']);
+
+        return Pdf::loadView('admin.jobs.receipt', ['job' => $job, 'logo' => InvoiceBranding::logo()])
+            ->setPaper('a4')
+            ->download("receipt-job-{$job->id}.pdf");
     }
 
     /**
