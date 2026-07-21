@@ -17,7 +17,7 @@ interface CartContextValue {
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = 'salonbelinda_shop_cart_v2';
+const STORAGE_KEY = 'salon_shop_cart_v2';
 
 function loadInitialLines(): CartLine[] {
   try {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, Clock } from 'lucide-react';
 import { site } from '../../data/site';
+import Logo from '../ui/Logo';
 
 const links = [
   { to: '/', label: 'Home' },
@@ -14,7 +15,7 @@ const links = [
 
 // The shop is a separate app on its own subdomain, so it isn't part of the
 // router — it always opens in a new tab. Set VITE_SHOP_URL per environment
-// (e.g. http://localhost:5174 locally, https://shop.salonbelinda.com in prod).
+// (e.g. http://localhost:5174 locally, https://shop.yoursalon.com in prod).
 const shopUrl = import.meta.env.VITE_SHOP_URL || 'http://localhost:5174';
 
 export default function Navbar() {
@@ -58,11 +59,7 @@ export default function Navbar() {
       <div style={{ backgroundColor: 'var(--color-ivory)' }}>
         <div className="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between h-20">
           <Link to="/" className="flex items-center group">
-            <img
-              src="/brand/wordmark.png"
-              alt="Salon Belinda"
-              className="h-16 w-auto object-contain"
-            />
+            <Logo />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8">

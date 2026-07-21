@@ -1,4 +1,4 @@
-# Salon Belinda — Backend
+# Salon SaaS — Backend
 
 Laravel API + admin dashboard shared by the `frontend` (main site) and `shop` apps.
 
@@ -33,7 +33,7 @@ VITE_API_URL=http://localhost:8000/api
 Visit `http://localhost:8000/admin`.
 
 Seeded login:
-- **Email:** admin@salonbelinda.com
+- **Email:** admin@yoursalon.com
 - **Password:** password
 
 Change this password (or create your own admin user and delete the seeded

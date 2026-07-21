@@ -31,11 +31,11 @@
         <tr>
             <td style="width: 60%;">
                 @if ($logo)
-                    <img src="{{ $logo }}" style="height: 46px; margin-bottom: 6px;" alt="Salon Belinda">
+                    <img src="{{ $logo }}" style="height: 46px; margin-bottom: 6px;" alt="{{ config('app.name') }}">
                 @endif
-                <div class="brand">Salon Belinda</div>
-                <div class="muted">Galle Road, Ratgama, Sri Lanka</div>
-                <div class="muted">{{ config('notifications.salon_email') }} · 070 244 4393</div>
+                <div class="brand">{{ config('app.name') }}</div>
+                <div class="muted">{{ config('notifications.salon_address') }}</div>
+                <div class="muted">{{ config('notifications.salon_email') }} &middot; {{ config('notifications.salon_phone') }}</div>
             </td>
             <td style="width: 40%; text-align: right;">
                 <div class="invoice-title">Invoice</div>
@@ -62,7 +62,7 @@
                 <div class="muted" style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; margin-bottom: 4px;">Fulfilment</div>
                 <div>
                     @if ($order->fulfilment_method === 'pickup')
-                        Pickup at Salon Belinda, Ratgama
+                        Pickup at {{ config('app.name') }}, {{ config('notifications.salon_address') }}
                     @else
                         Delivery to {{ $order->address }}, {{ $order->city }}
                     @endif
@@ -109,7 +109,7 @@
     </table>
 
     <div class="footer">
-        Thank you for shopping with Salon Belinda. For questions about this order, quote {{ $order->order_number }}.
+        Thank you for shopping with {{ config('app.name') }}. For questions about this order, quote {{ $order->order_number }}.
     </div>
 </body>
 </html>

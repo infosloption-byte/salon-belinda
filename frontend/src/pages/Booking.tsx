@@ -110,7 +110,7 @@ export default function Booking() {
           {confirmed.form.time}.
         </p>
         <p className="text-sm mb-9" style={{ color: 'var(--color-ink)', opacity: 0.7 }}>
-          Shanika's team will call you at {confirmed.form.phone} to confirm availability.
+          The {site.name} team will call you at {confirmed.form.phone} to confirm availability.
         </p>
         <Button onClick={() => setConfirmed(null)} variant="outline">
           Book Another Appointment

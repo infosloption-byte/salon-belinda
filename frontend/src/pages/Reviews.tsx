@@ -4,6 +4,7 @@ import SectionHeading from '../components/ui/SectionHeading';
 import StarRating from '../components/ui/StarRating';
 import { Button } from '../components/ui/Button';
 import { testimonials as initialTestimonials, type Testimonial } from '../data/testimonials';
+import { site } from '../data/site';
 
 export default function Reviews() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
@@ -104,7 +105,7 @@ export default function Reviews() {
               Share Your Experience
             </h3>
             <p className="text-sm mb-6" style={{ color: 'var(--color-ink)', opacity: 0.6 }}>
-              Visited Salon Belinda? Let other clients know how it went.
+              Visited {site.name}? Let other clients know how it went.
             </p>
 
             {submitted && (

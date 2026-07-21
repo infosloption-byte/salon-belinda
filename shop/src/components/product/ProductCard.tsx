@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Check } from 'lucide-react';
 import type { Product } from '../../data/products';
-import { formatLKR } from '../../data/site';
+import { formatCurrency } from '../../data/site';
 import { useCart } from '../../context/CartContext';
 import StarRating from '../ui/StarRating';
 import Badge from '../ui/Badge';
@@ -47,14 +47,14 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="flex items-center justify-between">
         <span className="flex items-baseline gap-2">
           <span className="font-display italic text-base" style={{ color: 'var(--color-maroon)' }}>
-            {formatLKR(product.price)}
+            {formatCurrency(product.price)}
           </span>
           {product.compareAtPrice && (
             <span
               className="text-xs line-through"
               style={{ color: 'var(--color-ink)', opacity: 0.4 }}
             >
-              {formatLKR(product.compareAtPrice)}
+              {formatCurrency(product.compareAtPrice)}
             </span>
           )}
         </span>

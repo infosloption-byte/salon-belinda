@@ -18,7 +18,7 @@ class AppointmentCancelled extends Mailable implements ShouldQueue
 
     public function build(): self
     {
-        return $this->subject('Your appointment has been cancelled — Salon Belinda')
+        return $this->subject('Your appointment has been cancelled — ' . config('app.name'))
             ->view('emails.appointments.cancelled');
     }
 }

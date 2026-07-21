@@ -61,7 +61,7 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-36">
           <div className="max-w-xl">
             <p className="eyebrow mb-5" style={{ color: 'var(--color-amber-light)' }}>
-              Havelock Rd · Galle · Est. Bridal &amp; Ladies Salon
+              Bridal &amp; Ladies Salon
             </p>
             <h1
               className="font-display text-5xl md:text-6xl lg:text-[4rem] leading-[1.05]"
@@ -70,11 +70,11 @@ export default function Home() {
               Bridal artistry,
               <br />
               <span className="italic" style={{ color: 'var(--color-amber-light)' }}>
-                born by the shore.
+                styled with care.
               </span>
             </h1>
             <p className="mt-6 text-base md:text-lg max-w-md leading-relaxed" style={{ color: 'var(--color-ivory)', opacity: 0.85 }}>
-              Salon Belinda is Shanika Madushani's studio for brides, homecomings, and every
+              {site.name} is {site.owner}'s studio for brides, homecomings, and every
               occasion in between — hair, makeup, skin, and nails, styled with a steady hand.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
@@ -118,8 +118,8 @@ export default function Home() {
             />
             <div className="relative aspect-[4/5]">
               <PortfolioImage
-                src="/brand/shani.jpg"
-                alt="Shani, founder and lead stylist of Salon Belinda"
+                src="/brand/owner.jpg"
+                alt={`${site.ownerFirstName}, ${site.ownerTitle.toLowerCase()} of ${site.name}`}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -142,9 +142,9 @@ export default function Home() {
               "{site.ownerQuote}"
             </p>
             <p className="text-base leading-relaxed max-w-lg" style={{ color: 'var(--color-ink)', opacity: 0.7 }}>
-              I started styling from a small home studio in Galle in 2013, and I still take
-              every bridal trial myself. Salon Belinda grew one wedding, one homecoming, one
-              quiet Tuesday blow-dry at a time — and that's still exactly the pace I like it at.
+              I started styling from a small home studio, and I still take every bridal trial
+              myself. {site.name} grew one wedding, one homecoming, one quiet Tuesday
+              blow-dry at a time — and that's still exactly the pace I like it at.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <LinkButton to="/about" variant="outline">

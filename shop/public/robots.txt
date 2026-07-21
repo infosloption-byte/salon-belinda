@@ -4,4 +4,5 @@ Disallow: /cart
 Disallow: /checkout
 Disallow: /order-confirmation
 
-Sitemap: https://shop.belinda.ycusriya.online/sitemap.xml
+# Placeholder domain — replace per deployment (see sitemap.xml note).
+Sitemap: https://shop.yoursalon.example.com/sitemap.xml

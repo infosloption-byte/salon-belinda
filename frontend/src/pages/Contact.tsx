@@ -47,7 +47,7 @@ export default function Contact() {
 
           <div className="aspect-video w-full overflow-hidden border" style={{ borderColor: 'rgba(38,34,32,0.1)' }}>
             <iframe
-              title="Salon Belinda location map"
+              title={`${site.name} location map`}
               className="w-full h-full"
               style={{ border: 0 }}
               loading="lazy"

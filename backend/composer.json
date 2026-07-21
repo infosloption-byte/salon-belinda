@@ -1,7 +1,7 @@
 {
-    "name": "salonbelinda/backend",
+    "name": "salon-saas/backend",
     "type": "project",
-    "description": "Salon Belinda — shared API and admin dashboard (appointments, testimonials, gallery, services, shop/orders, contact).",
+    "description": "Salon SaaS — shared API and admin dashboard (appointments, testimonials, gallery, services, shop/orders, contact).",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {

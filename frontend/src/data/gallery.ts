@@ -5,7 +5,7 @@ export interface GalleryItem {
   image: string;
 }
 
-// Placeholder photography — swap these `image` URLs for Salon Belinda's own
+// Placeholder photography — swap these `image` URLs for the salon's own
 // portfolio shots once available. PortfolioImage will show a soft branded
 // placeholder automatically if any link fails to load.
 export const galleryItems: GalleryItem[] = [

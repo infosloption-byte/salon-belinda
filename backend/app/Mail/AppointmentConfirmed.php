@@ -18,7 +18,7 @@ class AppointmentConfirmed extends Mailable implements ShouldQueue
 
     public function build(): self
     {
-        return $this->subject('Your appointment is confirmed — Salon Belinda')
+        return $this->subject('Your appointment is confirmed — ' . config('app.name'))
             ->view('emails.appointments.confirmed');
     }
 }

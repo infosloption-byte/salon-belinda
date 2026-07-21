@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Truck, Store, ShieldCheck } from 'lucide-react';
 import { categories } from '../data/products';
 import { useProducts } from '../context/ProductsContext';
-import { shopSettings, formatLKR } from '../data/site';
+import { shopSettings, formatCurrency, site } from '../data/site';
 import ProductCard from '../components/product/ProductCard';
 import { LinkButton } from '../components/ui/Button';
 
@@ -23,7 +23,7 @@ export default function Home() {
       <section className="py-20 md:py-28 text-center relative" style={{ backgroundColor: 'var(--color-green)' }}>
         <div className="max-w-3xl mx-auto px-5">
           <p className="eyebrow mb-4" style={{ color: 'var(--color-gold-light)' }}>
-            Salon Belinda Shop
+            {site.name} Shop
           </p>
           <h1 className="font-display text-4xl md:text-6xl leading-tight" style={{ color: 'var(--color-ivory)' }}>
             Take Home the Products We Use
@@ -44,7 +44,7 @@ export default function Home() {
           <div className="flex items-center gap-3 justify-center sm:justify-start">
             <Truck size={20} style={{ color: 'var(--color-gold)' }} />
             <p className="text-sm" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>
-              Free delivery over {formatLKR(shopSettings.freeDeliveryThreshold)}
+              Free delivery over {formatCurrency(shopSettings.freeDeliveryThreshold)}
             </p>
           </div>
           <div className="flex items-center gap-3 justify-center sm:justify-start">

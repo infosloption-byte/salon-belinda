@@ -20,7 +20,7 @@ const whyUs = [
   {
     icon: Heart,
     title: 'One stylist, start to finish',
-    text: 'Shanika personally oversees every bridal booking from consultation to the final pin, so nothing is handed off along the way.',
+    text: `${site.ownerFirstName} personally oversees every bridal booking from consultation to the final pin, so nothing is handed off along the way.`,
   },
   {
     icon: ShieldCheck,
@@ -53,7 +53,7 @@ const process = [
   { step: '01', title: 'Consultation', text: 'Tell us your date, venue, and vision. We recommend a package and timeline that fits.' },
   { step: '02', title: 'Trial Session', text: 'A full rehearsal of your look — hair, makeup, and draping — photographed so you can compare options.' },
   { step: '03', title: 'Confirmation', text: 'Once you approve the trial, we lock in your date, timing, and any final adjustments.' },
-  { step: '04', title: 'The Big Day', text: 'Shanika and the team arrive on time and styled-ready, so all you have to do is enjoy it.' },
+  { step: '04', title: 'The Big Day', text: `${site.ownerFirstName} and the team arrive on time and styled-ready, so all you have to do is enjoy it.` },
 ];
 
 export default function About() {
@@ -68,8 +68,8 @@ export default function About() {
           />
           <div className="relative aspect-[4/5]">
             <PortfolioImage
-              src="/brand/shani.jpg"
-              alt="Shanika Madushani (Shani), owner of Salon Belinda"
+              src="/brand/owner.jpg"
+              alt={`${site.owner}, owner of ${site.name}`}
               className="w-full h-full object-cover"
             />
           </div>
@@ -79,16 +79,16 @@ export default function About() {
             Our Story
           </p>
           <h1 className="font-display text-4xl md:text-5xl leading-tight mb-6" style={{ color: 'var(--color-ink)' }}>
-            Led by Shanika Madushani
+            Led by {site.owner}
           </h1>
           <p className="text-base leading-relaxed mb-4" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>
-            Salon Belinda started as a one-chair studio in Galle and grew, one wedding at a
-            time, into a full bridal and ladies' salon on Galle Road. Shanika still personally
-            styles every bridal trial — she believes the calmest bride is the best-prepared one.
+            {site.name} started as a one-chair studio and grew, one wedding at a
+            time, into a full bridal and ladies' salon. {site.ownerFirstName} still personally
+            styles every bridal trial — {site.ownerFirstName.toLowerCase()} believes the calmest bride is the best-prepared one.
           </p>
           <p className="text-base leading-relaxed" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>
             Alongside bridal work, the team looks after everyday hair, skin, makeup, and nail
-            care for clients across the Galle area, treating every appointment — big or small —
+            care for clients across the area, treating every appointment — big or small —
             with the same attention.
           </p>
           <div className="mt-9">

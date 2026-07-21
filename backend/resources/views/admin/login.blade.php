@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login · Salon Belinda</title>
+    <title>Admin Login · {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Jost:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +13,7 @@
 </head>
 <body class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-sm bg-[#FBF6F1] p-8">
-        <p class="font-display italic text-3xl text-center mb-1" style="color:#2F3E2E;">Salon Belinda</p>
+        <p class="font-display italic text-3xl text-center mb-1" style="color:#2F3E2E;">{{ config('app.name') }}</p>
         <p class="text-xs uppercase tracking-widest text-center mb-8" style="color:#7A2E3A;">Admin Dashboard</p>
 
         @if ($errors->any())

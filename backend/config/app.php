@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Facade;
 
 return [
 
-    'name' => env('APP_NAME', 'Salon Belinda'),
+    'name' => env('APP_NAME', 'Salon SaaS'),
 
     'env' => env('APP_ENV', 'production'),
 

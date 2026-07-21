@@ -16,7 +16,7 @@ export const testimonials: Testimonial[] = [
     service: 'Complete Bridal Package',
     rating: 5,
     message:
-      'Shanika and her team made my wedding morning so calm. My hair held up through the whole beach ceremony and photos afterwards. I felt completely like myself, just more polished.',
+      'The team made my wedding morning so calm. My hair held up through the whole beach ceremony and photos afterwards. I felt completely like myself, just more polished.',
     date: '2026-05-12',
   },
   {
@@ -43,7 +43,7 @@ export const testimonials: Testimonial[] = [
     service: 'Classic Facial',
     rating: 5,
     message:
-      'My go-to facial before any event. The salon always feels clean, relaxed, and Shanika remembers exactly what my skin needs each visit.',
+      'My go-to facial before any event. The salon always feels clean, relaxed, and the staff remember exactly what my skin needs each visit.',
     date: '2026-02-14',
   },
   {

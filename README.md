@@ -1,11 +1,13 @@
-# Salon Belinda — Monorepo
+# Salon SaaS — Monorepo
 
-Three independent apps, each deployable on its own:
+Independently deployable apps, converting from a single-brand salon platform into a
+white-label, multi-tenant SaaS. See `SAAS-ROADMAP.md` for the full conversion plan.
 
 ```
-frontend/   React + TS + Vite — the marketing site (salonbelinda.com)
-shop/       React + TS + Vite — the online shop (shop.salonbelinda.com)
-backend/    Laravel — shared API (products, orders, etc.) — not yet scaffolded
+frontend/   React + TS + Vite — the public marketing/booking site
+shop/       React + TS + Vite — the online shop (products, cart, checkout)
+backend/    Laravel 11 — API + (currently) a server-rendered Blade admin panel,
+            being split into a pure API (see roadmap Phase 2)
 ```
 
 The shop is intentionally a **separate app**, not a route inside `frontend`. This keeps deploys,
@@ -14,61 +16,69 @@ the shop in a new tab.
 
 ## Local development
 
-Run both apps side by side (they use fixed ports so they don't collide):
-
 ```bash
-cd frontend && npm install && npm run dev   # http://localhost:5173
-cd shop      && npm install && npm run dev  # http://localhost:5174
+cd frontend && cp .env.example .env && npm install && npm run dev   # http://localhost:5173
+cd shop      && cp .env.example .env && npm install && npm run dev  # http://localhost:5174
+cd backend   && cp .env.example .env && composer install && php artisan migrate --seed && php artisan serve  # http://localhost:8000
 ```
 
-Each app has a `.env` (already checked in for local dev) pointing at the other:
+Each frontend app's `.env` sets its own salon branding (`VITE_SALON_NAME`, `VITE_SALON_ADDRESS`,
+etc. — see `.env.example` in each app) plus where to find the other apps:
 
-- `frontend/.env` → `VITE_SHOP_URL=http://localhost:5174`
-- `shop/.env` → `VITE_MAIN_SITE_URL=http://localhost:5173`
+- `frontend/.env` → `VITE_SHOP_URL=http://localhost:5174`, `VITE_API_URL=http://localhost:8000/api`
+- `shop/.env` → `VITE_MAIN_SITE_URL=http://localhost:5173`, `VITE_API_URL=http://localhost:8000/api`
 
-Click "Shop" in the frontend nav — it opens the shop app in a new tab. Click "Back to
-salonbelinda.com" in the shop header — it links back.
+This branding config is a **stop-gap for single-tenant deployments**. Once the platform is
+multi-tenant, it's replaced by a runtime fetch to a tenant-config API endpoint, keyed off the
+subdomain, so a salon owner can edit their own branding without a rebuild — see
+`SAAS-ROADMAP.md` Phase 4.
 
 ## Production: subdomain routing
 
-Following the same pattern as your other projects (master nginx container routing by `Host`
-header to per-app Docker containers on a shared network), add two server blocks:
+Master nginx (or equivalent) container routing by `Host` header to per-app containers on a shared
+network:
 
 ```nginx
 # Main site
 server {
-    server_name salonbelinda.com www.salonbelinda.com;
+    server_name yoursalon.example.com www.yoursalon.example.com;
     location / { proxy_pass http://frontend_container:PORT; }
 }
 
 # Shop, on its own subdomain
 server {
-    server_name shop.salonbelinda.com;
+    server_name shop.yoursalon.example.com;
     location / { proxy_pass http://shop_container:PORT; }
+}
+
+# API
+server {
+    server_name api.yoursalon.example.com;
+    location / { proxy_pass http://backend_container:PORT; }
 }
 ```
 
-Then in each app's production `.env` (or build-time env), set:
+Then in each frontend app's production build-time env:
 
-- `frontend`: `VITE_SHOP_URL=https://shop.salonbelinda.com`
-- `shop`: `VITE_MAIN_SITE_URL=https://salonbelinda.com`
+- `frontend`: `VITE_SHOP_URL=https://shop.yoursalon.example.com`, `VITE_API_URL=https://api.yoursalon.example.com/api`
+- `shop`: `VITE_MAIN_SITE_URL=https://yoursalon.example.com`, `VITE_API_URL=https://api.yoursalon.example.com/api`
 
-Both are static Vite builds (`npm run build` → `dist/`), so they can be served by nginx directly
-or from small containers exactly like `ycusriya` and `ubiq` — no app server needed for either.
+`frontend` and `shop` are static Vite builds (`npm run build` → `dist/`), served by nginx directly
+or from small containers — no app server needed for either. `backend` is a Laravel app (PHP-FPM
+or `php artisan serve` behind nginx).
 
-DNS: add an `A`/`CNAME` record for `shop` pointing at the same EC2 host, then request/attach a
-cert for `shop.salonbelinda.com` (e.g. via `certbot --nginx -d shop.salonbelinda.com` or add it to
-an existing wildcard cert for `*.salonbelinda.com`).
+See `docker-compose.yml` for a working example wiring all three together, and
+`SAAS-ROADMAP.md` for how this evolves into `{tenant}.yoursalon.com` wildcard subdomains once
+multi-tenancy lands.
 
-## Shop → Backend API contract (for when `backend` is built)
+## Backend → frontend/shop API contract
 
-The shop currently places orders entirely client-side (see `Checkout.tsx`) and stores the cart in
-`localStorage`. To wire it to Laravel later, the shop expects:
+- `GET  /api/services`, `/api/gallery`, `/api/albums`, `/api/testimonials` — public site content
+- `POST /api/appointments`, `/api/contact`, `POST /api/testimonials` — public site actions
+- `GET  /api/products`, `/api/products/{slug}` — shop catalog
+- `POST /api/orders`, `GET /api/orders/{orderNumber}` — shop checkout + order lookup
 
-- `GET  /api/products` — returns the catalog (replaces `src/data/products.ts`)
-- `POST /api/orders` — body: `{ lines: [{productId, quantity}], fulfilment, payment, customer }`,
-  returns `{ orderNumber }`
-- `GET  /api/orders/{orderNumber}` — for order lookup/status (optional, for later)
-
-Everything in `shop/src/data/products.ts` maps 1:1 to a products table/migration, so switching
-from mock data to the real API is a matter of swapping the import for a `fetch` call.
+Admin operations (staff, customers, orders management, reports, etc.) currently live behind
+session-authenticated Blade views at `/admin/*` in `backend`. These are being rebuilt as a
+token-authenticated (`laravel/sanctum`) JSON API plus a new standalone `admin/` React app — see
+`SAAS-ROADMAP.md` Phase 2.

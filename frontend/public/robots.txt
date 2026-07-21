@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://belinda.ycusriya.online/sitemap.xml
+# Placeholder domain — replace per deployment (see sitemap.xml note).
+Sitemap: https://yoursalon.example.com/sitemap.xml

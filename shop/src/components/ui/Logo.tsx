@@ -1,3 +1,5 @@
+import { site } from '../../data/site';
+
 interface LogoProps {
   variant?: 'dark' | 'light';
   className?: string;
@@ -5,15 +7,11 @@ interface LogoProps {
 
 export default function Logo({ variant = 'dark', className = '' }: LogoProps) {
   const lineColor = variant === 'dark' ? 'rgba(36,26,33,0.35)' : 'rgba(251,247,243,0.4)';
-  const eyebrowColor = variant === 'dark' ? 'var(--color-maroon)' : 'var(--color-gold-light)';
 
   return (
     <span className={`flex flex-col items-center leading-none ${className}`}>
       <span className="flex items-center gap-2 mb-1">
         <span className="h-px w-5" style={{ backgroundColor: lineColor }} />
-        <span className="eyebrow" style={{ color: eyebrowColor, fontSize: '0.6rem', letterSpacing: '0.32em' }}>
-          Salon
-        </span>
         <span className="h-px w-5" style={{ backgroundColor: lineColor }} />
       </span>
       <span
@@ -22,7 +20,7 @@ export default function Logo({ variant = 'dark', className = '' }: LogoProps) {
         }`}
         style={variant === 'light' ? { color: 'var(--color-ivory)' } : undefined}
       >
-        Belinda
+        {site.name}
       </span>
     </span>
   );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Truck, Store, Banknote, Landmark, CreditCard } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { shopSettings, formatLKR } from '../data/site';
+import { shopSettings, formatCurrency, site } from '../data/site';
 import { createOrder } from '../lib/api';
 import { Button } from '../components/ui/Button';
 
@@ -143,7 +143,7 @@ export default function Checkout() {
                     <span>
                       <span className="block text-sm font-medium" style={{ color: 'var(--color-ink)' }}>Delivery</span>
                       <span className="block text-xs mt-0.5" style={{ color: 'var(--color-ink)', opacity: 0.6 }}>
-                        Island-wide, {formatLKR(shopSettings.deliveryFee)} or free over {formatLKR(shopSettings.freeDeliveryThreshold)}
+                        Island-wide, {formatCurrency(shopSettings.deliveryFee)} or free over {formatCurrency(shopSettings.freeDeliveryThreshold)}
                       </span>
                     </span>
                   </button>
@@ -304,7 +304,7 @@ export default function Checkout() {
                   <p>{details.fullName} · {details.phone}</p>
                   {details.email && <p style={{ opacity: 0.7 }}>{details.email}</p>}
                   <p style={{ opacity: 0.7 }}>
-                    {method === 'delivery' ? `Delivery to ${details.address}, ${details.city}` : 'Pickup at Salon Belinda, Galle'}
+                    {method === 'delivery' ? `Delivery to ${details.address}, ${details.city}` : `Pickup at ${site.name}, ${site.address}`}
                   </p>
                   {details.notes && <p style={{ opacity: 0.7 }}>Note: {details.notes}</p>}
                 </div>
@@ -342,7 +342,7 @@ export default function Checkout() {
                     {line.product.name} × {line.quantity}
                   </span>
                   <span className="shrink-0" style={{ color: 'var(--color-ink)' }}>
-                    {formatLKR(line.product.price * line.quantity)}
+                    {formatCurrency(line.product.price * line.quantity)}
                   </span>
                 </li>
               ))}
@@ -350,17 +350,17 @@ export default function Checkout() {
             <div className="space-y-2 text-sm mb-5 pt-4 border-t" style={{ borderColor: 'rgba(38,34,32,0.15)', color: 'var(--color-ink)' }}>
               <div className="flex justify-between">
                 <span style={{ opacity: 0.7 }}>Subtotal</span>
-                <span>{formatLKR(subtotal)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span style={{ opacity: 0.7 }}>Delivery</span>
-                <span>{deliveryFee === 0 ? 'Free' : formatLKR(deliveryFee)}</span>
+                <span>{deliveryFee === 0 ? 'Free' : formatCurrency(deliveryFee)}</span>
               </div>
             </div>
             <div className="flex justify-between items-baseline pt-4 border-t" style={{ borderColor: 'rgba(38,34,32,0.15)' }}>
               <span className="text-sm" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>Total</span>
               <span className="font-display italic text-2xl" style={{ color: 'var(--color-maroon)' }}>
-                {formatLKR(total)}
+                {formatCurrency(total)}
               </span>
             </div>
           </div>

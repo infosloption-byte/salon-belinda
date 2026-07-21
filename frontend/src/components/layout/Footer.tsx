@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Mail, Phone } from 'lucide-react';
 import { site } from '../../data/site';
+import Logo from '../ui/Logo';
 
 function FacebookIcon() {
   return (
@@ -25,10 +26,11 @@ export default function Footer() {
     <footer style={{ backgroundColor: 'var(--color-deep)', color: 'var(--color-ivory)' }}>
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div>
-          <img src="/brand/wordmark.png" alt="Salon Belinda" className="h-16 w-auto object-contain mb-4" />
+          <div className="mb-4">
+            <Logo variant="light" className="items-start" />
+          </div>
           <p className="text-sm leading-relaxed text-[var(--color-ivory)]/70">
-            Bridal artistry and ladies' salon services on Havelock Rd, Galle — led by Shanika
-            Madushani.
+            Bridal artistry and ladies' salon services, based at {site.address}.
           </p>
           <div className="flex gap-4 mt-5">
             <a href={site.social.facebook} aria-label="Facebook" className="opacity-80 hover:opacity-100">
@@ -76,7 +78,7 @@ export default function Footer() {
       <div
         className="border-t border-[var(--color-ivory)]/10 py-5 text-center text-xs text-[var(--color-ivory)]/50"
       >
-        © {new Date().getFullYear()} Salon Belinda. All rights reserved.
+        © {new Date().getFullYear()} {site.name}. All rights reserved.
       </div>
     </footer>
   );

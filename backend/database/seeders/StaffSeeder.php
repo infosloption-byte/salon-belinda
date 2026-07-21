@@ -35,7 +35,7 @@ class StaffSeeder extends Seeder
         // A demo staff-role login, linked to Sanduni's profile, for testing
         // the Jobs/Customers area with staff-level (not admin) access.
         User::updateOrCreate(
-            ['email' => 'staff@salonbelinda.com'],
+            ['email' => 'staff@yoursalon.com'],
             [
                 'name' => $stylist->name,
                 'password' => Hash::make('password'),

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') · Salon Belinda Admin</title>
+    <title>@yield('title', 'Dashboard') · {{ config('app.name') }} Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
@@ -57,7 +57,7 @@
 
         <aside id="admin-sidebar" class="w-60 shrink-0 flex flex-col h-full overflow-y-auto" style="background: var(--green);">
             <div class="px-5 py-6">
-                <p class="font-display italic text-2xl text-white">Salon Belinda</p>
+                <p class="font-display italic text-2xl text-white">{{ config('app.name') }}</p>
                 <p class="text-[0.65rem] uppercase tracking-widest mt-0.5" style="color: var(--gold-light);">Admin Dashboard</p>
             </div>
             <nav class="flex-1 px-3 space-y-1">
@@ -106,7 +106,7 @@
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
                 </button>
-                <p class="font-display italic text-xl text-white">Salon Belinda Admin</p>
+                <p class="font-display italic text-xl text-white">{{ config('app.name') }} Admin</p>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
                     <button class="text-xs text-white/80">Log Out</button>

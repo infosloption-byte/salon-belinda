@@ -1,6 +1,6 @@
 import { useLocation, Navigate } from 'react-router-dom';
 import { CheckCircle2, Truck, Store, CreditCard } from 'lucide-react';
-import { formatLKR, site } from '../data/site';
+import { formatCurrency, site } from '../data/site';
 import { LinkButton } from '../components/ui/Button';
 
 interface ConfirmationState {
@@ -47,7 +47,7 @@ export default function OrderConfirmation() {
           <Truck size={18} style={{ color: 'var(--color-gold)' }} />
         )}
         <span className="text-sm" style={{ color: 'var(--color-ink)' }}>
-          {state.method === 'pickup' ? 'Pickup at Salon Belinda, Galle' : `Delivery to ${state.details.address}, ${state.details.city}`}
+          {state.method === 'pickup' ? `Pickup at ${site.name}, ${site.address}` : `Delivery to ${state.details.address}, ${state.details.city}`}
         </span>
       </div>
 
@@ -62,7 +62,7 @@ export default function OrderConfirmation() {
       )}
 
       <p className="font-display italic text-2xl mb-10" style={{ color: 'var(--color-maroon)' }}>
-        Total: {formatLKR(state.total)}
+        Total: {formatCurrency(state.total)}
       </p>
 
       <div className="flex flex-wrap gap-4 justify-center">

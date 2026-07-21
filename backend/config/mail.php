@@ -25,8 +25,8 @@ return [
     ],
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'info.salonbelinda@gmail.com'),
-        'name' => env('MAIL_FROM_NAME', 'Salon Belinda'),
+        'address' => env('MAIL_FROM_ADDRESS', 'info@yoursalon.com'),
+        'name' => env('MAIL_FROM_NAME', 'Salon SaaS'),
     ],
 
 ];

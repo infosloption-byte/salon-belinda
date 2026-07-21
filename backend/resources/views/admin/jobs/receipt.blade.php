@@ -33,11 +33,11 @@
         <tr>
             <td style="width: 60%;">
                 @if ($logo)
-                    <img src="{{ $logo }}" style="height: 46px; margin-bottom: 6px;" alt="Salon Belinda">
+                    <img src="{{ $logo }}" style="height: 46px; margin-bottom: 6px;" alt="{{ config('app.name') }}">
                 @endif
-                <div class="brand">Salon Belinda</div>
-                <div class="muted">Galle Road, Ratgama, Sri Lanka</div>
-                <div class="muted">{{ config('notifications.salon_email') }} &middot; 070 244 4393</div>
+                <div class="brand">{{ config('app.name') }}</div>
+                <div class="muted">{{ config('notifications.salon_address') }}</div>
+                <div class="muted">{{ config('notifications.salon_email') }} &middot; {{ config('notifications.salon_phone') }}</div>
             </td>
             <td style="width: 40%; text-align: right;">
                 <div class="receipt-title">Receipt</div>
@@ -132,7 +132,7 @@
     </table>
 
     <div class="footer">
-        Thank you for visiting Salon Belinda. For questions about this receipt, quote Job #{{ $job->id }}.
+        Thank you for visiting {{ config('app.name') }}. For questions about this receipt, quote Job #{{ $job->id }}.
     </div>
 </body>
 </html>

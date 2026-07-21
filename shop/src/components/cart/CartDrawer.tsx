@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { formatLKR } from '../../data/site';
+import { formatCurrency } from '../../data/site';
 import { Button } from '../ui/Button';
 
 export default function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -50,7 +50,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                   <p className="text-sm font-medium" style={{ color: 'var(--color-ink)' }}>{line.product.name}</p>
                 </Link>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--color-ink)', opacity: 0.5 }}>
-                  {formatLKR(line.product.price)}
+                  {formatCurrency(line.product.price)}
                 </p>
                 <div className="flex items-center gap-3 mt-2">
                   <button
@@ -90,7 +90,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
             <div className="flex justify-between mb-4 text-sm">
               <span style={{ color: 'var(--color-ink)', opacity: 0.7 }}>Subtotal</span>
               <span className="font-display text-lg" style={{ color: 'var(--color-maroon)' }}>
-                {formatLKR(subtotal)}
+                {formatCurrency(subtotal)}
               </span>
             </div>
             <Link to="/cart" onClick={onClose}>

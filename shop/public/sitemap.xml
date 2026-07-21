@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Placeholder sitemap for local/template use. Replace the domain below with
+  the real production domain per deployment (or, once multi-tenant, generate
+  this per-tenant server-side — see roadmap Phase 9).
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://shop.belinda.ycusriya.online/</loc>
+    <loc>https://shop.yoursalon.example.com/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://shop.belinda.ycusriya.online/products</loc>
+    <loc>https://shop.yoursalon.example.com/products</loc>
     <priority>0.9</priority>
   </url>
 </urlset>

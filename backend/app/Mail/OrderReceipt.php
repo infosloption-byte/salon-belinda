@@ -18,7 +18,7 @@ class OrderReceipt extends Mailable implements ShouldQueue
 
     public function build(): self
     {
-        return $this->subject("Your Salon Belinda order {$this->order->order_number}")
+        return $this->subject('Your ' . config('app.name') . " order {$this->order->order_number}")
             ->view('emails.orders.receipt');
     }
 }

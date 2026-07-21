@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { shopSettings, formatLKR } from '../data/site';
+import { shopSettings, formatCurrency } from '../data/site';
 import { Button, LinkButton } from '../components/ui/Button';
 
 export default function Cart() {
@@ -51,7 +51,7 @@ export default function Cart() {
                     </p>
                   </div>
                   <span className="font-display italic text-base shrink-0" style={{ color: 'var(--color-maroon)' }}>
-                    {formatLKR(line.product.price * line.quantity)}
+                    {formatCurrency(line.product.price * line.quantity)}
                   </span>
                 </div>
                 <div className="flex items-center gap-4 mt-3">
@@ -89,15 +89,15 @@ export default function Cart() {
             <div className="space-y-3 text-sm mb-5" style={{ color: 'var(--color-ink)' }}>
               <div className="flex justify-between">
                 <span style={{ opacity: 0.7 }}>Subtotal</span>
-                <span>{formatLKR(subtotal)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span style={{ opacity: 0.7 }}>Delivery</span>
-                <span>{deliveryFee === 0 ? 'Free' : formatLKR(deliveryFee)}</span>
+                <span>{deliveryFee === 0 ? 'Free' : formatCurrency(deliveryFee)}</span>
               </div>
               {deliveryFee > 0 && (
                 <p className="text-xs" style={{ color: 'var(--color-ink)', opacity: 0.5 }}>
-                  Free delivery on orders over {formatLKR(shopSettings.freeDeliveryThreshold)}
+                  Free delivery on orders over {formatCurrency(shopSettings.freeDeliveryThreshold)}
                 </p>
               )}
             </div>
@@ -107,7 +107,7 @@ export default function Cart() {
             >
               <span className="text-sm" style={{ color: 'var(--color-ink)', opacity: 0.75 }}>Total</span>
               <span className="font-display italic text-2xl" style={{ color: 'var(--color-maroon)' }}>
-                {formatLKR(total)}
+                {formatCurrency(total)}
               </span>
             </div>
             <Link to="/checkout">

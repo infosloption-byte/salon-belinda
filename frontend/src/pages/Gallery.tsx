@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, Calendar, Images } from 'lucide-react';
 import { fetchAlbums, fetchAlbumCategories, type AlbumSummary } from '../lib/api';
+import { site } from '../data/site';
 
 function formatDate(d: string | null) {
   if (!d) return null;
@@ -48,7 +49,7 @@ export default function Gallery() {
             Every Couple, <span className="text-gradient-brand italic">Their Own Story</span>
           </h1>
           <p className="mt-6 text-base" style={{ color: 'var(--color-ivory)', opacity: 0.8 }}>
-            Browse complete photoshoots from real Salon Belinda brides — search by name, date, or
+            Browse complete photoshoots from real {site.name} brides — search by name, date, or
             venue, and step inside each album for the full set.
           </p>
         </div>

@@ -1,31 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Placeholder sitemap for local/template use. Static files in /public are not
+  processed by Vite env substitution, so this can't read VITE_SALON_NAME etc.
+  at build time without a small prebuild script. Replace the domain below
+  with the real production domain per deployment (or, once multi-tenant,
+  generate this per-tenant server-side — see roadmap Phase 9).
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://belinda.ycusriya.online/</loc>
+    <loc>https://yoursalon.example.com/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://belinda.ycusriya.online/about</loc>
+    <loc>https://yoursalon.example.com/about</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://belinda.ycusriya.online/services</loc>
+    <loc>https://yoursalon.example.com/services</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://belinda.ycusriya.online/gallery</loc>
+    <loc>https://yoursalon.example.com/gallery</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://belinda.ycusriya.online/reviews</loc>
+    <loc>https://yoursalon.example.com/reviews</loc>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://belinda.ycusriya.online/booking</loc>
+    <loc>https://yoursalon.example.com/booking</loc>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://belinda.ycusriya.online/contact</loc>
+    <loc>https://yoursalon.example.com/contact</loc>
     <priority>0.6</priority>
   </url>
 </urlset>

@@ -42,7 +42,7 @@ class AlbumSeeder extends Seeder
                 'title' => 'Sanduni Homecoming',
                 'couple_names' => 'Sanduni & Ravindu',
                 'event_date' => '2025-09-20',
-                'location' => 'Salon Belinda, Galle',
+                'location' => 'In-salon',
                 'category' => 'Homecoming',
                 'description' => 'Homecoming saree draping and evening makeup, styled entirely in-salon.',
                 'photos' => [
