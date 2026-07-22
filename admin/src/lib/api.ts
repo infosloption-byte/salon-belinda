@@ -83,3 +83,91 @@ export function logoutRequest(): Promise<void> {
 export function fetchCurrentUser(): Promise<AdminUser> {
   return api.get<AdminUser>('/admin/me');
 }
+
+export interface DashboardStats {
+  todayAppointments: number;
+  pendingAppointments: number;
+  activeCustomers: number;
+  pendingOrders: number;
+  todayRevenue: number;
+  monthRevenue: number;
+  pendingTestimonials: number;
+  newMessages: number;
+  todayJobs: number;
+  todaySalonCash: number;
+  outstandingBalance: number;
+}
+
+export interface DashboardActivity {
+  id: number;
+  event: string;
+  action: string;
+  user: string | null;
+  time: string;
+}
+
+export interface DashboardResponse {
+  role: 'admin' | 'staff';
+  redirectTo?: string;
+  stats?: DashboardStats;
+  recentActivity?: DashboardActivity[];
+}
+
+export function fetchDashboard(): Promise<DashboardResponse> {
+  return api.get<DashboardResponse>('/admin/dashboard');
+}
+
+// --- Services ---
+
+export interface Service {
+  id: number;
+  service_category_id: number;
+  name: string;
+  description: string | null;
+  duration: string | null;
+  price: number;
+  price_prefix: string | null;
+}
+
+export interface ServiceCategory {
+  id: number;
+  title: string;
+  intro: string | null;
+  slug: string;
+  sort_order: number;
+  services: Service[];
+}
+
+export function fetchServiceCategories(): Promise<{ categories: ServiceCategory[] }> {
+  return api.get('/admin/services');
+}
+
+export function createServiceCategory(data: { title: string; intro?: string }) {
+  return api.post<{ category: ServiceCategory; message: string }>('/admin/services/categories', data);
+}
+
+export function deleteServiceCategory(id: number) {
+  return api.del<{ message: string }>(`/admin/services/categories/${id}`);
+}
+
+export function createService(data: {
+  service_category_id: number;
+  name: string;
+  description?: string;
+  duration?: string;
+  price: number;
+  price_prefix?: string;
+}) {
+  return api.post<{ service: Service; message: string }>('/admin/services', data);
+}
+
+export function updateService(
+  id: number,
+  data: { name: string; description?: string; duration?: string; price: number; price_prefix?: string }
+) {
+  return api.put<{ service: Service; message: string }>(`/admin/services/${id}`, data);
+}
+
+export function deleteService(id: number) {
+  return api.del<{ message: string }>(`/admin/services/${id}`);
+}

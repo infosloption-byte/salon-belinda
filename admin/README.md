@@ -1,4 +1,4 @@
-# Salon Belinda — Admin (React)
+# Salon SaaS — Admin (React)
 
 Scaffold for the Phase 2 admin panel: Vite + React 19 + TypeScript + Tailwind v4,
 mirroring the `frontend`/`shop` app conventions in the main repo.

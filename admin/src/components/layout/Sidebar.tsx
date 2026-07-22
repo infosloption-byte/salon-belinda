@@ -14,6 +14,7 @@ import {
   History,
   UserCog,
 } from 'lucide-react';
+import { site } from '../../data/site';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -36,10 +37,10 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col bg-wine text-paper lg:flex">
       <div className="flex items-center gap-3 px-6 py-6">
         <div className="arch flex h-10 w-10 items-center justify-center border border-gold/40 bg-wine-light">
-          <span className="font-display text-lg text-gold">B</span>
+          <span className="font-display text-lg text-gold">{site.name.charAt(0)}</span>
         </div>
         <div>
-          <p className="font-display text-base leading-tight text-paper">Belinda</p>
+          <p className="font-display text-base leading-tight text-paper">{site.name}</p>
           <p className="text-[11px] uppercase tracking-[0.2em] text-paper/50">Admin</p>
         </div>
       </div>
@@ -64,7 +65,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-6 py-5 text-[11px] text-paper/40">Salon Belinda &middot; Ratgama</div>
+      <div className="px-6 py-5 text-[11px] text-paper/40">{site.name}</div>
     </aside>
   );
 }

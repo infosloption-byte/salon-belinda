@@ -4,10 +4,10 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { Services } from './pages/Services';
 import { ComingSoon } from './pages/ComingSoon';
 
 const pendingModules: { path: string; title: string }[] = [
-  { path: 'services', title: 'Services' },
   { path: 'products', title: 'Products' },
   { path: 'gallery', title: 'Gallery' },
   { path: 'appointments', title: 'Appointments' },
@@ -35,6 +35,7 @@ export default function App() {
           }
         >
           <Route index element={<Dashboard />} />
+          <Route path="services" element={<Services />} />
           {pendingModules.map(({ path, title }) => (
             <Route key={path} path={path} element={<ComingSoon title={title} />} />
           ))}

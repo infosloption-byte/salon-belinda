@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AlbumController;
 use App\Http\Controllers\Api\ContactMessageController;
@@ -26,3 +29,33 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
 Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
+
+// --- Admin (new React admin app — see /admin) ---
+// Mirrors routes/web.php's admin.* group 1:1, JSON instead of Blade. Kept
+// side-by-side with the Blade admin until every module below is ported and
+// verified working against the React app — see SAAS-ROADMAP.md Phase 2.
+Route::prefix('admin')->name('api.admin.')->group(function () {
+    Route::post('login', [AdminAuthController::class, 'login'])
+        ->middleware('throttle:6,1')
+        ->name('login');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
+        Route::get('me', [AdminAuthController::class, 'me'])->name('me');
+
+        // Shared area: both admin and staff logins can reach these.
+        Route::middleware('staff_or_admin')->group(function () {
+            Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        });
+
+        // Admin-only area.
+        Route::middleware('admin')->group(function () {
+            Route::get('services', [AdminServiceController::class, 'index'])->name('services.index');
+            Route::post('services/categories', [AdminServiceController::class, 'storeCategory'])->name('services.categories.store');
+            Route::delete('services/categories/{category}', [AdminServiceController::class, 'destroyCategory'])->name('services.categories.destroy');
+            Route::post('services', [AdminServiceController::class, 'storeService'])->name('services.store');
+            Route::put('services/{service}', [AdminServiceController::class, 'updateService'])->name('services.update');
+            Route::delete('services/{service}', [AdminServiceController::class, 'destroyService'])->name('services.destroy');
+        });
+    });
+});

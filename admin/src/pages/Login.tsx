@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Lock, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { site } from '../data/site';
 
 export function Login() {
   const { login, isAuthenticated } = useAuth();
@@ -32,9 +33,9 @@ export function Login() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-paper">
           <div className="arch mb-4 flex h-14 w-14 items-center justify-center border border-gold/40 bg-wine-light">
-            <span className="font-display text-2xl text-gold">B</span>
+            <span className="font-display text-2xl text-gold">{site.name.charAt(0)}</span>
           </div>
-          <h1 className="font-display text-2xl">Salon Belinda</h1>
+          <h1 className="font-display text-2xl">{site.name}</h1>
           <p className="mt-1 text-sm text-paper/50">Staff &amp; admin sign in</p>
         </div>
 
@@ -50,7 +51,7 @@ export function Login() {
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@salonbelinda.com"
+                  placeholder="you@yoursalon.com"
                   className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-muted/60"
                 />
               </div>
