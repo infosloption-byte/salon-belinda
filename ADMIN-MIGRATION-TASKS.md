@@ -29,7 +29,7 @@ route with no page swapped in, is still in progress.
 | Services (+ categories) | ✅ | ✅ | ✅ | **Done** |
 | Products (+ categories) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Gallery (+ categories) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
-| Wedding Albums | ❌ | ❌ | ❌ (ComingSoon) | Not started — was missing from Sidebar entirely until 2026-07-23, added as placeholder |
+| Wedding Albums | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Appointments | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Jobs (daily ops: items/payments/receipt) | ❌ | ❌ | ❌ (ComingSoon) | Not started — was missing from Sidebar entirely until 2026-07-23, added as placeholder. Largest single module (job items, payments, PDF receipt) |
 | Staff | ❌ | ❌ | ❌ (ComingSoon) | Not started |

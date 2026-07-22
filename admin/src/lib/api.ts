@@ -362,3 +362,59 @@ export function updateAppointmentStatus(id: number, status: AppointmentStatus) {
 export function deleteAppointment(id: number) {
   return api.del<{ message: string }>(`/admin/appointments/${id}`);
 }
+
+// --- Wedding Albums ---
+
+export interface AlbumPhoto {
+  id: number;
+  album_id: number;
+  image: string;
+  caption: string | null;
+  sort_order: number;
+}
+
+export interface Album {
+  id: number;
+  title: string;
+  slug: string;
+  couple_names: string | null;
+  event_date: string | null;
+  location: string | null;
+  category: string | null;
+  description: string | null;
+  cover_image: string | null;
+  is_published: boolean;
+  photos_count?: number;
+  photos?: AlbumPhoto[];
+}
+
+export interface PaginatedAlbums {
+  data: Album[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchAlbums(q?: string): Promise<{ albums: PaginatedAlbums }> {
+  return api.get(`/admin/albums${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+}
+
+export function fetchAlbum(id: number): Promise<{ album: Album }> {
+  return api.get(`/admin/albums/${id}`);
+}
+
+export function createAlbum(formData: FormData) {
+  return api.postForm<{ album: Album; message: string }>('/admin/albums', formData);
+}
+
+export function updateAlbum(id: number, formData: FormData) {
+  return api.putForm<{ album: Album; message: string }>(`/admin/albums/${id}`, formData);
+}
+
+export function deleteAlbum(id: number) {
+  return api.del<{ message: string }>(`/admin/albums/${id}`);
+}
+
+export function deleteAlbumPhoto(albumId: number, photoId: number) {
+  return api.del<{ message: string }>(`/admin/albums/${albumId}/photos/${photoId}`);
+}

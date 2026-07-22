@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AlbumController as AdminAlbumController;
 use App\Http\Controllers\Api\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
@@ -85,6 +86,15 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::get('appointments', [AdminAppointmentController::class, 'index'])->name('appointments.index');
             Route::patch('appointments/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.status');
             Route::delete('appointments/{appointment}', [AdminAppointmentController::class, 'destroy'])->name('appointments.destroy');
+
+            // Wedding Albums (multipart create/update — same "_method": "PUT"
+            // spoofing convention as Products for update requests).
+            Route::get('albums', [AdminAlbumController::class, 'index'])->name('albums.index');
+            Route::get('albums/{album}', [AdminAlbumController::class, 'show'])->name('albums.show');
+            Route::post('albums', [AdminAlbumController::class, 'store'])->name('albums.store');
+            Route::put('albums/{album}', [AdminAlbumController::class, 'update'])->name('albums.update');
+            Route::delete('albums/{album}', [AdminAlbumController::class, 'destroy'])->name('albums.destroy');
+            Route::delete('albums/{album}/photos/{photo}', [AdminAlbumController::class, 'destroyPhoto'])->name('albums.photos.destroy');
         });
     });
 });
