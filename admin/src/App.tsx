@@ -5,10 +5,10 @@ import { AdminLayout } from './components/layout/AdminLayout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Services } from './pages/Services';
+import { Products } from './pages/Products';
 import { ComingSoon } from './pages/ComingSoon';
 
 const pendingModules: { path: string; title: string }[] = [
-  { path: 'products', title: 'Products' },
   { path: 'gallery', title: 'Gallery' },
   { path: 'appointments', title: 'Appointments' },
   { path: 'staff', title: 'Staff' },
@@ -19,6 +19,8 @@ const pendingModules: { path: string; title: string }[] = [
   { path: 'reports', title: 'Reports' },
   { path: 'activity-log', title: 'Activity Log' },
   { path: 'users', title: 'Users' },
+  { path: 'jobs', title: 'Jobs' },
+  { path: 'albums', title: 'Wedding Albums' },
 ];
 
 export default function App() {
@@ -36,6 +38,7 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="services" element={<Services />} />
+          <Route path="products" element={<Products />} />
           {pendingModules.map(({ path, title }) => (
             <Route key={path} path={path} element={<ComingSoon title={title} />} />
           ))}

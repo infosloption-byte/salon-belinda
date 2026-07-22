@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\ProductCategoryController as AdminProductCategoryController;
+use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AlbumController;
@@ -56,6 +58,17 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::post('services', [AdminServiceController::class, 'storeService'])->name('services.store');
             Route::put('services/{service}', [AdminServiceController::class, 'updateService'])->name('services.update');
             Route::delete('services/{service}', [AdminServiceController::class, 'destroyService'])->name('services.destroy');
+
+            // Products (multipart create/update — send FormData with a
+            // "_method": "PUT" field on update requests, Laravel's method
+            // spoofing middleware reads that from multipart POST bodies).
+            Route::get('products', [AdminProductController::class, 'index'])->name('products.index');
+            Route::post('products', [AdminProductController::class, 'store'])->name('products.store');
+            Route::put('products/{product}', [AdminProductController::class, 'update'])->name('products.update');
+            Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+            Route::post('products/categories', [AdminProductCategoryController::class, 'store'])->name('products.categories.store');
+            Route::put('products/categories/{productCategory}', [AdminProductCategoryController::class, 'update'])->name('products.categories.update');
+            Route::delete('products/categories/{productCategory}', [AdminProductCategoryController::class, 'destroy'])->name('products.categories.destroy');
         });
     });
 });

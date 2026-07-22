@@ -98,16 +98,18 @@ Goal: stop the apps from being compiled with "Salon Belinda" baked in, without y
 
 Goal: Blade admin retired, Laravel becomes API-only, new `admin` React app takes over.
 
-- [ ] `composer require laravel/sanctum`, publish config, add `Passport`-free token auth (`personal_access_tokens` table).
-- [ ] Build `Api/Admin/*` controllers mirroring the 17 existing `Admin/*` Blade controllers 1:1, but returning JSON (Resources/ Fractal-style) instead of views: `DashboardController`, `CustomerController`, `AppointmentController`, `StaffController`, `ProductController`, `ProductCategoryController`, `ServiceController`, `GalleryController`, `GalleryCategoryController`, `AlbumController`, `OrderController`, `TestimonialController`, `ContactMessageController`, `ReportController` (all 6 report types), `ActivityLogController`, `UserController`, `AuthController` (login/logout → issue/revoke Sanctum token).
-- [ ] Re-implement the `staff_or_admin` / `EnsureUserIsAdmin` middleware as Sanctum token ability checks instead of session middleware.
-- [ ] Move `routes/web.php` admin routes into `routes/api.php` under `/api/admin/*`; keep `routes/web.php` essentially empty (or just a health-check).
-- [ ] Scaffold `admin/` as a new Vite + React + TS app (same toolchain as `frontend`/`shop` for consistency): routing (React Router), auth context (stores Sanctum token), API client (axios/fetch wrapper with auth header + 401 handling), and a layout shell replacing `layouts/admin.blade.php`.
-- [ ] Rebuild each admin screen as a React page/module, matching the Blade view it replaces, one module at a time (suggested order: Auth/Login → Dashboard → Services → Products → Gallery → Appointments/Jobs → Staff → Customers → Orders → Testimonials → Contact Messages → Reports → Activity Log → Users/Account). Keep the old Blade views running in parallel (feature-flag or just leave the routes) until each React module is verified, then delete the corresponding Blade files.
-- [ ] `barryvdh/laravel-dompdf` usage (invoices/receipts) — decide: keep PDF generation server-side (API returns a PDF blob/download URL) or move to client-side PDF generation from the React admin. Server-side is lower-risk; keep it.
-- [ ] Update `docker-compose.yml` / Dockerfiles to add the `admin` service (mirrors `frontend`/`shop` nginx+vite build pattern already in the repo), and update `CORS_ALLOWED_ORIGINS` to include the admin origin.
+> **Per-module status now lives in `ADMIN-MIGRATION-TASKS.md`** — check that file for what's actually done vs. pending; this checklist only tracks phase-level milestones.
 
-**Outcome:** four independently deployable apps — `frontend`, `shop`, `admin`, `backend` (API-only). Still single-tenant at this point.
+- [x] `composer require laravel/sanctum`, publish config, add token auth (`personal_access_tokens` table).
+- [~] Build `Api/Admin/*` controllers mirroring the 17 existing `Admin/*` Blade controllers 1:1, but returning JSON instead of views. **4 of 17 done** (Auth, Dashboard, Services, Products) — see `ADMIN-MIGRATION-TASKS.md` for the rest: `CustomerController`, `AppointmentController`, `StaffController`, `ProductCategoryController`(✅ done alongside Products), `GalleryController`, `GalleryCategoryController`, `AlbumController`, `OrderController`, `TestimonialController`, `ContactMessageController`, `ReportController` (all 6 report types), `ActivityLogController`, `UserController`, `SalonJobController`.
+- [x] Re-implement the `staff_or_admin` / `EnsureUserIsAdmin` middleware as reusable route middleware under `/api/admin/*` (kept the same aliases, applied to the API group instead of session middleware).
+- [ ] Move `routes/web.php` admin routes into `routes/api.php` under `/api/admin/*` for good, and empty out `routes/web.php` — **not yet**, both route files still run in parallel by design until every module is ported (see Outcome note below).
+- [x] Scaffold `admin/` as a new Vite + React + TS app: routing (React Router), auth context (Sanctum token), API client (fetch wrapper with auth header + 401 handling), and a layout shell.
+- [~] Rebuild each admin screen as a React page/module. **Done: Login, Dashboard, Services, Products.** Remaining 11 (Gallery, Wedding Albums, Appointments, Jobs, Staff, Customers, Orders, Testimonials, Contact Messages, Reports, Activity Log, Users) are `ComingSoon` placeholders in the sidebar — note Jobs and Wedding Albums weren't even wired into the sidebar until this pass. Old Blade views still running in parallel as designed.
+- [ ] `barryvdh/laravel-dompdf` usage (invoices/receipts) — decision made (keep server-side), not yet re-implemented in the API controllers for Orders/Jobs since those modules aren't ported yet.
+- [x] Update `docker-compose.yml` / Dockerfiles to add the `admin` service; CORS already includes the admin origin.
+
+**Outcome (current, not yet final):** `frontend`, `shop`, `admin` are independently deployable; `backend` still serves both the legacy Blade admin (`routes/web.php`, 17 controllers/44 views, untouched) *and* the new JSON API (`routes/api.php`, growing) side by side on purpose — that's the parallel-run strategy so nothing breaks mid-migration. It becomes fully "API-only" only once every row in `ADMIN-MIGRATION-TASKS.md` is checked and the Blade files are deleted.
 
 ### Phase 3 — Multi-tenancy foundation (data layer)
 

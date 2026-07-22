@@ -1,24 +1,29 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Services\ActivityLogger;
 use App\Services\ImageUploadService;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
 
+/**
+ * JSON port of Admin\ProductController. Same validation/logging/behaviour
+ * as the Blade version, JSON responses instead of redirect()->back().
+ * Create/update accept multipart/form-data (image_files[]) same as the
+ * Blade form did — routes live under /api/admin/products* in routes/api.php.
+ */
 class ProductController extends Controller
 {
     public function __construct(private readonly ImageUploadService $uploads)
     {
     }
 
-    public function index(Request $request): View
+    public function index(Request $request): JsonResponse
     {
         $products = Product::query()
             ->when($request->query('category'), fn ($q, $c) => $q->where('category', $c))
@@ -26,15 +31,13 @@ class ProductController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.products.index', ['products' => $products, 'categories' => $this->categoryNames(), 'categoryModels' => ProductCategory::orderBy('sort_order')->get()]);
+        return response()->json([
+            'products' => $products,
+            'categories' => ProductCategory::orderBy('sort_order')->get(),
+        ]);
     }
 
-    public function create(): View
-    {
-        return view('admin.products.form', ['product' => new Product, 'categories' => $this->categoryNames()]);
-    }
-
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $data = $this->validated($request);
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
@@ -43,15 +46,10 @@ class ProductController extends Controller
         $product = Product::create($data);
         ActivityLogger::log('product.created', "Created product \"{$product->name}\"", $product);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product added.');
+        return response()->json(['product' => $product, 'message' => 'Product added.'], 201);
     }
 
-    public function edit(Product $product): View
-    {
-        return view('admin.products.form', ['product' => $product, 'categories' => $this->categoryNames()]);
-    }
-
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(Request $request, Product $product): JsonResponse
     {
         $data = $this->validated($request, $product->id);
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
@@ -60,10 +58,10 @@ class ProductController extends Controller
         $product->update($data);
         ActivityLogger::log('product.updated', "Updated product \"{$product->name}\"", $product);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product updated.');
+        return response()->json(['product' => $product, 'message' => 'Product updated.']);
     }
 
-    public function destroy(Product $product): RedirectResponse
+    public function destroy(Product $product): JsonResponse
     {
         foreach ($product->images ?? [] as $image) {
             $this->uploads->delete($image);
@@ -72,7 +70,7 @@ class ProductController extends Controller
         ActivityLogger::log('product.deleted', "Deleted product \"{$product->name}\"", $product);
         $product->delete();
 
-        return back()->with('success', 'Product removed.');
+        return response()->json(['message' => 'Product removed.']);
     }
 
     private function validated(Request $request, ?int $ignoreId = null): array
@@ -95,7 +93,6 @@ class ProductController extends Controller
             'is_new' => ['nullable', 'boolean'],
         ]);
 
-        // Textareas in the form use one line per item; convert to arrays for storage.
         $data['details'] = collect(explode("\n", (string) ($data['details_text'] ?? '')))
             ->map(fn ($line) => trim($line))->filter()->values()->all();
         $data['images'] = collect(explode("\n", (string) ($data['images_text'] ?? '')))
@@ -110,10 +107,6 @@ class ProductController extends Controller
         return $data;
     }
 
-    /**
-     * Combine: existing images minus any marked for removal, plus any
-     * pasted URLs, plus any newly uploaded files.
-     */
     private function mergeImages(Request $request, array $existingImages, array $pastedUrls): array
     {
         $toRemove = $request->input('remove_images', []);

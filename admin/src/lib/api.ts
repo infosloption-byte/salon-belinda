@@ -49,6 +49,48 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return body as T;
 }
 
+/**
+ * Like `request`, but for multipart/form-data bodies (file uploads). Skips
+ * the JSON Content-Type header so the browser can set its own boundary.
+ * PUT is spoofed via a "_method" field since browsers/fetch can't send a
+ * real multipart PUT body reliably — Laravel's method-spoofing middleware
+ * reads "_method" from POST bodies (form or multipart) and routes it as PUT.
+ */
+async function requestForm<T>(path: string, formData: FormData, method: 'POST' | 'PUT' = 'POST'): Promise<T> {
+  const token = getToken();
+
+  if (method === 'PUT') {
+    formData.append('_method', 'PUT');
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (response.status === 401) {
+    clearToken();
+    window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    throw new Error('Your session has expired. Please log in again.');
+  }
+
+  const body = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message =
+      body?.message ||
+      (body?.errors && (Object.values(body.errors)[0] as string[])?.[0]) ||
+      'Something went wrong. Please try again.';
+    throw new Error(message);
+  }
+
+  return body as T;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data?: unknown) =>
@@ -58,6 +100,8 @@ export const api = {
   patch: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'PATCH', body: data ? JSON.stringify(data) : undefined }),
   del: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData, 'POST'),
+  putForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData, 'PUT'),
 };
 
 export interface AdminUser {
@@ -170,4 +214,66 @@ export function updateService(
 
 export function deleteService(id: number) {
   return api.del<{ message: string }>(`/admin/services/${id}`);
+}
+
+// --- Products ---
+
+export interface ProductCategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  sort_order: number;
+}
+
+export interface Product {
+  id: number;
+  slug: string;
+  name: string;
+  category: string;
+  price: number;
+  compare_at_price: number | null;
+  description: string | null;
+  details: string[];
+  images: string[];
+  in_stock: boolean;
+  stock_count: number;
+  rating: string | null;
+  review_count: number;
+  best_seller: boolean;
+  is_new: boolean;
+}
+
+export interface PaginatedProducts {
+  data: Product[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchProducts(category?: string): Promise<{ products: PaginatedProducts; categories: ProductCategoryItem[] }> {
+  return api.get(`/admin/products${category ? `?category=${encodeURIComponent(category)}` : ''}`);
+}
+
+export function createProduct(formData: FormData) {
+  return api.postForm<{ product: Product; message: string }>('/admin/products', formData);
+}
+
+export function updateProduct(id: number, formData: FormData) {
+  return api.putForm<{ product: Product; message: string }>(`/admin/products/${id}`, formData);
+}
+
+export function deleteProduct(id: number) {
+  return api.del<{ message: string }>(`/admin/products/${id}`);
+}
+
+export function createProductCategory(name: string) {
+  return api.post<{ category: ProductCategoryItem; message: string }>('/admin/products/categories', { name });
+}
+
+export function updateProductCategory(id: number, name: string) {
+  return api.put<{ category: ProductCategoryItem; message: string }>(`/admin/products/categories/${id}`, { name });
+}
+
+export function deleteProductCategory(id: number) {
+  return api.del<{ message: string }>(`/admin/products/categories/${id}`);
 }
