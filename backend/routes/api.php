@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\GalleryCategoryController as AdminGalleryCategoryController;
@@ -79,6 +80,11 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::post('gallery/categories', [AdminGalleryCategoryController::class, 'store'])->name('gallery.categories.store');
             Route::put('gallery/categories/{galleryCategory}', [AdminGalleryCategoryController::class, 'update'])->name('gallery.categories.update');
             Route::delete('gallery/categories/{galleryCategory}', [AdminGalleryCategoryController::class, 'destroy'])->name('gallery.categories.destroy');
+
+            // Appointments
+            Route::get('appointments', [AdminAppointmentController::class, 'index'])->name('appointments.index');
+            Route::patch('appointments/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.status');
+            Route::delete('appointments/{appointment}', [AdminAppointmentController::class, 'destroy'])->name('appointments.destroy');
         });
     });
 });

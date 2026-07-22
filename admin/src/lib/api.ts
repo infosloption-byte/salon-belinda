@@ -325,3 +325,40 @@ export function updateGalleryCategory(id: number, name: string) {
 export function deleteGalleryCategory(id: number) {
   return api.del<{ message: string }>(`/admin/gallery/categories/${id}`);
 }
+
+// --- Appointments ---
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+
+export interface Appointment {
+  id: number;
+  service_id: number | null;
+  service_name: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  date: string;
+  time: string;
+  notes: string | null;
+  status: AppointmentStatus;
+}
+
+export interface PaginatedAppointments {
+  data: Appointment[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchAppointments(params?: { status?: string; q?: string; date_from?: string; date_to?: string }): Promise<{ appointments: PaginatedAppointments }> {
+  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
+  return api.get(`/admin/appointments${query ? `?${query}` : ''}`);
+}
+
+export function updateAppointmentStatus(id: number, status: AppointmentStatus) {
+  return api.patch<{ appointment: Appointment; message: string }>(`/admin/appointments/${id}/status`, { status });
+}
+
+export function deleteAppointment(id: number) {
+  return api.del<{ message: string }>(`/admin/appointments/${id}`);
+}
