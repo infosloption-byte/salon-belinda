@@ -28,7 +28,7 @@ route with no page swapped in, is still in progress.
 | Dashboard | ✅ | ✅ | ✅ | **Done** |
 | Services (+ categories) | ✅ | ✅ | ✅ | **Done** |
 | Products (+ categories) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
-| Gallery (+ categories) | ❌ | ❌ | ❌ (ComingSoon) | Not started |
+| Gallery (+ categories) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Wedding Albums | ❌ | ❌ | ❌ (ComingSoon) | Not started — was missing from Sidebar entirely until 2026-07-23, added as placeholder |
 | Appointments | ❌ | ❌ | ❌ (ComingSoon) | Not started |
 | Jobs (daily ops: items/payments/receipt) | ❌ | ❌ | ❌ (ComingSoon) | Not started — was missing from Sidebar entirely until 2026-07-23, added as placeholder. Largest single module (job items, payments, PDF receipt) |

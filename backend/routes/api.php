@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\GalleryCategoryController as AdminGalleryCategoryController;
+use App\Http\Controllers\Api\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\Api\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
@@ -69,6 +71,14 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::post('products/categories', [AdminProductCategoryController::class, 'store'])->name('products.categories.store');
             Route::put('products/categories/{productCategory}', [AdminProductCategoryController::class, 'update'])->name('products.categories.update');
             Route::delete('products/categories/{productCategory}', [AdminProductCategoryController::class, 'destroy'])->name('products.categories.destroy');
+
+            // Gallery
+            Route::get('gallery', [AdminGalleryController::class, 'index'])->name('gallery.index');
+            Route::post('gallery', [AdminGalleryController::class, 'store'])->name('gallery.store');
+            Route::delete('gallery/{galleryItem}', [AdminGalleryController::class, 'destroy'])->name('gallery.destroy');
+            Route::post('gallery/categories', [AdminGalleryCategoryController::class, 'store'])->name('gallery.categories.store');
+            Route::put('gallery/categories/{galleryCategory}', [AdminGalleryCategoryController::class, 'update'])->name('gallery.categories.update');
+            Route::delete('gallery/categories/{galleryCategory}', [AdminGalleryCategoryController::class, 'destroy'])->name('gallery.categories.destroy');
         });
     });
 });

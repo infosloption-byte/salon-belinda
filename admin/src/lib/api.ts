@@ -277,3 +277,51 @@ export function updateProductCategory(id: number, name: string) {
 export function deleteProductCategory(id: number) {
   return api.del<{ message: string }>(`/admin/products/categories/${id}`);
 }
+
+// --- Gallery ---
+
+export interface GalleryCategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  sort_order: number;
+}
+
+export interface GalleryItem {
+  id: number;
+  category: string;
+  title: string;
+  image: string;
+  sort_order: number;
+}
+
+export interface PaginatedGalleryItems {
+  data: GalleryItem[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchGallery(): Promise<{ items: PaginatedGalleryItems; categories: GalleryCategoryItem[] }> {
+  return api.get('/admin/gallery');
+}
+
+export function createGalleryItem(formData: FormData) {
+  return api.postForm<{ item: GalleryItem; message: string }>('/admin/gallery', formData);
+}
+
+export function deleteGalleryItem(id: number) {
+  return api.del<{ message: string }>(`/admin/gallery/${id}`);
+}
+
+export function createGalleryCategory(name: string) {
+  return api.post<{ category: GalleryCategoryItem; message: string }>('/admin/gallery/categories', { name });
+}
+
+export function updateGalleryCategory(id: number, name: string) {
+  return api.put<{ category: GalleryCategoryItem; message: string }>(`/admin/gallery/categories/${id}`, { name });
+}
+
+export function deleteGalleryCategory(id: number) {
+  return api.del<{ message: string }>(`/admin/gallery/categories/${id}`);
+}
