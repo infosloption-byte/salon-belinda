@@ -17,12 +17,8 @@ import { MyAccount } from './pages/MyAccount';
 import { Orders } from './pages/Orders';
 import { Testimonials } from './pages/Testimonials';
 import { ContactMessages } from './pages/ContactMessages';
-import { ComingSoon } from './pages/ComingSoon';
-
-const pendingModules: { path: string; title: string }[] = [
-  { path: 'reports', title: 'Reports' },
-  { path: 'activity-log', title: 'Activity Log' },
-];
+import { Reports } from './pages/Reports';
+import { ActivityLog } from './pages/ActivityLog';
 
 export default function App() {
   return (
@@ -51,9 +47,8 @@ export default function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="testimonials" element={<Testimonials />} />
           <Route path="messages" element={<ContactMessages />} />
-          {pendingModules.map(({ path, title }) => (
-            <Route key={path} path={path} element={<ComingSoon title={title} />} />
-          ))}
+          <Route path="reports" element={<Reports />} />
+          <Route path="activity-log" element={<ActivityLog />} />
         </Route>
       </Routes>
     </AuthProvider>

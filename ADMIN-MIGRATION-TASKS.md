@@ -37,14 +37,14 @@ route with no page swapped in, is still in progress.
 | Orders (+ invoice PDF) | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
 | Testimonials | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
 | Contact Messages | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
-| Reports (×6: revenue, best-sellers, low-stock, appointments, outstanding-balances, staff-commission) | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. `staff-commission` lives in the shared `staff_or_admin` route group (staff can pull their own); the other 5 are admin-only. React page pending |
-| Activity Log | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
+| Reports (×6: revenue, best-sellers, low-stock, appointments, outstanding-balances, staff-commission) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 (React page 2026-07-24). `staff-commission` lives in the shared `staff_or_admin` route group (staff see only their own row/detail); the other 5 are admin-only and hidden client-side for staff logins. |
+| Activity Log | ✅ | ✅ | ✅ | **Done** — 2026-07-23 (React page 2026-07-24). Admin-only; page shows a plain message for non-admin logins as a client-side guard alongside the 403 the API already returns. |
 | Users | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
 | My Account (self-service, every role) | ✅ | ✅ | ✅ | **Done** — 2026-07-24. Added sidebar entry + page — wasn't in the nav at all before |
 
-**Step 1 (People & Access) and Step 2 (Commerce Operations — Orders, Testimonials, Contact Messages) complete as of 2026-07-24.** Remaining: Step 3 (Reports ×6, Activity Log) — the last two modules.
+**Step 1 (People & Access), Step 2 (Commerce Operations), and Step 3 (Reports ×6, Activity Log) are all complete as of 2026-07-24.** Every module in the table above is now fully ported — API controller, route, and React page.
 
-**All 17 Blade admin controllers are now ported to `Api/Admin/*` JSON controllers with routes wired.** What's left is entirely on the React side: 8 pages (Customers, Staff, Orders, Testimonials, Contact Messages, Reports, Activity Log, Users) plus My Account (new nav entry).
+**All 17 Blade admin controllers are now ported to `Api/Admin/*` JSON controllers with routes wired, and every React page has replaced its `ComingSoon` placeholder.** Next up is the cutover housekeeping below (deleting the old Blade admin controllers/views and trimming `routes/web.php`).
 
 ## Cutover housekeeping (do once every module above is done)
 

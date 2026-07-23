@@ -882,3 +882,154 @@ export function markMessageReplied(id: number) {
 export function deleteContactMessage(id: number) {
   return api.del<{ message: string }>(`/admin/messages/${id}`);
 }
+
+// --- Reports ---
+
+export interface DateRangeParams {
+  date_from?: string;
+  date_to?: string;
+}
+
+function toQuery<T extends object>(params?: T): string {
+  if (!params) return '';
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== '') as [string, string][]
+  ).toString();
+  return query ? `?${query}` : '';
+}
+
+export interface RevenueReportRow {
+  day: string;
+  shop: number;
+  salon: number;
+  total: number;
+  orders_count: number;
+  payments_count: number;
+}
+
+export interface RevenueReport {
+  combined: RevenueReportRow[];
+  totalRevenue: number;
+  totalShopRevenue: number;
+  totalSalonRevenue: number;
+  totalOrders: number;
+  from: string;
+  to: string;
+}
+
+export function fetchRevenueReport(params?: DateRangeParams): Promise<RevenueReport> {
+  return api.get(`/admin/reports/revenue${toQuery(params)}`);
+}
+
+export interface BestSellerRow {
+  product_id: number | null;
+  product_name: string;
+  units_sold: number;
+  revenue: number;
+}
+
+export function fetchBestSellersReport(
+  params?: DateRangeParams
+): Promise<{ bestSellers: BestSellerRow[]; from: string; to: string }> {
+  return api.get(`/admin/reports/best-sellers${toQuery(params)}`);
+}
+
+export function fetchLowStockReport(): Promise<{ products: Product[] }> {
+  return api.get('/admin/reports/low-stock');
+}
+
+export interface AppointmentsByServiceRow {
+  service_name: string;
+  total: number;
+}
+
+export interface AppointmentsByStatusRow {
+  status: string;
+  total: number;
+}
+
+export function fetchAppointmentsReport(
+  params?: DateRangeParams
+): Promise<{ byService: AppointmentsByServiceRow[]; byStatus: AppointmentsByStatusRow[]; from: string; to: string }> {
+  return api.get(`/admin/reports/appointments${toQuery(params)}`);
+}
+
+export interface OutstandingBalanceJob {
+  id: number;
+  job_date: string;
+  status: string;
+  subtotal: number;
+  total_paid: number;
+  balance_due: number;
+  customer?: { id: number; name: string; phone: string };
+}
+
+export function fetchOutstandingBalancesReport(): Promise<{ jobs: OutstandingBalanceJob[]; totalOutstanding: number }> {
+  return api.get('/admin/reports/outstanding-balances');
+}
+
+export interface StaffCommissionSummaryRow {
+  staff_id: number;
+  name: string;
+  role_title: string | null;
+  services_count: number;
+  revenue: number;
+  commission: number;
+}
+
+export interface StaffCommissionDetailRow {
+  id: number;
+  job_id: number;
+  service_name: string;
+  final_price: number;
+  commission_amount: number;
+  job?: { job_date: string; customer?: { name: string } };
+}
+
+export interface StaffCommissionReport {
+  summary: StaffCommissionSummaryRow[];
+  detail: StaffCommissionDetailRow[] | null;
+  staffId: number | null;
+  staffList: Staff[];
+  from: string;
+  to: string;
+  isAdmin: boolean;
+}
+
+export function fetchStaffCommissionReport(
+  params?: DateRangeParams & { staff_id?: number | string }
+): Promise<StaffCommissionReport> {
+  return api.get(`/admin/reports/staff-commission${toQuery(params)}`);
+}
+
+// --- Activity Log ---
+
+export interface ActivityLogEntry {
+  id: number;
+  action: string;
+  description: string | null;
+  created_at: string;
+  user?: { id: number; name: string } | null;
+}
+
+export interface PaginatedActivityLogs {
+  data: ActivityLogEntry[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export interface ActivityLogUser {
+  id: number;
+  name: string;
+}
+
+export function fetchActivityLog(params?: {
+  user_id?: number | string;
+  action?: string;
+  date_from?: string;
+  date_to?: string;
+  page?: number;
+}): Promise<{ logs: PaginatedActivityLogs; users: ActivityLogUser[]; actions: string[] }> {
+  return api.get(`/admin/activity-log${toQuery(params)}`);
+}
