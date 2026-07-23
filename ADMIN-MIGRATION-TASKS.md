@@ -32,15 +32,17 @@ route with no page swapped in, is still in progress.
 | Wedding Albums | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Appointments | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Jobs (daily ops: items/payments/receipt) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
-| Staff | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Customers | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Orders (+ invoice PDF) | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Testimonials | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Contact Messages | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Reports (×6: revenue, best-sellers, low-stock, appointments, outstanding-balances, staff-commission) | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Activity Log | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| Users (admin/staff account mgmt) | ❌ | ❌ | ❌ (ComingSoon) | Not started |
-| My Account (self-service, every role) | ❌ | ❌ | — (not yet in nav) | Not started |
+| Customers | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
+| Staff | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
+| Orders (+ invoice PDF) | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
+| Testimonials | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
+| Contact Messages | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. API path is `/api/admin/messages` (not `contact-messages` like the Blade routes — matches the sidebar's `/messages` path). React page pending |
+| Reports (×6: revenue, best-sellers, low-stock, appointments, outstanding-balances, staff-commission) | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. `staff-commission` lives in the shared `staff_or_admin` route group (staff can pull their own); the other 5 are admin-only. React page pending |
+| Activity Log | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
+| Users | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. Added a `GET /users/unlinked-staff` endpoint that didn't exist as a separate route in Blade (it was baked into the create/edit view data) — the React form needs it to populate the staff-link dropdown. React page pending |
+| My Account (self-service, every role) | ✅ | ✅ | — (not yet in nav) | Backend done — 2026-07-23 (`GET/PUT /api/admin/account`). Needs a sidebar entry + page — wasn't in the nav at all before |
+
+**All 17 Blade admin controllers are now ported to `Api/Admin/*` JSON controllers with routes wired.** What's left is entirely on the React side: 8 pages (Customers, Staff, Orders, Testimonials, Contact Messages, Reports, Activity Log, Users) plus My Account (new nav entry).
 
 ## Cutover housekeeping (do once every module above is done)
 
@@ -49,7 +51,7 @@ route with no page swapped in, is still in progress.
 - [ ] Empty out `routes/web.php` down to a health check
 - [ ] Remove `staff_or_admin`/`admin` session-middleware usage from `routes/web.php` (moot once web.php is emptied)
 
-## Suggested build order (remaining)
+## Suggested build order (remaining — React pages only, backend is 100% done)
 
 Staff → Customers → Orders → Testimonials → Contact Messages → Reports →
 Activity Log → Users → My Account

@@ -1,15 +1,23 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\ActivityLogController as AdminActivityLogController;
 use App\Http\Controllers\Api\Admin\AlbumController as AdminAlbumController;
 use App\Http\Controllers\Api\Admin\AppointmentController as AdminAppointmentController;
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Api\Admin\ContactMessageController as AdminContactMessageController;
+use App\Http\Controllers\Api\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\GalleryCategoryController as AdminGalleryCategoryController;
 use App\Http\Controllers\Api\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\Api\Admin\JobController as AdminJobController;
+use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Api\Admin\StaffController as AdminStaffController;
+use App\Http\Controllers\Api\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AlbumController;
 use App\Http\Controllers\Api\ContactMessageController;
@@ -68,6 +76,23 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::delete('jobs/{job}/payments/{payment}', [AdminJobController::class, 'removePayment'])->name('jobs.payments.destroy');
             Route::get('jobs/{job}/receipt', [AdminJobController::class, 'receiptPreview'])->name('jobs.receipt.preview');
             Route::get('jobs/{job}/receipt/download', [AdminJobController::class, 'receiptDownload'])->name('jobs.receipt.download');
+
+            // Customers — shared: staff need this to run the Jobs screen,
+            // but per-customer job/revenue visibility is still scoped
+            // inside the controller for non-admin logins.
+            Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+            Route::post('customers', [AdminCustomerController::class, 'store'])->name('customers.store');
+            Route::get('customers/{customer}', [AdminCustomerController::class, 'show'])->name('customers.show');
+            Route::put('customers/{customer}', [AdminCustomerController::class, 'update'])->name('customers.update');
+            Route::delete('customers/{customer}', [AdminCustomerController::class, 'destroy'])->name('customers.destroy');
+
+            // My Account — every logged-in user (admin or staff) manages their own login here.
+            Route::get('account', [AdminUserController::class, 'account'])->name('account');
+            Route::put('account', [AdminUserController::class, 'updateAccount'])->name('account.update');
+
+            // Staff commission — shared route, but the controller scopes results
+            // to "only their own" for staff logins and "all staff" for admins.
+            Route::get('reports/staff-commission', [AdminReportController::class, 'staffCommission'])->name('reports.staffCommission');
         });
 
         // Admin-only area.
@@ -111,6 +136,53 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::put('albums/{album}', [AdminAlbumController::class, 'update'])->name('albums.update');
             Route::delete('albums/{album}', [AdminAlbumController::class, 'destroy'])->name('albums.destroy');
             Route::delete('albums/{album}/photos/{photo}', [AdminAlbumController::class, 'destroyPhoto'])->name('albums.photos.destroy');
+
+            // Staff profiles
+            Route::get('staff', [AdminStaffController::class, 'index'])->name('staff.index');
+            Route::post('staff', [AdminStaffController::class, 'store'])->name('staff.store');
+            Route::put('staff/{staff}', [AdminStaffController::class, 'update'])->name('staff.update');
+            Route::delete('staff/{staff}', [AdminStaffController::class, 'destroy'])->name('staff.destroy');
+            Route::post('staff/{staff}/toggle-active', [AdminStaffController::class, 'toggleActive'])->name('staff.toggleActive');
+
+            // Testimonials
+            Route::get('testimonials', [AdminTestimonialController::class, 'index'])->name('testimonials.index');
+            Route::patch('testimonials/{testimonial}/status', [AdminTestimonialController::class, 'updateStatus'])->name('testimonials.status');
+            Route::delete('testimonials/{testimonial}', [AdminTestimonialController::class, 'destroy'])->name('testimonials.destroy');
+
+            // Orders (PDF invoice preview/download need the Bearer token —
+            // fetch as a blob client-side, same pattern as the Jobs receipt).
+            Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+            Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+            Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
+            Route::post('orders/{order}/mark-paid', [AdminOrderController::class, 'markPaid'])->name('orders.markPaid');
+            Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoicePreview'])->name('orders.invoice.preview');
+            Route::get('orders/{order}/invoice/download', [AdminOrderController::class, 'invoiceDownload'])->name('orders.invoice.download');
+
+            // Contact messages
+            Route::get('messages', [AdminContactMessageController::class, 'index'])->name('messages.index');
+            Route::post('messages/{contactMessage}/read', [AdminContactMessageController::class, 'markRead'])->name('messages.read');
+            Route::post('messages/{contactMessage}/replied', [AdminContactMessageController::class, 'markReplied'])->name('messages.replied');
+            Route::delete('messages/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->name('messages.destroy');
+
+            // Reports (staff-commission lives in the shared group above —
+            // it's the one report staff can also pull, scoped to themselves).
+            Route::get('reports/revenue', [AdminReportController::class, 'revenue'])->name('reports.revenue');
+            Route::get('reports/best-sellers', [AdminReportController::class, 'bestSellers'])->name('reports.bestSellers');
+            Route::get('reports/low-stock', [AdminReportController::class, 'lowStock'])->name('reports.lowStock');
+            Route::get('reports/appointments', [AdminReportController::class, 'appointments'])->name('reports.appointments');
+            Route::get('reports/outstanding-balances', [AdminReportController::class, 'outstandingBalances'])->name('reports.outstandingBalances');
+
+            // Activity Log
+            Route::get('activity-log', [AdminActivityLogController::class, 'index'])->name('activity-log.index');
+
+            // Users — managing other admin/staff accounts (My Account,
+            // above, is separate and open to every role).
+            Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+            Route::get('users/unlinked-staff', [AdminUserController::class, 'unlinkedStaff'])->name('users.unlinkedStaff');
+            Route::post('users', [AdminUserController::class, 'store'])->name('users.store');
+            Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+            Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+            Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         });
     });
 });
