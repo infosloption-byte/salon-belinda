@@ -34,15 +34,15 @@ route with no page swapped in, is still in progress.
 | Jobs (daily ops: items/payments/receipt) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Customers | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Staff | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
-| Orders (+ invoice PDF) | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
-| Testimonials | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
-| Contact Messages | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. API path is `/api/admin/messages` (not `contact-messages` like the Blade routes — matches the sidebar's `/messages` path). React page pending |
+| Orders (+ invoice PDF) | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
+| Testimonials | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
+| Contact Messages | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
 | Reports (×6: revenue, best-sellers, low-stock, appointments, outstanding-balances, staff-commission) | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. `staff-commission` lives in the shared `staff_or_admin` route group (staff can pull their own); the other 5 are admin-only. React page pending |
 | Activity Log | ✅ | ✅ | ❌ (ComingSoon) | Backend done — 2026-07-23. React page pending |
 | Users | ✅ | ✅ | ✅ | **Done** — 2026-07-24 |
 | My Account (self-service, every role) | ✅ | ✅ | ✅ | **Done** — 2026-07-24. Added sidebar entry + page — wasn't in the nav at all before |
 
-**Step 1 (People & Access — Staff, Customers, Users, My Account) complete as of 2026-07-24.** Remaining: Step 2 (Orders, Testimonials, Contact Messages) and Step 3 (Reports, Activity Log).
+**Step 1 (People & Access) and Step 2 (Commerce Operations — Orders, Testimonials, Contact Messages) complete as of 2026-07-24.** Remaining: Step 3 (Reports ×6, Activity Log) — the last two modules.
 
 **All 17 Blade admin controllers are now ported to `Api/Admin/*` JSON controllers with routes wired.** What's left is entirely on the React side: 8 pages (Customers, Staff, Orders, Testimonials, Contact Messages, Reports, Activity Log, Users) plus My Account (new nav entry).
 

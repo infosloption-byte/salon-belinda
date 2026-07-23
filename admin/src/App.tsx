@@ -14,12 +14,12 @@ import { Staff } from './pages/Staff';
 import { Customers } from './pages/Customers';
 import { Users } from './pages/Users';
 import { MyAccount } from './pages/MyAccount';
+import { Orders } from './pages/Orders';
+import { Testimonials } from './pages/Testimonials';
+import { ContactMessages } from './pages/ContactMessages';
 import { ComingSoon } from './pages/ComingSoon';
 
 const pendingModules: { path: string; title: string }[] = [
-  { path: 'orders', title: 'Orders' },
-  { path: 'testimonials', title: 'Testimonials' },
-  { path: 'messages', title: 'Contact Messages' },
   { path: 'reports', title: 'Reports' },
   { path: 'activity-log', title: 'Activity Log' },
 ];
@@ -48,6 +48,9 @@ export default function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="users" element={<Users />} />
           <Route path="account" element={<MyAccount />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="testimonials" element={<Testimonials />} />
+          <Route path="messages" element={<ContactMessages />} />
           {pendingModules.map(({ path, title }) => (
             <Route key={path} path={path} element={<ComingSoon title={title} />} />
           ))}

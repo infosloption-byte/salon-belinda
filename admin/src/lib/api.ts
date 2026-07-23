@@ -723,3 +723,162 @@ export function updateUser(id: number, data: UserFormData) {
 export function deleteUser(id: number) {
   return api.del<{ message: string }>(`/admin/users/${id}`);
 }
+
+// --- Orders ---
+
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
+
+export interface OrderItem {
+  id: number;
+  product_id: number | null;
+  product_name: string;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+}
+
+export interface Order {
+  id: number;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  fulfilment_method: 'delivery' | 'pickup';
+  address: string | null;
+  city: string | null;
+  notes: string | null;
+  payment_method: 'cod' | 'bank' | 'card';
+  payment_status: PaymentStatus;
+  transaction_id: string | null;
+  subtotal: number;
+  delivery_fee: number;
+  total: number;
+  status: OrderStatus;
+  created_at: string;
+  items?: OrderItem[];
+}
+
+export interface PaginatedOrders {
+  data: Order[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchOrders(params?: {
+  status?: string;
+  payment_status?: string;
+  q?: string;
+  date_from?: string;
+  date_to?: string;
+}): Promise<{ orders: PaginatedOrders }> {
+  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
+  return api.get(`/admin/orders${query ? `?${query}` : ''}`);
+}
+
+export function fetchOrder(id: number): Promise<{ order: Order }> {
+  return api.get(`/admin/orders/${id}`);
+}
+
+export function updateOrderStatus(id: number, status: OrderStatus) {
+  return api.patch<{ order: Order; message: string }>(`/admin/orders/${id}/status`, { status });
+}
+
+export function markOrderPaid(id: number) {
+  return api.post<{ order: Order; message: string }>(`/admin/orders/${id}/mark-paid`);
+}
+
+async function fetchOrderInvoiceBlob(orderId: number, download: boolean): Promise<string> {
+  const token = getToken();
+  const response = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/invoice${download ? '/download' : ''}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) throw new Error('Failed to load invoice PDF.');
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
+
+export function openOrderInvoice(orderId: number) {
+  fetchOrderInvoiceBlob(orderId, false).then((url) => window.open(url, '_blank'));
+}
+
+export function downloadOrderInvoice(orderId: number, orderNumber: string) {
+  fetchOrderInvoiceBlob(orderId, true).then((url) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${orderNumber}.pdf`;
+    a.click();
+  });
+}
+
+// --- Testimonials ---
+
+export type TestimonialStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Testimonial {
+  id: number;
+  name: string;
+  service: string | null;
+  rating: number;
+  message: string;
+  status: TestimonialStatus;
+  created_at: string;
+}
+
+export interface PaginatedTestimonials {
+  data: Testimonial[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchTestimonials(status?: string): Promise<{ testimonials: PaginatedTestimonials }> {
+  const query = status ? `?status=${status}` : '';
+  return api.get(`/admin/testimonials${query}`);
+}
+
+export function updateTestimonialStatus(id: number, status: TestimonialStatus) {
+  return api.patch<{ testimonial: Testimonial; message: string }>(`/admin/testimonials/${id}/status`, { status });
+}
+
+export function deleteTestimonial(id: number) {
+  return api.del<{ message: string }>(`/admin/testimonials/${id}`);
+}
+
+// --- Contact Messages ---
+
+export type ContactMessageStatus = 'new' | 'read' | 'replied';
+
+export interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  message: string;
+  status: ContactMessageStatus;
+  created_at: string;
+}
+
+export interface PaginatedContactMessages {
+  data: ContactMessage[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchContactMessages(): Promise<{ messages: PaginatedContactMessages }> {
+  return api.get('/admin/messages');
+}
+
+export function markMessageRead(id: number) {
+  return api.post<{ contactMessage: ContactMessage; message: string }>(`/admin/messages/${id}/read`);
+}
+
+export function markMessageReplied(id: number) {
+  return api.post<{ contactMessage: ContactMessage; message: string }>(`/admin/messages/${id}/replied`);
+}
+
+export function deleteContactMessage(id: number) {
+  return api.del<{ message: string }>(`/admin/messages/${id}`);
+}
