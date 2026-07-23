@@ -48,10 +48,12 @@ route with no page swapped in, is still in progress.
 
 ## Cutover housekeeping (do once every module above is done)
 
-- [x] `barryvdh/laravel-dompdf` — confirmed staying server-side; Jobs receipt (`Api/Admin/JobController::receiptPreview/receiptDownload`) already streams/downloads PDFs this way. Orders invoice still needs the same treatment once that module is ported.
-- [ ] Delete the 17 Blade `Admin/*` controllers and 44 Blade views under `resources/views/admin/*`
-- [ ] Empty out `routes/web.php` down to a health check
-- [ ] Remove `staff_or_admin`/`admin` session-middleware usage from `routes/web.php` (moot once web.php is emptied)
+- [x] `barryvdh/laravel-dompdf` — confirmed staying server-side; Jobs receipt (`Api/Admin/JobController::receiptPreview/receiptDownload`) and Orders invoice (`Api/Admin/OrderController::invoicePreview/invoiceDownload`) both stream/download via `Pdf::loadView()`.
+- [x] Delete the 17 Blade `Admin/*` controllers and 44 Blade views under `resources/views/admin/*` — done 2026-07-23. Kept only `resources/views/admin/orders/invoice.blade.php` and `resources/views/admin/jobs/receipt.blade.php`, since the new API controllers still render those two through `Pdf::loadView()`.
+- [x] Empty out `routes/web.php` down to a health check — done 2026-07-23. Now just `/` and `/up` JSON health endpoints; all admin traffic goes through `/api/admin/*`.
+- [x] Remove `staff_or_admin`/`admin` session-middleware usage from `routes/web.php` — done 2026-07-23 (moot now that web.php is emptied). The middleware aliases themselves stay registered in `bootstrap/app.php` since `routes/api.php` still uses them for the token-auth admin API.
+
+**Phase 2 is fully complete as of 2026-07-23: all 17 modules ported, old Blade admin controllers/views deleted, `web.php` cut over to a health check.**
 
 ## Suggested build order (remaining — React pages only, backend is 100% done)
 
