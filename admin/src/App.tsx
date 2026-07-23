@@ -10,17 +10,18 @@ import { Gallery } from './pages/Gallery';
 import { Appointments } from './pages/Appointments';
 import { Albums } from './pages/Albums';
 import { Jobs } from './pages/Jobs';
+import { Staff } from './pages/Staff';
+import { Customers } from './pages/Customers';
+import { Users } from './pages/Users';
+import { MyAccount } from './pages/MyAccount';
 import { ComingSoon } from './pages/ComingSoon';
 
 const pendingModules: { path: string; title: string }[] = [
-  { path: 'staff', title: 'Staff' },
-  { path: 'customers', title: 'Customers' },
   { path: 'orders', title: 'Orders' },
   { path: 'testimonials', title: 'Testimonials' },
   { path: 'messages', title: 'Contact Messages' },
   { path: 'reports', title: 'Reports' },
   { path: 'activity-log', title: 'Activity Log' },
-  { path: 'users', title: 'Users' },
 ];
 
 export default function App() {
@@ -43,6 +44,10 @@ export default function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="albums" element={<Albums />} />
           <Route path="jobs" element={<Jobs />} />
+          <Route path="staff" element={<Staff />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="users" element={<Users />} />
+          <Route path="account" element={<MyAccount />} />
           {pendingModules.map(({ path, title }) => (
             <Route key={path} path={path} element={<ComingSoon title={title} />} />
           ))}

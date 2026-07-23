@@ -15,6 +15,7 @@ import {
   BarChart3,
   History,
   UserCog,
+  UserCircle,
 } from 'lucide-react';
 import { site } from '../../data/site';
 
@@ -34,6 +35,7 @@ const navItems = [
   { to: '/reports', label: 'Reports', icon: BarChart3 },
   { to: '/activity-log', label: 'Activity Log', icon: History },
   { to: '/users', label: 'Users', icon: UserCog },
+  { to: '/account', label: 'My Account', icon: UserCircle },
 ];
 
 export function Sidebar() {

@@ -577,3 +577,149 @@ export function downloadJobReceipt(jobId: number) {
     a.click();
   });
 }
+
+// --- Staff ---
+
+export interface Staff {
+  id: number;
+  name: string;
+  role_title: string | null;
+  phone: string | null;
+  commission_percent: number;
+  is_active: boolean;
+  job_items_count?: number;
+  user_count?: number;
+}
+
+export interface PaginatedStaff {
+  data: Staff[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchStaff(params?: { status?: string; q?: string }): Promise<{ staff: PaginatedStaff }> {
+  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
+  return api.get(`/admin/staff${query ? `?${query}` : ''}`);
+}
+
+export function createStaff(data: { name: string; role_title?: string; phone?: string; commission_percent: number }) {
+  return api.post<{ staffMember: Staff; message: string }>('/admin/staff', data);
+}
+
+export function updateStaff(id: number, data: { name: string; role_title?: string; phone?: string; commission_percent: number }) {
+  return api.put<{ staffMember: Staff; message: string }>(`/admin/staff/${id}`, data);
+}
+
+export function deleteStaff(id: number) {
+  return api.del<{ message: string }>(`/admin/staff/${id}`);
+}
+
+export function toggleStaffActive(id: number) {
+  return api.post<{ staffMember: Staff; message: string }>(`/admin/staff/${id}/toggle-active`);
+}
+
+// --- Customers ---
+
+export interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  email: string | null;
+  notes: string | null;
+  jobs_count?: number;
+}
+
+export interface CustomerJob {
+  id: number;
+  job_date: string;
+  status: string;
+  total_paid: number;
+}
+
+export interface PaginatedCustomers {
+  data: Customer[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchCustomers(q?: string): Promise<{ customers: PaginatedCustomers; isAdmin: boolean }> {
+  const query = q ? `?q=${encodeURIComponent(q)}` : '';
+  return api.get(`/admin/customers${query}`);
+}
+
+export function fetchCustomer(id: number): Promise<{ customer: Customer; jobs: CustomerJob[]; visitCount: number; totalSpent: number }> {
+  return api.get(`/admin/customers/${id}`);
+}
+
+export function createCustomer(data: { name: string; phone: string; email?: string; notes?: string }) {
+  return api.post<{ customer: Customer; message: string }>('/admin/customers', data);
+}
+
+export function updateCustomer(id: number, data: { name: string; phone: string; email?: string; notes?: string }) {
+  return api.put<{ customer: Customer; message: string }>(`/admin/customers/${id}`, data);
+}
+
+export function deleteCustomer(id: number) {
+  return api.del<{ message: string }>(`/admin/customers/${id}`);
+}
+
+// --- Users (dashboard logins) + My Account ---
+
+export interface DashboardUser {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'staff';
+  staff_id: number | null;
+  staff?: Staff | null;
+}
+
+export function fetchAccount(): Promise<{ user: DashboardUser }> {
+  return api.get('/admin/account');
+}
+
+export function updateAccount(data: {
+  name: string;
+  email: string;
+  current_password?: string;
+  password?: string;
+  password_confirmation?: string;
+}) {
+  return api.put<{ user: DashboardUser; message: string }>('/admin/account', data);
+}
+
+export function fetchUsers(): Promise<{ users: DashboardUser[] }> {
+  return api.get('/admin/users');
+}
+
+export function fetchUnlinkedStaff(userId?: number): Promise<{ unlinkedStaff: Staff[] }> {
+  const query = userId ? `?user_id=${userId}` : '';
+  return api.get(`/admin/users/unlinked-staff${query}`);
+}
+
+export interface UserFormData {
+  name: string;
+  email: string;
+  password?: string;
+  password_confirmation?: string;
+  role: 'admin' | 'staff';
+  staff_id?: number | '';
+  new_staff_name?: string;
+  new_staff_role_title?: string;
+  new_staff_phone?: string;
+  new_staff_commission_percent?: number;
+}
+
+export function createUser(data: UserFormData) {
+  return api.post<{ user: DashboardUser; message: string }>('/admin/users', data);
+}
+
+export function updateUser(id: number, data: UserFormData) {
+  return api.put<{ user: DashboardUser; message: string }>(`/admin/users/${id}`, data);
+}
+
+export function deleteUser(id: number) {
+  return api.del<{ message: string }>(`/admin/users/${id}`);
+}
