@@ -31,7 +31,7 @@ route with no page swapped in, is still in progress.
 | Gallery (+ categories) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Wedding Albums | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Appointments | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
-| Jobs (daily ops: items/payments/receipt) | ❌ | ❌ | ❌ (ComingSoon) | Not started — was missing from Sidebar entirely until 2026-07-23, added as placeholder. Largest single module (job items, payments, PDF receipt) |
+| Jobs (daily ops: items/payments/receipt) | ✅ | ✅ | ✅ | **Done** — 2026-07-23 |
 | Staff | ❌ | ❌ | ❌ (ComingSoon) | Not started |
 | Customers | ❌ | ❌ | ❌ (ComingSoon) | Not started |
 | Orders (+ invoice PDF) | ❌ | ❌ | ❌ (ComingSoon) | Not started |
@@ -44,15 +44,15 @@ route with no page swapped in, is still in progress.
 
 ## Cutover housekeeping (do once every module above is done)
 
-- [ ] `barryvdh/laravel-dompdf` — confirm server-side PDF stays (Orders invoice, Jobs receipt); decision already made in SAAS-ROADMAP.md, just needs re-confirming once those two modules are ported
+- [x] `barryvdh/laravel-dompdf` — confirmed staying server-side; Jobs receipt (`Api/Admin/JobController::receiptPreview/receiptDownload`) already streams/downloads PDFs this way. Orders invoice still needs the same treatment once that module is ported.
 - [ ] Delete the 17 Blade `Admin/*` controllers and 44 Blade views under `resources/views/admin/*`
 - [ ] Empty out `routes/web.php` down to a health check
 - [ ] Remove `staff_or_admin`/`admin` session-middleware usage from `routes/web.php` (moot once web.php is emptied)
 
-## Suggested build order (unchanged from SAAS-ROADMAP.md, Jobs/Albums added)
+## Suggested build order (remaining)
 
-Gallery → Wedding Albums → Appointments → Jobs → Staff → Customers → Orders →
-Testimonials → Contact Messages → Reports → Activity Log → Users → My Account
+Staff → Customers → Orders → Testimonials → Contact Messages → Reports →
+Activity Log → Users → My Account
 
 ---
 

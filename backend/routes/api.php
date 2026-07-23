@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\GalleryCategoryController as AdminGalleryCategoryController;
 use App\Http\Controllers\Api\Admin\GalleryController as AdminGalleryController;
+use App\Http\Controllers\Api\Admin\JobController as AdminJobController;
 use App\Http\Controllers\Api\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
@@ -52,6 +53,21 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
         // Shared area: both admin and staff logins can reach these.
         Route::middleware('staff_or_admin')->group(function () {
             Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+            // Jobs (daily ops) — staff can reach these too; the controller
+            // itself scopes/authorizes per-job access for non-admin users.
+            Route::get('jobs', [AdminJobController::class, 'index'])->name('jobs.index');
+            Route::get('jobs/create', [AdminJobController::class, 'create'])->name('jobs.create');
+            Route::post('jobs/quick-register-customer', [AdminJobController::class, 'quickRegisterCustomer'])->name('jobs.quickRegisterCustomer');
+            Route::post('jobs', [AdminJobController::class, 'store'])->name('jobs.store');
+            Route::get('jobs/{job}', [AdminJobController::class, 'show'])->name('jobs.show');
+            Route::patch('jobs/{job}/status', [AdminJobController::class, 'updateStatus'])->name('jobs.status');
+            Route::post('jobs/{job}/items', [AdminJobController::class, 'addItem'])->name('jobs.items.store');
+            Route::delete('jobs/{job}/items/{item}', [AdminJobController::class, 'removeItem'])->name('jobs.items.destroy');
+            Route::post('jobs/{job}/payments', [AdminJobController::class, 'addPayment'])->name('jobs.payments.store');
+            Route::delete('jobs/{job}/payments/{payment}', [AdminJobController::class, 'removePayment'])->name('jobs.payments.destroy');
+            Route::get('jobs/{job}/receipt', [AdminJobController::class, 'receiptPreview'])->name('jobs.receipt.preview');
+            Route::get('jobs/{job}/receipt/download', [AdminJobController::class, 'receiptDownload'])->name('jobs.receipt.download');
         });
 
         // Admin-only area.

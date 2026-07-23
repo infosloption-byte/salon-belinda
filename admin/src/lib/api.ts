@@ -418,3 +418,162 @@ export function deleteAlbum(id: number) {
 export function deleteAlbumPhoto(albumId: number, photoId: number) {
   return api.del<{ message: string }>(`/admin/albums/${albumId}/photos/${photoId}`);
 }
+
+// --- Jobs (daily ops) ---
+
+export type JobStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+export type DiscountType = 'none' | 'percent' | 'fixed';
+export type PaymentMethod = 'cash' | 'card' | 'bank_transfer';
+
+export interface JobCustomer {
+  id: number;
+  name: string;
+  phone: string;
+  email: string | null;
+  notes: string | null;
+}
+
+export interface JobItemRow {
+  id: number;
+  job_id: number;
+  service_id: number | null;
+  service_name: string;
+  staff_id: number;
+  base_price: number;
+  discount_type: DiscountType;
+  discount_value: string;
+  final_price: number;
+  commission_percent: string;
+  commission_amount: number;
+  staff?: { id: number; name: string };
+}
+
+export interface JobPaymentRow {
+  id: number;
+  job_id: number;
+  amount: number;
+  method: PaymentMethod;
+  paid_at: string;
+  note: string | null;
+  recorded_by: number;
+  recordedBy?: { id: number; name: string };
+}
+
+export interface SalonJob {
+  id: number;
+  customer_id: number;
+  appointment_id: number | null;
+  status: JobStatus;
+  job_date: string;
+  notes: string | null;
+  subtotal: number;
+  total_paid: number;
+  balance_due: number;
+  customer?: JobCustomer;
+  items?: JobItemRow[];
+  payments?: JobPaymentRow[];
+}
+
+export interface PaginatedJobs {
+  data: SalonJob[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export interface ActiveStaffMember {
+  id: number;
+  name: string;
+  role_title: string | null;
+  commission_percent: string;
+  is_active: boolean;
+}
+
+export function fetchJobs(params?: { status?: string; q?: string; from?: string; to?: string }): Promise<{ jobs: PaginatedJobs }> {
+  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
+  return api.get(`/admin/jobs${query ? `?${query}` : ''}`);
+}
+
+export function fetchJobCreateData(params?: { q?: string; customer_id?: number; appointment_id?: number }): Promise<{
+  customers: JobCustomer[];
+  selectedCustomer: JobCustomer | null;
+  selectedCustomerVisitCount: number;
+  appointment: Appointment | null;
+}> {
+  const query = new URLSearchParams(
+    Object.entries(params ?? {}).filter(([, v]) => v).map(([k, v]) => [k, String(v)])
+  ).toString();
+  return api.get(`/admin/jobs/create${query ? `?${query}` : ''}`);
+}
+
+export function quickRegisterCustomer(data: { name: string; phone: string; email?: string }) {
+  return api.post<{ customer: JobCustomer; message: string }>('/admin/jobs/quick-register-customer', data);
+}
+
+export function createJob(data: { customer_id: number; appointment_id?: number; job_date: string; status: JobStatus; notes?: string }) {
+  return api.post<{ job: SalonJob; message: string }>('/admin/jobs', data);
+}
+
+export function fetchJob(id: number): Promise<{ job: SalonJob; serviceCategories: ServiceCategory[]; activeStaff: ActiveStaffMember[] }> {
+  return api.get(`/admin/jobs/${id}`);
+}
+
+export function addJobItem(jobId: number, data: {
+  service_id?: number;
+  custom_name?: string;
+  custom_price?: number;
+  staff_id: number;
+  discount_type: DiscountType;
+  discount_value?: number;
+}) {
+  return api.post<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/items`, data);
+}
+
+export function removeJobItem(jobId: number, itemId: number) {
+  return api.del<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/items/${itemId}`);
+}
+
+export function addJobPayment(jobId: number, data: { amount: number; method: PaymentMethod; paid_at?: string; note?: string }) {
+  return api.post<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/payments`, data);
+}
+
+export function removeJobPayment(jobId: number, paymentId: number) {
+  return api.del<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/payments/${paymentId}`);
+}
+
+export function updateJobStatus(jobId: number, status: JobStatus) {
+  return api.patch<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/status`, { status });
+}
+
+/**
+ * Receipt PDFs require the Bearer token, so a plain <a href> won't work —
+ * fetch as a blob (with auth header) and hand back an object URL the
+ * caller can window.open() or trigger a download from.
+ */
+async function fetchReceiptBlob(jobId: number, download: boolean): Promise<string> {
+  const token = getToken();
+  const response = await fetch(`${API_BASE_URL}/admin/jobs/${jobId}/receipt${download ? '/download' : ''}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to load receipt PDF.');
+  }
+
+  const blob = await response.blob();
+
+  return URL.createObjectURL(blob);
+}
+
+export function openJobReceipt(jobId: number) {
+  fetchReceiptBlob(jobId, false).then((url) => window.open(url, '_blank'));
+}
+
+export function downloadJobReceipt(jobId: number) {
+  fetchReceiptBlob(jobId, true).then((url) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `receipt-job-${jobId}.pdf`;
+    a.click();
+  });
+}
