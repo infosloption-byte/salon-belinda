@@ -68,6 +68,7 @@ export function Services() {
         name: String(form.get('name')),
         description: String(form.get('description') || ''),
         duration: String(form.get('duration') || ''),
+        duration_minutes: form.get('duration_minutes') ? Number(form.get('duration_minutes')) : undefined,
         price: Number(form.get('price')),
         price_prefix: String(form.get('price_prefix') || ''),
       });
@@ -86,6 +87,7 @@ export function Services() {
         name: String(form.get('name')),
         description: String(form.get('description') || ''),
         duration: String(form.get('duration') || ''),
+        duration_minutes: form.get('duration_minutes') ? Number(form.get('duration_minutes')) : undefined,
         price: Number(form.get('price')),
         price_prefix: String(form.get('price_prefix') || ''),
       });
@@ -174,13 +176,22 @@ export function Services() {
           {addingServiceTo === category.id && (
             <form
               onSubmit={(e) => handleAddService(e, category.id)}
-              className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-ink/10 p-4 sm:grid-cols-2 lg:grid-cols-5"
+              className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-ink/10 p-4 sm:grid-cols-2 lg:grid-cols-6"
             >
               <input name="name" required placeholder="Service name" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold lg:col-span-2" />
               <input name="duration" placeholder="Duration (e.g. 45 min)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+              <input
+                name="duration_minutes"
+                type="number"
+                min={1}
+                max={1440}
+                placeholder="Minutes (scheduling)"
+                title="Single-sitting duration in minutes, used for appointment overlap checks"
+                className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
+              />
               <input name="price_prefix" placeholder="Prefix (e.g. From)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
               <input name="price" type="number" min={0} required placeholder="Price" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
-              <input name="description" placeholder="Description (optional)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold lg:col-span-4" />
+              <input name="description" placeholder="Description (optional)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold lg:col-span-5" />
               <button type="submit" className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
                 Save
               </button>
@@ -194,13 +205,23 @@ export function Services() {
                 <form
                   key={service.id}
                   onSubmit={(e) => handleUpdateService(e, service)}
-                  className="grid grid-cols-1 gap-3 py-3 sm:grid-cols-2 lg:grid-cols-5"
+                  className="grid grid-cols-1 gap-3 py-3 sm:grid-cols-2 lg:grid-cols-6"
                 >
                   <input name="name" required defaultValue={service.name} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold lg:col-span-2" />
                   <input name="duration" defaultValue={service.duration ?? ''} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+                  <input
+                    name="duration_minutes"
+                    type="number"
+                    min={1}
+                    max={1440}
+                    defaultValue={service.duration_minutes ?? ''}
+                    placeholder="Minutes (scheduling)"
+                    title="Single-sitting duration in minutes, used for appointment overlap checks"
+                    className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
                   <input name="price_prefix" defaultValue={service.price_prefix ?? ''} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
                   <input name="price" type="number" min={0} required defaultValue={service.price} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
-                  <input name="description" defaultValue={service.description ?? ''} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold lg:col-span-4" />
+                  <input name="description" defaultValue={service.description ?? ''} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold lg:col-span-5" />
                   <div className="flex gap-2">
                     <button type="submit" className="rounded-lg bg-wine px-3 py-2 text-xs font-medium text-paper hover:bg-wine-light">
                       Save
@@ -217,6 +238,7 @@ export function Services() {
                     <p className="text-xs text-muted">
                       {formatPrice(service)}
                       {service.duration ? ` · ${service.duration}` : ''}
+                      {service.duration_minutes ? ` (${service.duration_minutes} min for scheduling)` : ''}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">

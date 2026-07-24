@@ -1,25 +1,29 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { Trash2, X } from 'lucide-react';
 import {
+  assignAppointmentStaff,
   deleteAppointment,
   fetchAppointments,
   updateAppointmentStatus,
   type Appointment,
+  type AppointmentStaffOption,
   type AppointmentStatus,
   type PaginatedAppointments,
 } from '../lib/api';
 
-const STATUSES: AppointmentStatus[] = ['pending', 'confirmed', 'completed', 'cancelled'];
+const STATUSES: AppointmentStatus[] = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
 
 const statusStyles: Record<AppointmentStatus, string> = {
   pending: 'bg-amber-100 text-amber-700',
   confirmed: 'bg-emerald-100 text-emerald-700',
   completed: 'bg-blue-100 text-blue-700',
   cancelled: 'bg-red-100 text-red-700',
+  no_show: 'bg-zinc-200 text-zinc-700',
 };
 
 export function Appointments() {
   const [appointments, setAppointments] = useState<PaginatedAppointments | null>(null);
+  const [staffList, setStaffList] = useState<AppointmentStaffOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
@@ -28,7 +32,10 @@ export function Appointments() {
   function load() {
     setIsLoading(true);
     fetchAppointments({ status: statusFilter || undefined, q: search || undefined })
-      .then((res) => setAppointments(res.appointments))
+      .then((res) => {
+        setAppointments(res.appointments);
+        setStaffList(res.staffList);
+      })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load appointments.'))
       .finally(() => setIsLoading(false));
   }
@@ -43,6 +50,18 @@ export function Appointments() {
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update status.');
+    }
+  }
+
+  async function handleStaffChange(e: ChangeEvent<HTMLSelectElement>, appointment: Appointment) {
+    const staffId = e.target.value ? Number(e.target.value) : null;
+    try {
+      await assignAppointmentStaff(appointment.id, staffId);
+      load();
+    } catch (err) {
+      // The API returns a 422 with a human-readable conflict message
+      // (e.g. "That staff member already has X's appointment at ...").
+      setError(err instanceof Error ? err.message : 'Failed to assign staff — that slot may already be booked.');
     }
   }
 
@@ -88,7 +107,7 @@ export function Appointments() {
           >
             <option value="">All</option>
             {STATUSES.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>{s.replace('_', ' ')}</option>
             ))}
           </select>
         </label>
@@ -108,6 +127,7 @@ export function Appointments() {
               <p className="text-sm font-medium text-ink">{appointment.name}</p>
               <p className="text-xs text-muted">
                 {appointment.service_name} · {appointment.date} at {appointment.time}
+                {appointment.service?.duration_minutes ? ` (${appointment.service.duration_minutes} min)` : ''}
               </p>
               <p className="text-xs text-muted">
                 {appointment.phone}
@@ -115,14 +135,25 @@ export function Appointments() {
               </p>
               {appointment.notes && <p className="mt-1 text-xs text-muted italic">"{appointment.notes}"</p>}
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <select
+                value={appointment.staff_id ?? ''}
+                onChange={(e) => handleStaffChange(e, appointment)}
+                className="rounded-lg border border-ink/10 bg-paper px-2 py-1.5 text-xs outline-none focus:border-gold"
+                title="Assign staff"
+              >
+                <option value="">Unassigned</option>
+                {staffList.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
               <select
                 value={appointment.status}
                 onChange={(e) => handleStatusChange(e, appointment)}
                 className={`rounded-lg border border-ink/10 px-2 py-1.5 text-xs font-medium capitalize outline-none ${statusStyles[appointment.status]}`}
               >
                 {STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>{s.replace('_', ' ')}</option>
                 ))}
               </select>
               <button onClick={() => handleDelete(appointment)} className="rounded-lg border border-ink/10 p-1.5 text-danger hover:bg-danger-bg">
@@ -141,3 +172,4 @@ export function Appointments() {
     </div>
   );
 }
+

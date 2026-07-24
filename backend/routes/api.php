@@ -126,6 +126,7 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             // Appointments
             Route::get('appointments', [AdminAppointmentController::class, 'index'])->name('appointments.index');
             Route::patch('appointments/{appointment}/status', [AdminAppointmentController::class, 'updateStatus'])->name('appointments.status');
+            Route::patch('appointments/{appointment}/staff', [AdminAppointmentController::class, 'assignStaff'])->name('appointments.assignStaff');
             Route::delete('appointments/{appointment}', [AdminAppointmentController::class, 'destroy'])->name('appointments.destroy');
 
             // Wedding Albums (multipart create/update — same "_method": "PUT"

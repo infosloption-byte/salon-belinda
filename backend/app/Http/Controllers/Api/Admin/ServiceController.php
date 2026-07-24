@@ -56,6 +56,7 @@ class ServiceController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:500'],
             'duration' => ['nullable', 'string', 'max:60'],
+            'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'price' => ['required', 'integer', 'min:0'],
             'price_prefix' => ['nullable', 'string', 'max:20'],
         ]);
@@ -72,6 +73,7 @@ class ServiceController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:500'],
             'duration' => ['nullable', 'string', 'max:60'],
+            'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'price' => ['required', 'integer', 'min:0'],
             'price_prefix' => ['nullable', 'string', 'max:20'],
         ]);

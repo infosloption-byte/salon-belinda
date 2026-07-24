@@ -169,6 +169,7 @@ export interface Service {
   name: string;
   description: string | null;
   duration: string | null;
+  duration_minutes: number | null;
   price: number;
   price_prefix: string | null;
 }
@@ -199,6 +200,7 @@ export function createService(data: {
   name: string;
   description?: string;
   duration?: string;
+  duration_minutes?: number;
   price: number;
   price_prefix?: string;
 }) {
@@ -207,7 +209,7 @@ export function createService(data: {
 
 export function updateService(
   id: number,
-  data: { name: string; description?: string; duration?: string; price: number; price_prefix?: string }
+  data: { name: string; description?: string; duration?: string; duration_minutes?: number; price: number; price_prefix?: string }
 ) {
   return api.put<{ service: Service; message: string }>(`/admin/services/${id}`, data);
 }
@@ -328,12 +330,15 @@ export function deleteGalleryCategory(id: number) {
 
 // --- Appointments ---
 
-export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
 
 export interface Appointment {
   id: number;
   service_id: number | null;
   service_name: string;
+  staff_id: number | null;
+  staff?: { id: number; name: string; role_title: string | null } | null;
+  service?: { id: number; duration: string | null; duration_minutes: number | null } | null;
   name: string;
   phone: string;
   email: string | null;
@@ -350,13 +355,29 @@ export interface PaginatedAppointments {
   total: number;
 }
 
-export function fetchAppointments(params?: { status?: string; q?: string; date_from?: string; date_to?: string }): Promise<{ appointments: PaginatedAppointments }> {
+export interface AppointmentStaffOption {
+  id: number;
+  name: string;
+  role_title: string | null;
+}
+
+export function fetchAppointments(params?: {
+  status?: string;
+  q?: string;
+  date_from?: string;
+  date_to?: string;
+  staff_id?: string;
+}): Promise<{ appointments: PaginatedAppointments; staffList: AppointmentStaffOption[] }> {
   const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
   return api.get(`/admin/appointments${query ? `?${query}` : ''}`);
 }
 
 export function updateAppointmentStatus(id: number, status: AppointmentStatus) {
   return api.patch<{ appointment: Appointment; message: string }>(`/admin/appointments/${id}/status`, { status });
+}
+
+export function assignAppointmentStaff(id: number, staffId: number | null) {
+  return api.patch<{ appointment: Appointment; message: string }>(`/admin/appointments/${id}/staff`, { staff_id: staffId });
 }
 
 export function deleteAppointment(id: number) {

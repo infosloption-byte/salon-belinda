@@ -14,6 +14,7 @@ class Service extends Model
         'name',
         'description',
         'duration',
+        'duration_minutes',
         'price',
         'price_prefix',
         'sort_order',
@@ -23,6 +24,7 @@ class Service extends Model
     {
         return [
             'price' => 'integer',
+            'duration_minutes' => 'integer',
         ];
     }
 
