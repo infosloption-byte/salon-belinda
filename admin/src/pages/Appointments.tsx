@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { Trash2, X } from 'lucide-react';
+import { Trash2, X, List, CalendarDays } from 'lucide-react';
 import {
   assignAppointmentStaff,
   deleteAppointment,
@@ -10,6 +10,7 @@ import {
   type AppointmentStatus,
   type PaginatedAppointments,
 } from '../lib/api';
+import { AppointmentsCalendar } from './AppointmentsCalendar';
 
 const STATUSES: AppointmentStatus[] = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
 
@@ -22,6 +23,7 @@ const statusStyles: Record<AppointmentStatus, string> = {
 };
 
 export function Appointments() {
+  const [view, setView] = useState<'list' | 'calendar'>('list');
   const [appointments, setAppointments] = useState<PaginatedAppointments | null>(null);
   const [staffList, setStaffList] = useState<AppointmentStaffOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,10 +77,29 @@ export function Appointments() {
     }
   }
 
-  if (isLoading && !appointments) return <p className="text-sm text-muted">Loading appointments…</p>;
+  if (isLoading && !appointments && view === 'list') return <p className="text-sm text-muted">Loading appointments…</p>;
 
   return (
     <div className="space-y-6">
+      <div className="flex gap-2">
+        <button
+          onClick={() => setView('list')}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${view === 'list' ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'}`}
+        >
+          <List size={14} /> List
+        </button>
+        <button
+          onClick={() => setView('calendar')}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${view === 'calendar' ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'}`}
+        >
+          <CalendarDays size={14} /> Calendar
+        </button>
+      </div>
+
+      {view === 'calendar' ? (
+        <AppointmentsCalendar />
+      ) : (
+        <>
       {error && (
         <p className="mirror-card flex items-center justify-between p-4 text-sm text-danger">
           {error}
@@ -168,6 +189,8 @@ export function Appointments() {
         <p className="text-center text-xs text-muted">
           Page {appointments.current_page} of {appointments.last_page} ({appointments.total} total)
         </p>
+      )}
+        </>
       )}
     </div>
   );

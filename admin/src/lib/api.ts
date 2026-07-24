@@ -372,6 +372,14 @@ export function fetchAppointments(params?: {
   return api.get(`/admin/appointments${query ? `?${query}` : ''}`);
 }
 
+/**
+ * Unpaginated — every appointment for the given day, for the calendar/
+ * day-grid view. `date` must be YYYY-MM-DD.
+ */
+export function fetchAppointmentsCalendar(date: string): Promise<{ appointments: Appointment[]; staffList: AppointmentStaffOption[] }> {
+  return api.get(`/admin/appointments/calendar?date=${date}`);
+}
+
 export function updateAppointmentStatus(id: number, status: AppointmentStatus) {
   return api.patch<{ appointment: Appointment; message: string }>(`/admin/appointments/${id}/status`, { status });
 }

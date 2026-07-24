@@ -10,14 +10,14 @@ still missing, before moving on to Phase 3 (multi-tenancy).
 
 ### Appointments — the biggest one
 
-Overlap-prevention core done 2026-07-24 (backend + admin UI): `appointments.time` was a free-text string with no staff assignment and no duration-based conflict checking, so nothing stopped two customers being booked for the same staff member at the same time. Fixed via a proper booking engine — `staff_id` + computed end-time from service duration + an overlap check on staff assignment. Calendar view and waitlist are still open, tracked separately below.
+Overlap-prevention core done 2026-07-24 (backend + admin UI): `appointments.time` was a free-text string with no staff assignment and no duration-based conflict checking, so nothing stopped two customers being booked for the same staff member at the same time. Fixed via a proper booking engine — `staff_id` + computed end-time from service duration + an overlap check on staff assignment. Calendar/day-grid view also done as of 2026-07-24. Only the waitlist is still open, tracked separately below.
 
 - [x] Add `staff_id` (nullable FK) to `appointments`, `staff()` relation on the model — 2026-07-24
 - [x] `duration_minutes` (nullable int) added to `services`, alongside the existing free-text `duration` (kept for the public site); seeded with a best-effort single-sitting estimate per existing service; editable in the admin Services page — 2026-07-24
 - [x] Overlap-check on staff assignment: new `App\Services\AppointmentScheduler::findConflict()`, wired into a new `PATCH /admin/appointments/{id}/staff` endpoint (`Api/Admin/AppointmentController::assignStaff`) that returns a 422 with a human-readable conflict message instead of silently double-booking; only `pending`/`confirmed` appointments hold the slot — 2026-07-24
 - [x] `no_show` status added (`pending/confirmed/completed/cancelled/no_show`), via raw `ALTER ... MODIFY` migration (no `doctrine/dbal` dependency needed) — 2026-07-24
 - [x] Admin Appointments page: staff-assignment dropdown per row (shows the conflict error inline if blocked), `no_show` selectable in the status dropdown, service duration shown next to date/time — 2026-07-24
-- [ ] Calendar/day-grid view in the admin Appointments page (who's free at X, not just a paginated list) — deferred, UI-only follow-up on top of the data model above
+- [x] Calendar/day-grid view in the admin Appointments page (who's free at X, not just a paginated list) — 2026-07-24. New "Calendar" tab alongside the existing list view: `GET /admin/appointments/calendar?date=` (unpaginated, one day) renders as a per-staff column grid with time-positioned blocks sized by service duration; an "Unassigned" column catches appointments with no staff yet; clicking a block opens the same staff/status/delete controls as the list view. Appointments with an unparseable free-text `time` value are listed separately below the grid rather than silently dropped.
 - [ ] No reminders yet — tracked separately as its own item below (SMS/WhatsApp)
 - [ ] No waitlist for fully-booked slots — separate, larger feature, not started
 
@@ -68,7 +68,7 @@ These aren't salon-specific but they're real operational risk, roughly in order 
 
 For actual salon-operations impact (not the SaaS pivot):
 
-1. [~] **Appointment double-booking prevention + staff assignment** — this is a live operational risk right now, not a nice-to-have. **Core done 2026-07-24** (staff assignment, overlap check, no-show status); calendar view + waitlist still open, see Appointments section above.
+1. [~] **Appointment double-booking prevention + staff assignment** — this is a live operational risk right now, not a nice-to-have. **Core done 2026-07-24** (staff assignment, overlap check, no-show status), **calendar/day-grid view done 2026-07-24**; only the waitlist is still open, see Appointments section above.
 2. [ ] **Queue the email sending** — quick fix, removes a real reliability risk
 3. [ ] **SMS/WhatsApp reminders** — directly reduces no-shows, which is real revenue
 4. [ ] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting

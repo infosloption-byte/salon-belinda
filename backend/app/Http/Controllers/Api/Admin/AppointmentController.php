@@ -49,6 +49,30 @@ class AppointmentController extends Controller
         ]);
     }
 
+    /**
+     * All appointments for a single day, unpaginated, for the calendar/
+     * day-grid view — the paginated index() endpoint is wrong for this
+     * since a busy day could span multiple pages and the grid needs every
+     * appointment on screen at once to show real availability.
+     */
+    public function calendar(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'date' => ['required', 'date'],
+        ]);
+
+        $appointments = Appointment::query()
+            ->with(['staff', 'service'])
+            ->whereDate('date', $data['date'])
+            ->orderBy('time')
+            ->get();
+
+        return response()->json([
+            'appointments' => $appointments,
+            'staffList' => Staff::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role_title']),
+        ]);
+    }
+
     public function updateStatus(Request $request, Appointment $appointment): JsonResponse
     {
         $request->validate([
