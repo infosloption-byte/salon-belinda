@@ -45,7 +45,7 @@ class AppointmentController extends Controller
 
         return response()->json([
             'appointments' => $appointments,
-            'staffList' => Staff::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role_title']),
+            'staffList' => $this->staffListWithQualifications(),
         ]);
     }
 
@@ -69,7 +69,7 @@ class AppointmentController extends Controller
 
         return response()->json([
             'appointments' => $appointments,
-            'staffList' => Staff::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'role_title']),
+            'staffList' => $this->staffListWithQualifications(),
         ]);
     }
 
@@ -153,6 +153,28 @@ class AppointmentController extends Controller
         );
 
         return response()->json(['appointment' => $appointment, 'message' => 'Appointment updated.']);
+    }
+
+    /**
+     * SALON-OPS-ENHANCEMENTS.md, "Staff" — qualification mapping. Each
+     * staff entry carries the service ids they're qualified for, so the
+     * admin UI can filter the "assign staff" dropdown to only people who
+     * can actually perform the appointment's service, instead of listing
+     * every active staff member regardless of skill.
+     */
+    private function staffListWithQualifications()
+    {
+        return Staff::query()
+            ->where('is_active', true)
+            ->with('services:id')
+            ->orderBy('name')
+            ->get(['id', 'name', 'role_title'])
+            ->map(fn (Staff $s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'role_title' => $s->role_title,
+                'service_ids' => $s->services->pluck('id'),
+            ]);
     }
 
     public function destroy(Appointment $appointment): JsonResponse

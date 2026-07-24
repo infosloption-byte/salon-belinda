@@ -23,9 +23,11 @@ Overlap-prevention core done 2026-07-24 (backend + admin UI): `appointments.time
 
 ### Staff
 
-- [ ] No working-hours/shift/leave table at all. Staff scheduling and "who's on today" only exists in your head, not the system.
-- [ ] No staff↔service qualification mapping (which staff can perform which services) — can't filter booking by "who can actually do a keratin treatment."
-- [ ] Performance visibility stops at commission $ — no bookings-completed count, average ticket size, or no-show rate per staff.
+Done 2026-07-24 (backend + admin UI), all three items from the original gap analysis:
+
+- [x] **Working-hours/shift/leave table.** New `staff_shifts` table — one row per staff member per date, either a `work` entry (with start/end time) or a `leave` entry (whole day). Deliberately one table for both rather than two, so "who's on today" is a single query, not a join across differently-shaped tables. `Api\Admin\StaffShiftController` for CRUD (`/admin/staff-shifts*`), plus a dedicated `GET /admin/staff/roster?date=` rollup — every active staff member annotated `work`/`leave`/`unscheduled` for that date (a staff member with no entry at all is reported `unscheduled`, not assumed either way). Admin UI: `RosterWidget.tsx` at the top of the Staff page (date-switchable, defaults to today), and a "Schedule" tab in the new expandable per-staff `StaffDetailPanel.tsx` for adding/removing entries.
+- [x] **Staff↔service qualification mapping.** New `service_staff` pivot table (plain many-to-many, no extra columns yet — per-staff price override or skill level would be a further enhancement, out of scope here). `Staff::services()` / `Service::staff()` relations. `StaffController::services()` returns every service flagged `qualified` for a given staff member (one call, not two lists to cross-reference client-side); `syncServices()` saves the checkbox state. Admin UI: "Qualified Services" tab in `StaffDetailPanel.tsx`. **Also wired into the actual booking flow** (the point of this item) — `AppointmentController`'s `staffList` (both `index()` and `calendar()`) now carries each staff member's `service_ids`, and the staff-assignment dropdown in both `Appointments.tsx` and `AppointmentsCalendar.tsx` sorts qualified staff first and labels unqualified ones "(not marked qualified)" rather than hiding them outright — hiding would make assignment impossible for any service that hasn't had its qualified staff configured yet, which won't be all of them on day one.
+- [x] **Performance visibility beyond commission $.** `StaffController::performance()` (`GET /admin/staff/{staff}/performance`) — bookings-completed count and no-show rate from `appointments` (staff-assigned, date-ranged), average ticket size and services-performed count from the staff member's own `job_items` (not the whole job total, since a job can have multiple staff on different line items). Admin UI: "Performance" tab in `StaffDetailPanel.tsx`, 5 stat tiles over a 90-day default window.
 
 ### Customers
 
@@ -71,7 +73,7 @@ For actual salon-operations impact (not the SaaS pivot):
 1. [~] **Appointment double-booking prevention + staff assignment** — this is a live operational risk right now, not a nice-to-have. **Core done 2026-07-24** (staff assignment, overlap check, no-show status), **calendar/day-grid view done 2026-07-24**; only the waitlist is still open, see Appointments section above.
 2. [ ] **Queue the email sending** — quick fix, removes a real reliability risk
 3. [ ] **SMS/WhatsApp reminders** — directly reduces no-shows, which is real revenue
-4. [ ] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting
+4. [x] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting. **Done 2026-07-24** along with the other two Staff items (qualification mapping, performance stats) — see Staff section above.
 5. [ ] Everything else (loyalty, inventory ledger, CSV export, 2FA, tests) — valuable, lower urgency
 
 ---

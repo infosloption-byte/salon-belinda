@@ -359,6 +359,8 @@ export interface AppointmentStaffOption {
   id: number;
   name: string;
   role_title: string | null;
+  /** Service ids this staff member is qualified for — SALON-OPS-ENHANCEMENTS.md, "Staff" */
+  service_ids: number[];
 }
 
 export function fetchAppointments(params?: {
@@ -1061,4 +1063,97 @@ export function fetchActivityLog(params?: {
   page?: number;
 }): Promise<{ logs: PaginatedActivityLogs; users: ActivityLogUser[]; actions: string[] }> {
   return api.get(`/admin/activity-log${toQuery(params)}`);
+}
+
+// --- Staff shifts/leave + roster (SALON-OPS-ENHANCEMENTS.md, "Staff") ---
+
+export type ShiftType = 'work' | 'leave';
+
+export interface StaffShift {
+  id: number;
+  staff_id: number;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  type: ShiftType;
+  notes: string | null;
+  staff?: { id: number; name: string };
+}
+
+export function fetchStaffShifts(params?: { staff_id?: number; date_from?: string; date_to?: string }): Promise<{ shifts: StaffShift[] }> {
+  return api.get(`/admin/staff-shifts${toQuery(params)}`);
+}
+
+export function createStaffShift(data: {
+  staff_id: number;
+  date: string;
+  type: ShiftType;
+  start_time?: string;
+  end_time?: string;
+  notes?: string;
+}) {
+  return api.post<{ shift: StaffShift; message: string }>('/admin/staff-shifts', data);
+}
+
+export function updateStaffShift(id: number, data: {
+  staff_id: number;
+  date: string;
+  type: ShiftType;
+  start_time?: string;
+  end_time?: string;
+  notes?: string;
+}) {
+  return api.put<{ shift: StaffShift; message: string }>(`/admin/staff-shifts/${id}`, data);
+}
+
+export function deleteStaffShift(id: number) {
+  return api.del<{ message: string }>(`/admin/staff-shifts/${id}`);
+}
+
+export interface RosterEntry {
+  staff_id: number;
+  name: string;
+  role_title: string | null;
+  status: 'work' | 'leave' | 'unscheduled';
+  start_time: string | null;
+  end_time: string | null;
+  notes: string | null;
+}
+
+export function fetchStaffRoster(date?: string): Promise<{ date: string; roster: RosterEntry[] }> {
+  return api.get(`/admin/staff/roster${toQuery({ date })}`);
+}
+
+// --- Staff <-> service qualification mapping ---
+
+export interface QualifiableService {
+  id: number;
+  name: string;
+  category: string | null;
+  qualified: boolean;
+}
+
+export function fetchStaffServices(staffId: number): Promise<{ services: QualifiableService[] }> {
+  return api.get(`/admin/staff/${staffId}/services`);
+}
+
+export function syncStaffServices(staffId: number, serviceIds: number[]) {
+  return api.put<{ message: string }>(`/admin/staff/${staffId}/services`, { service_ids: serviceIds });
+}
+
+// --- Staff performance (beyond commission $) ---
+
+export interface StaffPerformance {
+  from: string;
+  to: string;
+  bookingsCompleted: number;
+  noShowCount: number;
+  noShowRate: number;
+  servicesPerformed: number;
+  averageTicket: number;
+  totalCommission: number;
+}
+
+export function fetchStaffPerformance(staffId: number, params?: { date_from?: string; date_to?: string }): Promise<StaffPerformance> {
+  return api.get(`/admin/staff/${staffId}/performance${toQuery(params)}`);
 }

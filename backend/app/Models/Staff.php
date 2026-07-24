@@ -33,4 +33,15 @@ class Staff extends Model
     {
         return $this->hasMany(JobItem::class);
     }
+
+    public function shifts()
+    {
+        return $this->hasMany(StaffShift::class);
+    }
+
+    /** Services this staff member is qualified to perform. */
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'service_staff');
+    }
 }

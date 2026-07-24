@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\Admin\StaffController as AdminStaffController;
+use App\Http\Controllers\Api\Admin\StaffShiftController as AdminStaffShiftController;
 use App\Http\Controllers\Api\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AppointmentController;
@@ -142,9 +143,22 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             // Staff profiles
             Route::get('staff', [AdminStaffController::class, 'index'])->name('staff.index');
             Route::post('staff', [AdminStaffController::class, 'store'])->name('staff.store');
+            // 'roster' must come before the /staff/{staff}/* wildcard routes
+            // it'd otherwise never be reached (Laravel matches route
+            // definitions in order; {staff} would swallow "roster" as an id).
+            Route::get('staff/roster', [AdminStaffShiftController::class, 'roster'])->name('staff.roster');
             Route::put('staff/{staff}', [AdminStaffController::class, 'update'])->name('staff.update');
             Route::delete('staff/{staff}', [AdminStaffController::class, 'destroy'])->name('staff.destroy');
             Route::post('staff/{staff}/toggle-active', [AdminStaffController::class, 'toggleActive'])->name('staff.toggleActive');
+            Route::get('staff/{staff}/services', [AdminStaffController::class, 'services'])->name('staff.services');
+            Route::put('staff/{staff}/services', [AdminStaffController::class, 'syncServices'])->name('staff.services.sync');
+            Route::get('staff/{staff}/performance', [AdminStaffController::class, 'performance'])->name('staff.performance');
+
+            // Staff shifts/leave — SALON-OPS-ENHANCEMENTS.md, "Staff"
+            Route::get('staff-shifts', [AdminStaffShiftController::class, 'index'])->name('staffShifts.index');
+            Route::post('staff-shifts', [AdminStaffShiftController::class, 'store'])->name('staffShifts.store');
+            Route::put('staff-shifts/{shift}', [AdminStaffShiftController::class, 'update'])->name('staffShifts.update');
+            Route::delete('staff-shifts/{shift}', [AdminStaffShiftController::class, 'destroy'])->name('staffShifts.destroy');
 
             // Testimonials
             Route::get('testimonials', [AdminTestimonialController::class, 'index'])->name('testimonials.index');

@@ -280,9 +280,24 @@ export function AppointmentsCalendar() {
               value={selected.staff_id ?? ''}
               onChange={(e) => handleStaffChange(selected, e.target.value ? Number(e.target.value) : null)}
               className="rounded-lg border border-ink/10 bg-paper px-2 py-1.5 text-xs outline-none focus:border-gold"
+              title="Assign staff — qualified staff for this service are listed first"
             >
               <option value="">Unassigned</option>
-              {staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {[...staffList]
+                .sort((a, b) => {
+                  const aQualified = !selected.service_id || a.service_ids.includes(selected.service_id);
+                  const bQualified = !selected.service_id || b.service_ids.includes(selected.service_id);
+                  if (aQualified === bQualified) return a.name.localeCompare(b.name);
+                  return aQualified ? -1 : 1;
+                })
+                .map((s) => {
+                  const qualified = !selected.service_id || s.service_ids.includes(selected.service_id);
+                  return (
+                    <option key={s.id} value={s.id}>
+                      {s.name}{!qualified ? ' (not marked qualified)' : ''}
+                    </option>
+                  );
+                })}
             </select>
             <select
               value={selected.status}

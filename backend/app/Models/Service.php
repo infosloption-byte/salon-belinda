@@ -33,6 +33,12 @@ class Service extends Model
         return $this->belongsTo(ServiceCategory::class, 'service_category_id');
     }
 
+    /** Staff qualified to perform this service. */
+    public function staff()
+    {
+        return $this->belongsToMany(Staff::class, 'service_staff');
+    }
+
     /**
      * Display string matching the frontend's original format, e.g.
      * "LKR 4,500" or "From LKR 6,500".

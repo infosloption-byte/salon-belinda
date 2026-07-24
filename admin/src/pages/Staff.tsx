@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Plus, Trash2, Pencil, Power, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, Power, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { createStaff, deleteStaff, fetchStaff, toggleStaffActive, updateStaff, type Staff as StaffMember } from '../lib/api';
+import { RosterWidget } from '../components/staff/RosterWidget';
+import { StaffDetailPanel } from '../components/staff/StaffDetailPanel';
 
 export function Staff() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -9,6 +11,7 @@ export function Staff() {
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<StaffMember | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   function load() {
     setIsLoading(true);
@@ -85,6 +88,8 @@ export function Staff() {
         </p>
       )}
 
+      <RosterWidget />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
           {(['active', 'inactive'] as const).map((s) => (
@@ -146,29 +151,35 @@ export function Staff() {
                 </div>
               </form>
             ) : (
-              <div key={member.id} className="flex items-center justify-between gap-4 p-4">
-                <div>
-                  <p className="text-sm text-ink">{member.name}</p>
-                  <p className="text-xs text-muted">
-                    {member.role_title || '—'}
-                    {member.phone ? ` · ${member.phone}` : ''} · {member.commission_percent}% commission
-                  </p>
+              <div key={member.id}>
+                <div className="flex items-center justify-between gap-4 p-4">
+                  <button onClick={() => setExpanded(expanded === member.id ? null : member.id)} className="flex flex-1 items-center gap-2 text-left">
+                    {expanded === member.id ? <ChevronUp size={16} className="text-muted" /> : <ChevronDown size={16} className="text-muted" />}
+                    <div>
+                      <p className="text-sm text-ink">{member.name}</p>
+                      <p className="text-xs text-muted">
+                        {member.role_title || '—'}
+                        {member.phone ? ` · ${member.phone}` : ''} · {member.commission_percent}% commission
+                      </p>
+                    </div>
+                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      onClick={() => handleToggle(member)}
+                      title={member.is_active ? 'Deactivate' : 'Reactivate'}
+                      className="rounded-lg border border-ink/10 p-1.5 text-ink hover:bg-paper-dim"
+                    >
+                      <Power size={14} />
+                    </button>
+                    <button onClick={() => setEditing(member)} className="rounded-lg border border-ink/10 p-1.5 text-ink hover:bg-paper-dim">
+                      <Pencil size={14} />
+                    </button>
+                    <button onClick={() => handleDelete(member)} className="rounded-lg border border-ink/10 p-1.5 text-danger hover:bg-danger-bg">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    onClick={() => handleToggle(member)}
-                    title={member.is_active ? 'Deactivate' : 'Reactivate'}
-                    className="rounded-lg border border-ink/10 p-1.5 text-ink hover:bg-paper-dim"
-                  >
-                    <Power size={14} />
-                  </button>
-                  <button onClick={() => setEditing(member)} className="rounded-lg border border-ink/10 p-1.5 text-ink hover:bg-paper-dim">
-                    <Pencil size={14} />
-                  </button>
-                  <button onClick={() => handleDelete(member)} className="rounded-lg border border-ink/10 p-1.5 text-danger hover:bg-danger-bg">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                {expanded === member.id && <StaffDetailPanel staff={member} />}
               </div>
             )
           )}
