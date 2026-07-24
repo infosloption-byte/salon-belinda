@@ -1,10 +1,14 @@
-# Admin Migration Task Tracker
+# Admin Migration & Salon-Ops Task Tracker
 
-Living checklist for SAAS-ROADMAP.md Phase 2 ("Separate Laravel into a pure
-API + scaffold the React admin"). Update this file in the same commit as any
-module you finish — check the box, add the date/commit note. This is the
-single source of truth for "what's done vs what's left"; SAAS-ROADMAP.md
-Phase 2 only tracks phase-level progress, not per-module state.
+Living checklist. Started as the tracker for SAAS-ROADMAP.md Phase 2
+("Separate Laravel into a pure API + scaffold the React admin") — that
+phase is done (see below). It now also tracks the salon-operations
+feature/enhancement backlog identified after Phase 2, which we're working
+through before starting Phase 3 (multi-tenancy). Update this file in the
+same commit as any item you finish — check the box, add the date/commit
+note. This is the single source of truth for "what's done vs what's
+left"; SAAS-ROADMAP.md only tracks phase-level progress, not this level
+of detail.
 
 Each module needs all three of: **API controller** (JSON, under
 `app/Http/Controllers/Api/Admin/`), **routes** (`routes/api.php`, inside the
@@ -55,10 +59,72 @@ route with no page swapped in, is still in progress.
 
 **Phase 2 is fully complete as of 2026-07-23: all 17 modules ported, old Blade admin controllers/views deleted, `web.php` cut over to a health check.**
 
-## Suggested build order (remaining — React pages only, backend is 100% done)
+## Salon Operations — feature gaps & enhancements (next, before Phase 3)
 
-Staff → Customers → Orders → Testimonials → Contact Messages → Reports →
-Activity Log → Users → My Account
+Identified 2026-07-24 via a full pass over the schema, controllers, and mail
+setup (not just this doc) — what a real single-salon operation is still
+missing, before we move on to Phase 3 multi-tenancy. Same rule as above:
+check the box, note the date/commit, don't leave things half-done across
+commits. Ordered by how much operational risk / value each carries, not
+by ease of implementation.
+
+### Ops-1 — Appointment double-booking prevention (live risk, do first)
+
+`appointments.time` is currently free-text with no staff assignment and no
+duration, so nothing stops two customers being booked against the same
+staff member at the same time.
+
+- [ ] Add `staff_id` (nullable FK) to `appointments`
+- [ ] Convert `services.duration` from a free-text string to a real minutes column (or add one alongside it) so an end-time can be computed
+- [ ] Add an overlap-check (staff_id + date + computed time range) on create/update, both in the public booking flow and the admin Appointments page
+- [ ] Add a `no_show` status, distinct from `cancelled`, so no-show rate can actually be reported on
+- [ ] Add a calendar/day-grid view to the admin Appointments page (who's free at X, not just a paginated list)
+
+### Ops-2 — Queue outgoing email (reliability, quick win)
+
+All 6 `Mail` classes send synchronously (`QUEUE_CONNECTION=sync`) — every
+appointment confirmation, order notification, and contact-form submission
+blocks the HTTP request on the mail server.
+
+- [ ] Add `ShouldQueue` to `AppointmentConfirmed`, `AppointmentCancelled`, `NewAppointmentNotification`, `NewContactMessageNotification`, `NewOrderNotification`, `OrderReceipt`
+- [ ] Switch `QUEUE_CONNECTION` from `sync` to `database` (or `redis` if available) and run a queue worker in `docker-compose.yml`
+
+### Ops-3 — SMS/WhatsApp appointment reminders (retention, revenue)
+
+No SMS/WhatsApp integration exists anywhere in the codebase — email only.
+
+- [ ] Pick a provider (Twilio, or a local Sri Lankan SMS gateway) and add the service class
+- [ ] Scheduled command: reminder N hours before each confirmed appointment
+- [ ] Surface delivery status/failures somewhere in the admin (even just Activity Log)
+
+### Ops-4 — Staff shift/schedule table (unblocks Ops-1's overlap check properly)
+
+No working-hours/shift/leave model exists — "who's on today" only exists
+in someone's head.
+
+- [ ] `staff_shifts` table (staff_id, date/day-of-week, start_time, end_time)
+- [ ] Leave/time-off records
+- [ ] Feed shift data into the Ops-1 overlap check so bookings can't land outside a staff member's working hours either
+
+### Ops-5 — Everything else (real value, lower urgency)
+
+- [ ] Job-level discounts / service package bundling (e.g. a fixed-price bridal package instead of per-item discounts)
+- [ ] Tip field on job items/payments
+- [ ] Inventory movement ledger (why stock changed — sale, service use, damage, restock) instead of a single counter; service items should decrement stock too
+- [ ] Reorder point + supplier/purchase-order tracking per product
+- [ ] Online deposit payments for bookings (plug into the existing `PaymentGatewayStub`)
+- [ ] Waitlist for fully-booked slots
+- [ ] Staff↔service qualification mapping (which staff can perform which services)
+- [ ] Staff performance metrics beyond commission $ (bookings completed, average ticket size, no-show rate)
+- [ ] Customer visit-history rollup on profile (total spend, last visit, lifetime jobs) instead of manually drilling into jobs
+- [ ] Loyalty/points + customer tags (VIP, bridal, allergy notes as structured data, not a free-text `notes` field) + birthday/anniversary reminders
+- [ ] CSV/Excel export on all 6 reports (currently PDF-only, via invoice/receipt)
+- [ ] New report angles: repeat-customer/retention rate, busiest-hours heatmap, month-over-month comparison
+- [ ] Proactive dashboard alerts (e.g. outstanding balances aged over 30 days) instead of requiring someone to open the report
+- [ ] Soft deletes on `customers`, `staff`, `products` (currently hard deletes, no recovery/audit trail)
+- [ ] Automated test suite — especially the financial math (discounts, commission %, job balance-due) where a silent regression costs real money
+- [ ] 2FA on admin login
+- [ ] CDN/S3 for uploaded media (gallery/products/albums) instead of local disk
 
 ---
 
