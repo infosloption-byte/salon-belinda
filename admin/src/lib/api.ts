@@ -346,6 +346,8 @@ export interface Appointment {
   time: string;
   notes: string | null;
   status: AppointmentStatus;
+  /** SALON-OPS-ENHANCEMENTS.md, "Appointments" — waitlist for fully-booked slots */
+  is_waitlisted: boolean;
 }
 
 export interface PaginatedAppointments {
@@ -369,8 +371,13 @@ export function fetchAppointments(params?: {
   date_from?: string;
   date_to?: string;
   staff_id?: string;
-}): Promise<{ appointments: PaginatedAppointments; staffList: AppointmentStaffOption[] }> {
-  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
+  waitlisted?: boolean;
+}): Promise<{ appointments: PaginatedAppointments; staffList: AppointmentStaffOption[]; waitlistedCount: number }> {
+  const query = new URLSearchParams(
+    Object.entries(params ?? {})
+      .filter(([, v]) => v !== undefined && v !== '' && v !== false)
+      .map(([k, v]) => [k, String(v)])
+  ).toString();
   return api.get(`/admin/appointments${query ? `?${query}` : ''}`);
 }
 

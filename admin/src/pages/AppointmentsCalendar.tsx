@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Clock3 } from 'lucide-react';
 import {
   assignAppointmentStaff,
   deleteAppointment,
@@ -235,10 +235,14 @@ export function AppointmentsCalendar() {
                 <button
                   key={appointment.id}
                   onClick={() => setSelected(appointment)}
-                  className={`absolute left-1 right-1 overflow-hidden rounded-md border px-2 py-1 text-left text-[11px] leading-tight ${statusStyles[appointment.status]}`}
+                  title={appointment.is_waitlisted ? 'Waitlisted — no staff was free when this was booked' : undefined}
+                  className={`absolute left-1 right-1 overflow-hidden rounded-md border px-2 py-1 text-left text-[11px] leading-tight ${statusStyles[appointment.status]} ${appointment.is_waitlisted ? 'ring-2 ring-amber-500' : ''}`}
                   style={{ top, height }}
                 >
-                  <p className="truncate font-medium">{appointment.name}</p>
+                  <p className="flex items-center gap-1 truncate font-medium">
+                    {appointment.is_waitlisted && <Clock3 size={10} className="shrink-0" />}
+                    {appointment.name}
+                  </p>
                   <p className="truncate">{appointment.time} · {appointment.service_name}</p>
                 </button>
               ))}
@@ -255,7 +259,10 @@ export function AppointmentsCalendar() {
           <div className="divide-y divide-ink/5">
             {unparsed.map((appt) => (
               <button key={appt.id} onClick={() => setSelected(appt)} className="flex w-full items-center justify-between py-2 text-left text-sm hover:bg-paper-dim">
-                <span>{appt.name} — {appt.service_name}</span>
+                <span className="flex items-center gap-1.5">
+                  {appt.is_waitlisted && <Clock3 size={12} className="text-amber-600" />}
+                  {appt.name} — {appt.service_name}
+                </span>
                 <span className="text-xs text-muted">"{appt.time}"</span>
               </button>
             ))}
@@ -266,7 +273,14 @@ export function AppointmentsCalendar() {
       {selected && (
         <div className="mirror-card space-y-3 p-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-ink">{selected.name} — {selected.service_name}</p>
+            <p className="flex items-center gap-2 text-sm font-medium text-ink">
+              {selected.name} — {selected.service_name}
+              {selected.is_waitlisted && (
+                <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                  <Clock3 size={10} /> Waitlisted
+                </span>
+              )}
+            </p>
             <button onClick={() => setSelected(null)} className="text-muted hover:text-ink"><X size={16} /></button>
           </div>
           <p className="text-xs text-muted">

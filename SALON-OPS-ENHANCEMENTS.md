@@ -10,7 +10,7 @@ still missing, before moving on to Phase 3 (multi-tenancy).
 
 ### Appointments — the biggest one
 
-Overlap-prevention core done 2026-07-24 (backend + admin UI): `appointments.time` was a free-text string with no staff assignment and no duration-based conflict checking, so nothing stopped two customers being booked for the same staff member at the same time. Fixed via a proper booking engine — `staff_id` + computed end-time from service duration + an overlap check on staff assignment. Calendar/day-grid view also done as of 2026-07-24. Only the waitlist is still open, tracked separately below.
+Overlap-prevention core done 2026-07-24 (backend + admin UI): `appointments.time` was a free-text string with no staff assignment and no duration-based conflict checking, so nothing stopped two customers being booked for the same staff member at the same time. Fixed via a proper booking engine — `staff_id` + computed end-time from service duration + an overlap check on staff assignment. Calendar/day-grid view and waitlist both done as of 2026-07-24 — **all of Ops-1 is now complete.**
 
 - [x] Add `staff_id` (nullable FK) to `appointments`, `staff()` relation on the model — 2026-07-24
 - [x] `duration_minutes` (nullable int) added to `services`, alongside the existing free-text `duration` (kept for the public site); seeded with a best-effort single-sitting estimate per existing service; editable in the admin Services page — 2026-07-24
@@ -19,7 +19,7 @@ Overlap-prevention core done 2026-07-24 (backend + admin UI): `appointments.time
 - [x] Admin Appointments page: staff-assignment dropdown per row (shows the conflict error inline if blocked), `no_show` selectable in the status dropdown, service duration shown next to date/time — 2026-07-24
 - [x] Calendar/day-grid view in the admin Appointments page (who's free at X, not just a paginated list) — 2026-07-24. New "Calendar" tab alongside the existing list view: `GET /admin/appointments/calendar?date=` (unpaginated, one day) renders as a per-staff column grid with time-positioned blocks sized by service duration; an "Unassigned" column catches appointments with no staff yet; clicking a block opens the same staff/status/delete controls as the list view. Appointments with an unparseable free-text `time` value are listed separately below the grid rather than silently dropped.
 - [ ] No reminders yet — tracked separately as its own item below (SMS/WhatsApp)
-- [ ] No waitlist for fully-booked slots — separate, larger feature, not started
+- [x] Waitlist for fully-booked slots — done 2026-07-24. `is_waitlisted` boolean added to `appointments` (migration `2026_07_24_000006`). At public booking time (`Api\AppointmentController::store`), `AppointmentScheduler::isFullyBooked()` checks whether every active staff member qualified for the requested service (or every active staff member, if none are marked qualified yet) already has an overlapping pending/confirmed appointment at that date/time — staff on explicit full-day leave (`staff_shifts`, type `leave`) are excluded from the "available" pool, but an unscheduled staff member still counts as available. If nobody's free, the appointment still saves (not rejected outright) but is flagged `is_waitlisted`, and the customer gets a distinct confirmation message about being on the waitlist instead of the normal "we'll call to confirm" one. Cleared automatically the moment an admin successfully assigns any staff member via `assignStaff()` — no separate "promote from waitlist" action needed. Admin UI: a "Waitlist (N)" toggle button next to the List/Calendar switcher (only shown when N > 0) filters the list to just those; a small amber "Waitlisted" tag shows on the row/calendar block/detail panel wherever the appointment appears.
 
 ### Staff
 
@@ -70,7 +70,7 @@ These aren't salon-specific but they're real operational risk, roughly in order 
 
 For actual salon-operations impact (not the SaaS pivot):
 
-1. [~] **Appointment double-booking prevention + staff assignment** — this is a live operational risk right now, not a nice-to-have. **Core done 2026-07-24** (staff assignment, overlap check, no-show status), **calendar/day-grid view done 2026-07-24**; only the waitlist is still open, see Appointments section above.
+1. [x] **Appointment double-booking prevention + staff assignment** — this is a live operational risk right now, not a nice-to-have. **Done 2026-07-24** — staff assignment, overlap check, no-show status, calendar/day-grid view, and waitlist for fully-booked slots. See Appointments section above.
 2. [ ] **Queue the email sending** — quick fix, removes a real reliability risk
 3. [ ] **SMS/WhatsApp reminders** — directly reduces no-shows, which is real revenue
 4. [x] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting. **Done 2026-07-24** along with the other two Staff items (qualification mapping, performance stats) — see Staff section above.

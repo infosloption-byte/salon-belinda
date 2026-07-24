@@ -29,6 +29,7 @@ class AppointmentController extends Controller
             ->with(['jobs', 'staff', 'service'])
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('staff_id'), fn ($q, $staffId) => $q->where('staff_id', $staffId))
+            ->when($request->boolean('waitlisted'), fn ($q) => $q->where('is_waitlisted', true))
             ->when($request->query('q'), function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -46,6 +47,7 @@ class AppointmentController extends Controller
         return response()->json([
             'appointments' => $appointments,
             'staffList' => $this->staffListWithQualifications(),
+            'waitlistedCount' => Appointment::query()->where('is_waitlisted', true)->whereIn('status', ['pending', 'confirmed'])->count(),
         ]);
     }
 
@@ -140,7 +142,12 @@ class AppointmentController extends Controller
             }
         }
 
-        $appointment->update(['staff_id' => $data['staff_id'] ?? null]);
+        $update = ['staff_id' => $data['staff_id'] ?? null];
+        if ($data['staff_id'] ?? null) {
+            // A slot was actually found for them — no longer waitlisted.
+            $update['is_waitlisted'] = false;
+        }
+        $appointment->update($update);
         $appointment->load('staff');
 
         $staffName = $appointment->staff?->name;

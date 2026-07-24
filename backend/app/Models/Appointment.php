@@ -20,12 +20,14 @@ class Appointment extends Model
         'time',
         'notes',
         'status',
+        'is_waitlisted',
     ];
 
     protected function casts(): array
     {
         return [
             'date' => 'date',
+            'is_waitlisted' => 'boolean',
         ];
     }
 

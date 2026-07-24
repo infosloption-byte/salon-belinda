@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\NewAppointmentNotification;
 use App\Models\Appointment;
 use App\Models\Service;
+use App\Services\AppointmentScheduler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -26,11 +27,20 @@ class AppointmentController extends Controller
         ]);
 
         $service = Service::find($data['service_id']);
+        $duration = $service?->duration_minutes ?? AppointmentScheduler::DEFAULT_DURATION_MINUTES;
+
+        // SALON-OPS-ENHANCEMENTS.md, "Appointments" — waitlist for
+        // fully-booked slots. If literally nobody who could take this
+        // service is free at the requested time, still accept the request
+        // (rather than reject it outright) but flag it for the admin to
+        // resolve manually — see AppointmentScheduler::isFullyBooked().
+        $isWaitlisted = AppointmentScheduler::isFullyBooked($service?->id, $data['date'], $data['time'], $duration);
 
         $appointment = Appointment::create([
             ...$data,
             'service_name' => $service?->name,
             'status' => 'pending',
+            'is_waitlisted' => $isWaitlisted,
         ]);
 
         try {
@@ -41,9 +51,14 @@ class AppointmentController extends Controller
             Log::error('Failed to send new appointment notification', ['appointment_id' => $appointment->id, 'error' => $e->getMessage()]);
         }
 
+        $message = $isWaitlisted
+            ? "Thank you, {$appointment->name}. That time is fully booked right now, so we've added you to our waitlist — we'll call you if a slot opens up, or to arrange another time."
+            : "Thank you, {$appointment->name}. Your request has been received and the salon will call you to confirm.";
+
         return response()->json([
-            'message' => "Thank you, {$appointment->name}. Your request has been received and the salon will call you to confirm.",
+            'message' => $message,
             'appointment' => $appointment,
         ], 201);
     }
 }
+

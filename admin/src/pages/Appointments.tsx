@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { Trash2, X, List, CalendarDays } from 'lucide-react';
+import { Trash2, X, List, CalendarDays, Clock3 } from 'lucide-react';
 import {
   assignAppointmentStaff,
   deleteAppointment,
@@ -26,24 +26,27 @@ export function Appointments() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [appointments, setAppointments] = useState<PaginatedAppointments | null>(null);
   const [staffList, setStaffList] = useState<AppointmentStaffOption[]>([]);
+  const [waitlistedCount, setWaitlistedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [waitlistedOnly, setWaitlistedOnly] = useState(false);
   const [search, setSearch] = useState('');
 
   function load() {
     setIsLoading(true);
-    fetchAppointments({ status: statusFilter || undefined, q: search || undefined })
+    fetchAppointments({ status: statusFilter || undefined, q: search || undefined, waitlisted: waitlistedOnly || undefined })
       .then((res) => {
         setAppointments(res.appointments);
         setStaffList(res.staffList);
+        setWaitlistedCount(res.waitlistedCount);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load appointments.'))
       .finally(() => setIsLoading(false));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [statusFilter]);
+  useEffect(load, [statusFilter, waitlistedOnly]);
 
   async function handleStatusChange(e: ChangeEvent<HTMLSelectElement>, appointment: Appointment) {
     const status = e.target.value as AppointmentStatus;
@@ -81,7 +84,7 @@ export function Appointments() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setView('list')}
           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${view === 'list' ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'}`}
@@ -94,6 +97,17 @@ export function Appointments() {
         >
           <CalendarDays size={14} /> Calendar
         </button>
+        {view === 'list' && waitlistedCount > 0 && (
+          <button
+            onClick={() => setWaitlistedOnly((v) => !v)}
+            title="Requests that came in when no staff member was free — needs a manual look"
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${
+              waitlistedOnly ? 'bg-amber-600 text-white' : 'border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+            }`}
+          >
+            <Clock3 size={14} /> Waitlist ({waitlistedCount})
+          </button>
+        )}
       </div>
 
       {view === 'calendar' ? (
@@ -145,7 +159,17 @@ export function Appointments() {
         {appointments?.data.map((appointment) => (
           <div key={appointment.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
             <div>
-              <p className="text-sm font-medium text-ink">{appointment.name}</p>
+              <p className="flex items-center gap-2 text-sm font-medium text-ink">
+                {appointment.name}
+                {appointment.is_waitlisted && (
+                  <span
+                    title="Came in when no staff member was free at this time — resolve by assigning staff once a slot opens, or contact them about another time"
+                    className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700"
+                  >
+                    <Clock3 size={10} /> Waitlisted
+                  </span>
+                )}
+              </p>
               <p className="text-xs text-muted">
                 {appointment.service_name} · {appointment.date} at {appointment.time}
                 {appointment.service?.duration_minutes ? ` (${appointment.service.duration_minutes} min)` : ''}

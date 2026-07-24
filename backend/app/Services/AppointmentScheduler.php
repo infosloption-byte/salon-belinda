@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\Service;
+use App\Models\Staff;
+use App\Models\StaffShift;
 use Carbon\Carbon;
 
 class AppointmentScheduler
@@ -52,4 +55,57 @@ class AppointmentScheduler
                 return $start->lt($existingEnd) && $end->gt($existingStart);
             });
     }
+
+    /**
+     * Whether a new booking for the given service/date/time/duration would
+     * find literally no staff member free — i.e. it should go on the
+     * waitlist instead of a normal pending slot.
+     *
+     * "Candidate" staff = active staff qualified for the service, or every
+     * active staff member if nobody's been marked qualified for it yet
+     * (consistent with how the assign-staff dropdown treats an
+     * unconfigured service — see AppointmentController::staffListWithQualifications).
+     * A staff member on explicit full-day leave that date doesn't count as
+     * available; a staff member with no shift entry at all does (an
+     * unscheduled day isn't the same as a day off — see the roster
+     * feature's own "unscheduled" semantics).
+     */
+    public static function isFullyBooked(?int $serviceId, string $date, string $time, int $durationMinutes): bool
+    {
+        $qualifiedStaffIds = $serviceId
+            ? (Service::find($serviceId)?->staff()->pluck('staff.id') ?? collect())
+            : collect();
+
+        $candidateStaffIds = Staff::query()
+            ->where('is_active', true)
+            ->when($qualifiedStaffIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $qualifiedStaffIds))
+            ->pluck('id');
+
+        if ($candidateStaffIds->isEmpty()) {
+            // No active staff at all to book against — treat as fully
+            // booked rather than silently accepting an unbookable request.
+            return true;
+        }
+
+        $onLeaveStaffIds = StaffShift::query()
+            ->whereIn('staff_id', $candidateStaffIds)
+            ->whereDate('date', $date)
+            ->where('type', 'leave')
+            ->pluck('staff_id');
+
+        $availableStaffIds = $candidateStaffIds->diff($onLeaveStaffIds);
+
+        if ($availableStaffIds->isEmpty()) {
+            return true; // everyone who could take this is on leave that day
+        }
+
+        foreach ($availableStaffIds as $staffId) {
+            if (! self::findConflict($staffId, $date, $time, $durationMinutes)) {
+                return false; // at least one candidate is free at that time
+            }
+        }
+
+        return true;
+    }
 }
+
