@@ -32,15 +32,16 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 ### Customers
 
 - [x] Search by name/phone/email already works server-side (good — that's already there).
-- [ ] No loyalty/points, no customer tags (VIP, bridal, allergy notes as structured data rather than a free-text `notes` field), no birthday/anniversary reminders — all common salon retention levers.
-- [ ] No visit-history rollup on a customer's profile (total spend, last visit, lifetime jobs) beyond drilling into their job list manually.
+- [ ] **(Tier 3)** No loyalty/points, no customer tags (VIP, bridal, allergy notes as structured data rather than a free-text `notes` field), no birthday/anniversary reminders — all common salon retention levers. Bundled sub-work, roughly in order: tags (quick pivot/enum) → points (small ledger) → birthday/anniversary reminders (needs a scheduled command + Mailable, the biggest sub-item here).
+- [ ] **(Tier 1 — quick win)** No visit-history rollup on a customer's profile (total spend, last visit, lifetime jobs) beyond drilling into their job list manually. `Customer::totalSpent()` and `Customer::visitCount()` already exist on the model unused — just needs a `lastVisit()` addition and wiring into the customer detail API + admin UI. No migration needed.
 
 ### Jobs (walk-in/POS)
 
-- [ ] Discounts are per-item only — no job-level discount or **service package/bundle pricing** (e.g., a fixed-price bridal package covering hair+makeup+nails instead of three separately-discounted line items).
-- [ ] No tip field for staff.
-- [ ] No inventory decrement — a hair-color service consuming stock doesn't touch `products.stock_count`, so your low-stock report can't actually reflect real usage from services, only shop sales.
-- [ ] No support for a second staff member assisting on one item (common for bridal jobs).
+- [ ] **(Tier 2)** Discounts are per-item only — no job-level discount. New `discount_type`/`discount_value` columns on `jobs_salon`, folded into `SalonJob::recalculateTotals()`. Small, contained.
+- [ ] **(Tier 4)** No **service package/bundle pricing** (e.g., a fixed-price bridal package covering hair+makeup+nails instead of three separately-discounted line items). Split out from the job-level-discount item above — this one needs a new pricing entity (bundles of services at a fixed price) plugged into the Jobs POS flow, discounting, and per-line commission attribution. The bigger of the two "discounts" gaps.
+- [ ] **(Tier 1 — quick win)** No tip field for staff. One column on `job_payments`, included in `recalculateTotals()`, add the input to the Jobs POS UI.
+- [ ] **(Tier 4)** No inventory decrement — a hair-color service consuming stock doesn't touch `products.stock_count`, so your low-stock report can't actually reflect real usage from services, only shop sales. Needs a new service→product consumption mapping table, then a hook into `JobItem`'s save lifecycle. Also affects low-stock report accuracy once live.
+- [ ] **(Tier 4)** No support for a second staff member assisting on one item (common for bridal jobs). `job_items.staff_id` is a single FK feeding directly into commission math and the `staffCommission` report — this needs a pivot table and a rethink of how commission splits, not just a UI add.
 
 ### Payments
 
@@ -48,13 +49,15 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 
 ### Inventory
 
-- [ ] Stock is a single counter, no movement ledger (no record of *why* stock changed — sold, used in a service, damaged, restocked). Low-stock report exists, but there's no reorder-point-per-product or supplier/purchase-order tracking.
+- [ ] **(Tier 3)** Stock is a single counter, no movement ledger (no record of *why* stock changed — sold, used in a service, damaged, restocked). New `stock_movements` table; refactor `Product::decrementStock()` and any other stock-writing path to log a reason instead of just mutating the counter.
+- [ ] **(Tier 1 — quick win)** No reorder-point-per-product. One nullable column on `products`; tweak `ReportController::lowStock()` to compare against it instead of the hardcoded `<= 10`.
+- [ ] **(Tier 4)** No supplier/purchase-order tracking. Biggest item on the whole list — a full new CRUD subsystem (suppliers, POs, PO line items) with its own admin pages.
 
 ## Admin/reporting enhancements
 
-- [ ] Reports cover revenue, best-sellers, low-stock, appointments, outstanding balances, staff commission — solid coverage. Missing: **repeat-customer/retention rate**, busiest-hours heatmap (useful for staffing), and month-over-month comparison (growth %) rather than just an absolute range.
-- [ ] No CSV/Excel export on any report — only the invoice/receipt PDFs export. Your accountant will want CSV, not just PDF.
-- [ ] No dashboard alerting (e.g., "3 jobs have an outstanding balance over 30 days old" surfaced proactively rather than requiring someone to open the report).
+- [ ] **(Tier 2)** Reports cover revenue, best-sellers, low-stock, appointments, outstanding balances, staff commission — solid coverage. Missing three, all straightforward extensions of the existing `ReportController` date-range pattern: **repeat-customer/retention rate**, busiest-hours heatmap (useful for staffing — note appointments with unparseable free-text `time` need excluding, same as the calendar view already does), and month-over-month comparison (growth %) rather than just an absolute range.
+- [ ] **(Tier 1 — quick win)** No CSV/Excel export on any report — only the invoice/receipt PDFs export. Your accountant will want CSV, not just PDF. Every report already returns clean structured data; just a stream-download endpoint reusing the same queries.
+- [ ] **(Tier 1 — quick win)** No dashboard alerting (e.g., "3 jobs have an outstanding balance over 30 days old" surfaced proactively rather than requiring someone to open the report). No new data needed — just surfaces the existing `outstandingBalances` and `lowStock` queries as a Dashboard widget.
 
 ## Backend technical health
 
@@ -71,10 +74,30 @@ These aren't salon-specific but they're real operational risk, roughly in order 
 For actual salon-operations impact (not the SaaS pivot):
 
 1. [x] **Appointment double-booking prevention + staff assignment** — this is a live operational risk right now, not a nice-to-have. **Done 2026-07-24** — staff assignment, overlap check, no-show status, calendar/day-grid view, and waitlist for fully-booked slots. See Appointments section above.
-2. [ ] **Queue the email sending** — quick fix, removes a real reliability risk
-3. [ ] **SMS/WhatsApp reminders** — directly reduces no-shows, which is real revenue
-4. [x] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting. **Done 2026-07-24** along with the other two Staff items (qualification mapping, performance stats) — see Staff section above.
-5. [ ] Everything else (loyalty, inventory ledger, CSV export, 2FA, tests) — valuable, lower urgency
+2. [x] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting. **Done 2026-07-24** along with the other two Staff items (qualification mapping, performance stats) — see Staff section above.
+3. [ ] **Customers / Jobs / Inventory / Reporting gaps** — re-sorted 2026-07-24 by actual implementation effort (checked against the current schema/models/controllers), not by category. Work top-down within each tier; flip boxes in the sections above as items land.
+   - **Tier 1 — quick wins, no new schema or trivial one-column additions:**
+     - [ ] Customer visit-history rollup (model helpers already exist, just needs wiring)
+     - [ ] CSV/Excel export on reports (reuses existing report queries)
+     - [ ] Inventory reorder-point per product (one column + a report tweak)
+     - [ ] Dashboard alerting (reuses existing outstanding-balance/low-stock queries)
+     - [ ] Jobs: tip field (one column + totals + UI)
+   - **Tier 2 — small, contained (new column or query, no new domain):**
+     - [ ] Reporting: retention rate
+     - [ ] Reporting: busiest-hours heatmap
+     - [ ] Reporting: month-over-month comparison
+     - [ ] Jobs: job-level discount
+   - **Tier 3 — moderate (new table, but isolated):**
+     - [ ] Inventory movement ledger
+     - [ ] Customers: tags → points → birthday/anniversary reminders (in that sub-order)
+   - **Tier 4 — bigger lifts (touches core pricing/commission logic, or a new subsystem):**
+     - [ ] Jobs: inventory decrement on service use
+     - [ ] Jobs: second staff member on one item
+     - [ ] Jobs: service package/bundle pricing
+     - [ ] Inventory: supplier/purchase-order tracking
+4. [ ] **Queue the email sending** — quick fix, removes a real reliability risk. Deferred behind item 3 above per 2026-07-24 direction, but still cheap whenever picked up.
+5. [ ] **SMS/WhatsApp reminders** — directly reduces no-shows, which is real revenue. **Explicitly deferred 2026-07-24** — do after everything in item 3.
+6. [ ] Remaining backend technical health items (soft deletes, automated tests, 2FA, S3/CDN for uploads) — valuable, lower urgency, not yet scheduled.
 
 ---
 
