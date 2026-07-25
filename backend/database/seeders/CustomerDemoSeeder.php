@@ -65,7 +65,7 @@ class CustomerDemoSeeder extends Seeder
                     : null;
             }
 
-            $tags = fake()->randomElements(Customer::TAGS, fake()->numberBetween(0, 2));
+            $tags = fake()->randomElements(array_keys(Customer::TAGS), fake()->numberBetween(0, 2));
 
             Customer::create([
                 'name' => $name,

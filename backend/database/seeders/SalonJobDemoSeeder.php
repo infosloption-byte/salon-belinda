@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Customer;
-use App\Models\CustomerPointsLedger;
+use App\Models\CustomerPoint;
 use App\Models\JobItem;
 use App\Models\JobPayment;
 use App\Models\SalonJob;
@@ -17,17 +17,20 @@ use Illuminate\Database\Seeder;
  * Performance/scenario test data — see DemoDataSeeder. Builds jobs the same
  * way the real app does (JobItem's price/commission computed by its
  * `saving()` hook, SalonJob::recalculateTotals() for cached totals,
- * Customer::addPoints() for loyalty points) rather than inserting
- * precomputed numbers directly, so every derived figure is internally
- * consistent — a completed job's total_paid, its customer's points_balance,
- * and the points ledger entry for it all agree with each other.
+ * Customer::earnPoints() for loyalty points — called per payment, same as
+ * JobController::addPayment) rather than inserting precomputed numbers
+ * directly, so every derived figure is internally consistent — a
+ * completed job's total_paid, its customer's points_balance, and the
+ * points ledger entries for it all agree with each other.
  *
  * Scenarios covered per customer:
  *  - several past jobs (last 90 days), mostly 'completed' and fully paid
- *    (points awarded, matching JobController::updateStatus), a few
- *    'cancelled' with no payment
+ *    (each payment earns points, matching JobController::addPayment), a
+ *    few 'cancelled' with no payment
  *  - roughly a third of customers get a job dated today: 'in_progress'
- *    with a partial deposit payment, or already 'completed'
+ *    with a partial deposit payment (which still earns points — earning
+ *    is driven by payments recorded, not by job status), or already
+ *    'completed'
  *  - roughly a third get 1-2 future jobs: 'scheduled', no payment yet
  */
 class SalonJobDemoSeeder extends Seeder
@@ -73,7 +76,6 @@ class SalonJobDemoSeeder extends Seeder
         if ($status === 'completed') {
             $this->addPayments($job, $jobDate, $userIds, full: true);
             $job->recalculateTotals();
-            $this->awardPoints($job);
         }
 
         $this->backdate($job, $jobDate);
@@ -89,9 +91,10 @@ class SalonJobDemoSeeder extends Seeder
         if ($status === 'completed') {
             $this->addPayments($job, Carbon::today(), $userIds, full: true);
             $job->recalculateTotals();
-            $this->awardPoints($job);
         } elseif (fake()->boolean(50)) {
             // Deposit — partial payment against a job still in progress.
+            // Still earns points: earning is driven by payments recorded,
+            // not by job status.
             $this->addPayments($job, Carbon::today(), $userIds, full: false);
             $job->recalculateTotals();
         }
@@ -156,49 +159,41 @@ class SalonJobDemoSeeder extends Seeder
             // balance on the day) rather than always one lump sum.
             if (fake()->boolean(25) && $owed > 1000) {
                 $deposit = (int) round($owed * fake()->randomFloat(2, 0.2, 0.5));
-                JobPayment::create([
-                    'job_id' => $job->id,
-                    'amount' => $deposit,
-                    'tip_amount' => 0,
-                    'method' => fake()->randomElement(['cash', 'card', 'bank_transfer']),
-                    'paid_at' => $jobDate->copy()->subDays(fake()->numberBetween(1, 5)),
-                    'recorded_by' => $userIds ? fake()->randomElement($userIds) : null,
-                    'note' => 'Deposit',
-                ]);
+                $this->recordPayment($job, $deposit, 0, $jobDate->copy()->subDays(fake()->numberBetween(1, 5)), $userIds, 'Deposit');
                 $owed -= $deposit;
             }
 
-            JobPayment::create([
-                'job_id' => $job->id,
-                'amount' => max(0, $owed),
-                'tip_amount' => $tip,
-                'method' => fake()->randomElement(['cash', 'card', 'bank_transfer']),
-                'paid_at' => $jobDate->copy()->setTime(fake()->numberBetween(9, 19), fake()->randomElement([0, 15, 30, 45])),
-                'recorded_by' => $userIds ? fake()->randomElement($userIds) : null,
-                'note' => null,
-            ]);
+            $this->recordPayment($job, max(0, $owed), $tip, $jobDate->copy()->setTime(fake()->numberBetween(9, 19), fake()->randomElement([0, 15, 30, 45])), $userIds, null);
         } else {
             $deposit = (int) round($owed * fake()->randomFloat(2, 0.2, 0.6));
-            JobPayment::create([
-                'job_id' => $job->id,
-                'amount' => $deposit,
-                'tip_amount' => 0,
-                'method' => fake()->randomElement(['cash', 'card', 'bank_transfer']),
-                'paid_at' => Carbon::now(),
-                'recorded_by' => $userIds ? fake()->randomElement($userIds) : null,
-                'note' => 'Deposit',
-            ]);
+            $this->recordPayment($job, $deposit, 0, Carbon::now(), $userIds, 'Deposit');
         }
     }
 
-    /** Mirrors the auto-award in JobController::updateStatus(). */
-    private function awardPoints(SalonJob $job): void
+    /**
+     * Creates the payment AND earns points off it — same two steps
+     * JobController::addPayment does (recalculateTotals() is left to the
+     * caller, since addPayments() may add more than one payment before
+     * the job's totals need refreshing).
+     */
+    private function recordPayment(SalonJob $job, int $amount, int $tipAmount, Carbon $paidAt, array $userIds, ?string $note): void
     {
-        $points = intdiv((int) $job->total_paid, (int) config('loyalty.points_per_currency_unit'));
-        if ($points > 0) {
-            $job->customer->addPoints($points, "Job #{$job->id} completed", $job->id);
-        }
-        $job->forceFill(['points_awarded_at' => now()])->save();
+        $recordedBy = $userIds ? fake()->randomElement($userIds) : null;
+
+        JobPayment::create([
+            'job_id' => $job->id,
+            'amount' => $amount,
+            'tip_amount' => $tipAmount,
+            'method' => fake()->randomElement(['cash', 'card', 'bank_transfer']),
+            'paid_at' => $paidAt,
+            'recorded_by' => $recordedBy,
+            'note' => $note,
+        ]);
+
+        // Mirrors JobController::addPayment(): points earned off the
+        // amount paid (tip excluded), floor(amount / currency_per_point).
+        $points = intdiv($amount, max(1, (int) config('loyalty.currency_per_point')));
+        $job->customer?->earnPoints($points, "Payment on job #{$job->id}", 'job', $job->id, $recordedBy);
     }
 
     /** Backdate created_at/updated_at so the activity feed and any created_at-ordered lists don't show every past job as "just now". */
@@ -207,11 +202,8 @@ class SalonJobDemoSeeder extends Seeder
         $ts = $jobDate->copy()->setTime(fake()->numberBetween(9, 19), 0);
         $job->items()->update(['created_at' => $ts, 'updated_at' => $ts]);
         $job->payments()->update(['created_at' => $ts, 'updated_at' => $ts]);
-        CustomerPointsLedger::where('job_id', $job->id)->update(['created_at' => $ts, 'updated_at' => $ts]);
-        $job->forceFill([
-            'created_at' => $ts,
-            'updated_at' => $ts,
-            'points_awarded_at' => $job->points_awarded_at ? $ts : null,
-        ])->save();
+        CustomerPoint::where('reference_type', 'job')->where('reference_id', $job->id)
+            ->update(['created_at' => $ts, 'updated_at' => $ts]);
+        $job->forceFill(['created_at' => $ts, 'updated_at' => $ts])->save();
     }
 }
