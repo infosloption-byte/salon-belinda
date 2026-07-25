@@ -11,6 +11,7 @@ import {
   type GalleryItem,
   type PaginatedGalleryItems,
 } from '../lib/api';
+import { Pagination } from '../components/ui/Pagination';
 
 export function Gallery() {
   const [items, setItems] = useState<PaginatedGalleryItems | null>(null);
@@ -21,10 +22,11 @@ export function Gallery() {
   const [editingCategory, setEditingCategory] = useState<GalleryCategoryItem | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
 
   function load() {
     setIsLoading(true);
-    fetchGallery()
+    fetchGallery(page)
       .then((res) => {
         setItems(res.items);
         setCategories(res.categories);
@@ -33,7 +35,8 @@ export function Gallery() {
       .finally(() => setIsLoading(false));
   }
 
-  useEffect(load, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, [page]);
 
   async function handleAddCategory(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -195,6 +198,14 @@ export function Gallery() {
           </div>
         ))}
       </div>
+
+      <Pagination
+        currentPage={items?.current_page ?? 1}
+        lastPage={items?.last_page ?? 1}
+        total={items?.total ?? 0}
+        onPageChange={setPage}
+        itemLabel="photo"
+      />
     </div>
   );
 }

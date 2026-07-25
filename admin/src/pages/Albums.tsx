@@ -10,6 +10,7 @@ import {
   type Album,
   type PaginatedAlbums,
 } from '../lib/api';
+import { Pagination } from '../components/ui/Pagination';
 
 function buildFormData(form: HTMLFormElement): FormData {
   const fd = new FormData(form);
@@ -150,16 +151,30 @@ export function Albums() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [expandedAlbum, setExpandedAlbum] = useState<Album | null>(null);
+  const [page, setPage] = useState(1);
 
   function load() {
     setIsLoading(true);
-    fetchAlbums(search || undefined)
+    fetchAlbums(search || undefined, page)
       .then((res) => setAlbums(res.albums))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load albums.'))
       .finally(() => setIsLoading(false));
   }
 
-  useEffect(load, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, [page]);
+
+  // Running a new search should snap back to page 1 — otherwise staying on,
+  // say, page 3 while searching could show an empty page. If we're already
+  // on page 1 the page-change effect above won't refire, so trigger load()
+  // directly to pick up the new search term.
+  function handleSearch() {
+    if (page === 1) {
+      load();
+    } else {
+      setPage(1);
+    }
+  }
 
   async function toggleExpand(album: Album) {
     if (expandedId === album.id) {
@@ -206,11 +221,11 @@ export function Albums() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && load()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
           />
         </label>
-        <button onClick={load} className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
+        <button onClick={handleSearch} className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
           Search
         </button>
       </div>
@@ -279,11 +294,13 @@ export function Albums() {
         ))}
       </div>
 
-      {albums && albums.last_page > 1 && (
-        <p className="text-center text-xs text-muted">
-          Page {albums.current_page} of {albums.last_page} ({albums.total} total)
-        </p>
-      )}
+      <Pagination
+        currentPage={albums?.current_page ?? 1}
+        lastPage={albums?.last_page ?? 1}
+        total={albums?.total ?? 0}
+        onPageChange={setPage}
+        itemLabel="album"
+      />
     </div>
   );
 }

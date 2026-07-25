@@ -349,8 +349,8 @@ export interface PaginatedGalleryItems {
   total: number;
 }
 
-export function fetchGallery(): Promise<{ items: PaginatedGalleryItems; categories: GalleryCategoryItem[] }> {
-  return api.get('/admin/gallery');
+export function fetchGallery(page?: number): Promise<{ items: PaginatedGalleryItems; categories: GalleryCategoryItem[] }> {
+  return api.get(`/admin/gallery${toQuery({ page })}`);
 }
 
 export function createGalleryItem(formData: FormData) {
@@ -479,8 +479,8 @@ export interface PaginatedAlbums {
   total: number;
 }
 
-export function fetchAlbums(q?: string): Promise<{ albums: PaginatedAlbums }> {
-  return api.get(`/admin/albums${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+export function fetchAlbums(q?: string, page?: number): Promise<{ albums: PaginatedAlbums }> {
+  return api.get(`/admin/albums${toQuery({ q, page })}`);
 }
 
 export function fetchAlbum(id: number): Promise<{ album: Album }> {
@@ -961,9 +961,8 @@ export interface PaginatedTestimonials {
   total: number;
 }
 
-export function fetchTestimonials(status?: string): Promise<{ testimonials: PaginatedTestimonials }> {
-  const query = status ? `?status=${status}` : '';
-  return api.get(`/admin/testimonials${query}`);
+export function fetchTestimonials(status?: string, page?: number): Promise<{ testimonials: PaginatedTestimonials }> {
+  return api.get(`/admin/testimonials${toQuery({ status, page })}`);
 }
 
 export function updateTestimonialStatus(id: number, status: TestimonialStatus) {
@@ -995,8 +994,8 @@ export interface PaginatedContactMessages {
   total: number;
 }
 
-export function fetchContactMessages(): Promise<{ messages: PaginatedContactMessages }> {
-  return api.get('/admin/messages');
+export function fetchContactMessages(page?: number): Promise<{ messages: PaginatedContactMessages }> {
+  return api.get(`/admin/messages${toQuery({ page })}`);
 }
 
 export function markMessageRead(id: number) {

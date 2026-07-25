@@ -6,7 +6,9 @@ import {
   markMessageRead,
   markMessageReplied,
   type ContactMessage,
+  type PaginatedContactMessages,
 } from '../lib/api';
+import { Pagination } from '../components/ui/Pagination';
 
 const statusStyles: Record<string, string> = {
   new: 'bg-amber-100 text-amber-700',
@@ -15,19 +17,21 @@ const statusStyles: Record<string, string> = {
 };
 
 export function ContactMessages() {
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [messages, setMessages] = useState<PaginatedContactMessages | null>(null);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   function load() {
     setIsLoading(true);
-    fetchContactMessages()
-      .then((res) => setMessages(res.messages.data))
+    fetchContactMessages(page)
+      .then((res) => setMessages(res.messages))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load messages.'))
       .finally(() => setIsLoading(false));
   }
 
-  useEffect(load, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, [page]);
 
   async function handleMarkRead(m: ContactMessage) {
     try {
@@ -70,11 +74,11 @@ export function ContactMessages() {
 
       {isLoading ? (
         <p className="text-sm text-muted">Loading messages…</p>
-      ) : messages.length === 0 ? (
+      ) : !messages || messages.data.length === 0 ? (
         <p className="mirror-card p-6 text-center text-sm text-muted">No messages.</p>
       ) : (
         <div className="mirror-card divide-y divide-ink/5">
-          {messages.map((m) => (
+          {messages.data.map((m) => (
             <div key={m.id} className="space-y-2 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -124,6 +128,14 @@ export function ContactMessages() {
           ))}
         </div>
       )}
+
+      <Pagination
+        currentPage={messages?.current_page ?? 1}
+        lastPage={messages?.last_page ?? 1}
+        total={messages?.total ?? 0}
+        onPageChange={setPage}
+        itemLabel="message"
+      />
     </div>
   );
 }

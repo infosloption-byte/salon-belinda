@@ -4,9 +4,11 @@ import {
   deleteTestimonial,
   fetchTestimonials,
   updateTestimonialStatus,
+  type PaginatedTestimonials,
   type Testimonial,
   type TestimonialStatus,
 } from '../lib/api';
+import { Pagination } from '../components/ui/Pagination';
 
 const TABS: { value: string; label: string }[] = [
   { value: '', label: 'All' },
@@ -22,21 +24,29 @@ const statusStyles: Record<TestimonialStatus, string> = {
 };
 
 export function Testimonials() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [testimonials, setTestimonials] = useState<PaginatedTestimonials | null>(null);
   const [statusFilter, setStatusFilter] = useState('pending');
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   function load() {
     setIsLoading(true);
-    fetchTestimonials(statusFilter || undefined)
-      .then((res) => setTestimonials(res.testimonials.data))
+    fetchTestimonials(statusFilter || undefined, page)
+      .then((res) => setTestimonials(res.testimonials))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load reviews.'))
       .finally(() => setIsLoading(false));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [statusFilter]);
+  useEffect(load, [statusFilter, page]);
+
+  // Switching tabs should snap back to page 1 — otherwise staying on, say,
+  // page 3 of "Pending" while switching to "Rejected" could show an empty page.
+  function handleTabChange(status: string) {
+    setStatusFilter(status);
+    setPage(1);
+  }
 
   async function handleStatus(t: Testimonial, status: TestimonialStatus) {
     try {
@@ -72,7 +82,7 @@ export function Testimonials() {
         {TABS.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => setStatusFilter(tab.value)}
+            onClick={() => handleTabChange(tab.value)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
               statusFilter === tab.value ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'
             }`}
@@ -84,11 +94,11 @@ export function Testimonials() {
 
       {isLoading ? (
         <p className="text-sm text-muted">Loading reviews…</p>
-      ) : testimonials.length === 0 ? (
+      ) : !testimonials || testimonials.data.length === 0 ? (
         <p className="mirror-card p-6 text-center text-sm text-muted">No reviews here.</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {testimonials.map((t) => (
+          {testimonials.data.map((t) => (
             <div key={t.id} className="mirror-card space-y-2 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -133,6 +143,14 @@ export function Testimonials() {
           ))}
         </div>
       )}
+
+      <Pagination
+        currentPage={testimonials?.current_page ?? 1}
+        lastPage={testimonials?.last_page ?? 1}
+        total={testimonials?.total ?? 0}
+        onPageChange={setPage}
+        itemLabel="review"
+      />
     </div>
   );
 }
