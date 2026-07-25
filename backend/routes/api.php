@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\AppointmentController as AdminAppointmentCont
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Api\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Api\Admin\CustomerPointController as AdminCustomerPointController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\GalleryCategoryController as AdminGalleryCategoryController;
 use App\Http\Controllers\Api\Admin\GalleryController as AdminGalleryController;
@@ -88,6 +89,10 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::get('customers/{customer}', [AdminCustomerController::class, 'show'])->name('customers.show');
             Route::put('customers/{customer}', [AdminCustomerController::class, 'update'])->name('customers.update');
             Route::delete('customers/{customer}', [AdminCustomerController::class, 'destroy'])->name('customers.destroy');
+
+            // Points ledger — SALON-OPS-ENHANCEMENTS.md, "Customers" (Tier 3)
+            Route::get('customers/{customer}/points', [AdminCustomerPointController::class, 'index'])->name('customers.points.index');
+            Route::post('customers/{customer}/points', [AdminCustomerPointController::class, 'store'])->name('customers.points.store');
 
             // My Account — every logged-in user (admin or staff) manages their own login here.
             Route::get('account', [AdminUserController::class, 'account'])->name('account');

@@ -717,12 +717,23 @@ export function toggleStaffActive(id: number) {
 
 // --- Customers ---
 
+export const CUSTOMER_TAGS: Record<string, string> = {
+  vip: 'VIP',
+  bridal: 'Bridal',
+  regular: 'Regular',
+  allergy_sensitive: 'Allergy Sensitive',
+};
+
 export interface Customer {
   id: number;
   name: string;
   phone: string;
   email: string | null;
   notes: string | null;
+  tags: string[] | null;
+  date_of_birth: string | null;
+  anniversary_date: string | null;
+  points_balance: number;
   jobs_count?: number;
 }
 
@@ -740,7 +751,7 @@ export interface PaginatedCustomers {
   total: number;
 }
 
-export function fetchCustomers(q?: string): Promise<{ customers: PaginatedCustomers; isAdmin: boolean }> {
+export function fetchCustomers(q?: string): Promise<{ customers: PaginatedCustomers; isAdmin: boolean; availableTags: Record<string, string> }> {
   const query = q ? `?q=${encodeURIComponent(q)}` : '';
   return api.get(`/admin/customers${query}`);
 }
@@ -749,16 +760,65 @@ export function fetchCustomer(id: number): Promise<{ customer: Customer; jobs: C
   return api.get(`/admin/customers/${id}`);
 }
 
-export function createCustomer(data: { name: string; phone: string; email?: string; notes?: string }) {
+interface CustomerFormData {
+  name: string;
+  phone: string;
+  email?: string;
+  notes?: string;
+  tags?: string[];
+  date_of_birth?: string;
+  anniversary_date?: string;
+}
+
+export function createCustomer(data: CustomerFormData) {
   return api.post<{ customer: Customer; message: string }>('/admin/customers', data);
 }
 
-export function updateCustomer(id: number, data: { name: string; phone: string; email?: string; notes?: string }) {
+export function updateCustomer(id: number, data: CustomerFormData) {
   return api.put<{ customer: Customer; message: string }>(`/admin/customers/${id}`, data);
 }
 
 export function deleteCustomer(id: number) {
   return api.del<{ message: string }>(`/admin/customers/${id}`);
+}
+
+// --- Customer points ledger — SALON-OPS-ENHANCEMENTS.md, "Customers" (Tier 3) ---
+
+export type CustomerPointType = 'earned' | 'redeemed' | 'adjustment';
+
+export interface CustomerPoint {
+  id: number;
+  customer_id: number;
+  type: CustomerPointType;
+  points: number;
+  balance_after: number;
+  reason: string | null;
+  reference_type: string | null;
+  reference_id: number | null;
+  created_by: number | null;
+  creator?: { id: number; name: string } | null;
+  created_at: string;
+}
+
+export interface PaginatedCustomerPoints {
+  data: CustomerPoint[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchCustomerPoints(customerId: number, page = 1): Promise<{ ledger: PaginatedCustomerPoints; pointsBalance: number }> {
+  return api.get(`/admin/customers/${customerId}/points?page=${page}`);
+}
+
+export function createCustomerPoint(
+  customerId: number,
+  data: { type: CustomerPointType; points: number; reason?: string }
+) {
+  return api.post<{ entry: CustomerPoint; customer: Customer; message: string }>(
+    `/admin/customers/${customerId}/points`,
+    data
+  );
 }
 
 // --- Users (dashboard logins) + My Account ---

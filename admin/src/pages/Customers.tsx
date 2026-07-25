@@ -6,12 +6,44 @@ import {
   fetchCustomer,
   fetchCustomers,
   updateCustomer,
+  CUSTOMER_TAGS,
   type Customer,
   type CustomerJob,
 } from '../lib/api';
+import { CustomerPointsPanel } from '../components/customers/CustomerPointsPanel';
 
 function formatCurrency(n: number) {
   return `LKR ${n.toLocaleString('en-US')}`;
+}
+
+function TagPicker({ name, defaultValue }: { name: string; defaultValue?: string[] }) {
+  return (
+    <div className="col-span-2 flex flex-wrap gap-3 rounded-lg border border-ink/10 bg-paper px-3 py-2 text-xs lg:col-span-4">
+      {Object.entries(CUSTOMER_TAGS).map(([value, label]) => (
+        <label key={value} className="flex items-center gap-1.5 text-ink">
+          <input type="checkbox" name={name} value={value} defaultChecked={defaultValue?.includes(value)} />
+          {label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function TagChips({ tags }: { tags: string[] | null }) {
+  if (!tags || tags.length === 0) return null;
+  return (
+    <span className="ml-1 inline-flex flex-wrap gap-1">
+      {tags.map((t) => (
+        <span key={t} className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-medium text-wine">
+          {CUSTOMER_TAGS[t] ?? t}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function readTags(form: FormData): string[] {
+  return form.getAll('tags').map(String);
 }
 
 export function Customers() {
@@ -43,6 +75,9 @@ export function Customers() {
         phone: String(form.get('phone')),
         email: String(form.get('email') || ''),
         notes: String(form.get('notes') || ''),
+        tags: readTags(form),
+        date_of_birth: String(form.get('date_of_birth') || '') || undefined,
+        anniversary_date: String(form.get('anniversary_date') || '') || undefined,
       });
       setAdding(false);
       load();
@@ -60,6 +95,9 @@ export function Customers() {
         phone: String(form.get('phone')),
         email: String(form.get('email') || ''),
         notes: String(form.get('notes') || ''),
+        tags: readTags(form),
+        date_of_birth: String(form.get('date_of_birth') || '') || undefined,
+        anniversary_date: String(form.get('anniversary_date') || '') || undefined,
       });
       setEditing(null);
       load();
@@ -91,6 +129,10 @@ export function Customers() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load customer history.');
     }
+  }
+
+  function handlePointsChanged(updated: Customer) {
+    setCustomers((prev) => prev.map((c) => (c.id === updated.id ? { ...c, points_balance: updated.points_balance } : c)));
   }
 
   return (
@@ -133,6 +175,15 @@ export function Customers() {
           <input name="phone" required placeholder="Phone" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
           <input name="email" type="email" placeholder="Email (optional)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
           <input name="notes" placeholder="Notes (optional)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+          <label className="text-xs text-muted">
+            Date of birth
+            <input name="date_of_birth" type="date" className="mt-1 w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+          </label>
+          <label className="text-xs text-muted">
+            Anniversary date
+            <input name="anniversary_date" type="date" className="mt-1 w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+          </label>
+          <TagPicker name="tags" />
           <button type="submit" className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light lg:col-span-4 lg:w-fit">
             Save
           </button>
@@ -156,6 +207,25 @@ export function Customers() {
                 <input name="phone" required defaultValue={customer.phone} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
                 <input name="email" type="email" defaultValue={customer.email ?? ''} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
                 <input name="notes" defaultValue={customer.notes ?? ''} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+                <label className="text-xs text-muted">
+                  Date of birth
+                  <input
+                    name="date_of_birth"
+                    type="date"
+                    defaultValue={customer.date_of_birth?.slice(0, 10) ?? ''}
+                    className="mt-1 w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                </label>
+                <label className="text-xs text-muted">
+                  Anniversary date
+                  <input
+                    name="anniversary_date"
+                    type="date"
+                    defaultValue={customer.anniversary_date?.slice(0, 10) ?? ''}
+                    className="mt-1 w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                </label>
+                <TagPicker name="tags" defaultValue={customer.tags ?? []} />
                 <div className="flex gap-2 lg:col-span-4">
                   <button type="submit" className="rounded-lg bg-wine px-3 py-2 text-xs font-medium text-paper hover:bg-wine-light">
                     Save
@@ -171,11 +241,15 @@ export function Customers() {
                   <button onClick={() => toggleExpand(customer)} className="flex flex-1 items-center gap-2 text-left">
                     {expanded === customer.id ? <ChevronUp size={16} className="text-muted" /> : <ChevronDown size={16} className="text-muted" />}
                     <div>
-                      <p className="text-sm text-ink">{customer.name}</p>
+                      <p className="text-sm text-ink">
+                        {customer.name}
+                        <TagChips tags={customer.tags} />
+                      </p>
                       <p className="text-xs text-muted">
                         {customer.phone}
                         {customer.email ? ` · ${customer.email}` : ''}
                         {customer.jobs_count !== undefined ? ` · ${customer.jobs_count} visits` : ''}
+                        {` · ${customer.points_balance} points`}
                       </p>
                     </div>
                   </button>
@@ -189,32 +263,37 @@ export function Customers() {
                   </div>
                 </div>
                 {expanded === customer.id && (
-                  <div className="border-t border-ink/5 bg-paper-dim/40 p-4">
-                    {!detail ? (
-                      <p className="text-xs text-muted">Loading history…</p>
-                    ) : (
-                      <>
-                        <p className="mb-2 text-xs text-muted">
-                          {detail.visitCount} visits · {formatCurrency(detail.totalSpent)} total spent
-                          {detail.lastVisit && <> · last visit {detail.lastVisit}</>}
-                        </p>
-                        {detail.jobs.length === 0 ? (
-                          <p className="text-xs text-muted">No job history yet.</p>
-                        ) : (
-                          <div className="space-y-1">
-                            {detail.jobs.map((job) => (
-                              <div key={job.id} className="flex justify-between text-xs text-ink">
-                                <span>
-                                  {job.job_date} · <span className="capitalize">{job.status}</span>
-                                </span>
-                                <span>{formatCurrency(job.total_paid)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  <>
+                    <div className="border-t border-ink/5 bg-paper-dim/40 p-4">
+                      {!detail ? (
+                        <p className="text-xs text-muted">Loading history…</p>
+                      ) : (
+                        <>
+                          <p className="mb-2 text-xs text-muted">
+                            {detail.visitCount} visits · {formatCurrency(detail.totalSpent)} total spent
+                            {detail.lastVisit && <> · last visit {detail.lastVisit}</>}
+                            {customer.date_of_birth && <> · birthday {customer.date_of_birth.slice(0, 10)}</>}
+                            {customer.anniversary_date && <> · anniversary {customer.anniversary_date.slice(0, 10)}</>}
+                          </p>
+                          {detail.jobs.length === 0 ? (
+                            <p className="text-xs text-muted">No job history yet.</p>
+                          ) : (
+                            <div className="space-y-1">
+                              {detail.jobs.map((job) => (
+                                <div key={job.id} className="flex justify-between text-xs text-ink">
+                                  <span>
+                                    {job.job_date} · <span className="capitalize">{job.status}</span>
+                                  </span>
+                                  <span>{formatCurrency(job.total_paid)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <CustomerPointsPanel customer={customer} onPointsChanged={handlePointsChanged} />
+                  </>
                 )}
               </div>
             )

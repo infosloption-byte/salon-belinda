@@ -240,6 +240,15 @@ class JobController extends Controller
         $tipNote = ($data['tip_amount'] ?? 0) > 0 ? ' + LKR '.number_format($data['tip_amount']).' tip' : '';
         ActivityLogger::log('job.payment_recorded', 'Recorded LKR '.number_format($data['amount'])."{$tipNote} payment ({$data['method']}) on job #{$job->id}", $job);
 
+        // SALON-OPS-ENHANCEMENTS.md, "Customers" (Tier 3) — points earned
+        // automatically off the amount just paid (tip excluded — see
+        // config/loyalty.php). Removing a payment doesn't claw the points
+        // back; that's a deliberate simplification (a payment is rarely
+        // removed except to correct an entry mistake, and clawback would
+        // need to track exactly how many points came from which payment).
+        $pointsEarned = intdiv($data['amount'], max(1, (int) config('loyalty.currency_per_point')));
+        $job->customer?->earnPoints($pointsEarned, "Payment on job #{$job->id}", 'job', $job->id, Auth::id());
+
         return response()->json(['job' => $job->fresh(['items.staff', 'items.service', 'payments.recordedBy']), 'message' => 'Payment recorded.'], 201);
     }
 

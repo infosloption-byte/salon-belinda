@@ -46,7 +46,7 @@ class CustomerController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return response()->json(['customers' => $customers, 'isAdmin' => $isAdmin]);
+        return response()->json(['customers' => $customers, 'isAdmin' => $isAdmin, 'availableTags' => Customer::TAGS]);
     }
 
     public function store(Request $request): JsonResponse
@@ -117,6 +117,11 @@ class CustomerController extends Controller
             'phone' => ['required', 'string', 'max:30', Rule::unique('customers', 'phone')->ignore($ignoreId)],
             'email' => ['nullable', 'email', 'max:150'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            // SALON-OPS-ENHANCEMENTS.md, "Customers" (Tier 3)
+            'tags' => ['nullable', 'array'],
+            'tags.*' => [Rule::in(array_keys(Customer::TAGS))],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'anniversary_date' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
     }
 }
