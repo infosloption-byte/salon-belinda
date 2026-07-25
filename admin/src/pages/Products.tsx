@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ClipboardList, Plus, Trash2, Pencil, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, X } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
 import {
   createProduct,
   createProductCategory,
@@ -12,7 +13,6 @@ import {
   type Product,
   type ProductCategoryItem,
 } from '../lib/api';
-import { StockLedgerPanel } from '../components/products/StockLedgerPanel';
 
 function formatPrice(cents: number) {
   return `LKR ${cents.toLocaleString('en-US')}`;
@@ -154,11 +154,11 @@ export function Products() {
   const [editingCategory, setEditingCategory] = useState<ProductCategoryItem | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [expandedLedger, setExpandedLedger] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   function load() {
     setIsLoading(true);
-    fetchProducts(activeCategory || undefined)
+    fetchProducts({ category: activeCategory || undefined, page })
       .then((res) => {
         setProducts(res.products);
         setCategories(res.categories);
@@ -168,7 +168,15 @@ export function Products() {
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [activeCategory]);
+  useEffect(load, [activeCategory, page]);
+
+  // Changing the category filter should snap back to page 1 — staying on,
+  // say, page 3 of "All" while switching to a category with only one page
+  // would otherwise show an empty result.
+  function handleCategoryChange(category: string) {
+    setActiveCategory(category);
+    setPage(1);
+  }
 
   async function handleAddCategory(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -204,12 +212,6 @@ export function Products() {
     }
   }
 
-  function handleStockChanged(updated: Product) {
-    setProducts((prev) =>
-      prev ? { ...prev, data: prev.data.map((p) => (p.id === updated.id ? updated : p)) } : prev
-    );
-  }
-
   async function handleDeleteProduct(product: Product) {
     if (!confirm(`Delete "${product.name}"?`)) return;
     try {
@@ -236,7 +238,7 @@ export function Products() {
       <div className="mirror-card p-4">
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setActiveCategory('')}
+            onClick={() => handleCategoryChange('')}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium ${activeCategory === '' ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'}`}
           >
             All
@@ -251,7 +253,7 @@ export function Products() {
             ) : (
               <span key={c.id} className="group flex items-center gap-1">
                 <button
-                  onClick={() => setActiveCategory(c.name)}
+                  onClick={() => handleCategoryChange(c.name)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-medium ${activeCategory === c.name ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'}`}
                 >
                   {c.name}
@@ -323,15 +325,6 @@ export function Products() {
                   <p className="text-xs text-muted">{product.category}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    onClick={() => setExpandedLedger((v) => (v === product.id ? null : product.id))}
-                    title="Stock ledger"
-                    className={`rounded-lg border p-1.5 hover:bg-paper-dim ${
-                      expandedLedger === product.id ? 'border-gold text-gold' : 'border-ink/10 text-ink'
-                    }`}
-                  >
-                    <ClipboardList size={14} />
-                  </button>
                   <button onClick={() => setEditingProduct(product)} className="rounded-lg border border-ink/10 p-1.5 text-ink hover:bg-paper-dim">
                     <Pencil size={14} />
                   </button>
@@ -357,15 +350,18 @@ export function Products() {
                   {product.in_stock ? `${product.stock_count} in stock` : 'Out of stock'}
                 </span>
               </div>
-              {expandedLedger === product.id && (
-                <div className="-mx-4 -mb-4 mt-4">
-                  <StockLedgerPanel product={product} onStockChanged={handleStockChanged} />
-                </div>
-              )}
             </div>
           )
         )}
       </div>
+
+      <Pagination
+        currentPage={products?.current_page ?? 1}
+        lastPage={products?.last_page ?? 1}
+        total={products?.total ?? 0}
+        onPageChange={setPage}
+        itemLabel="product"
+      />
     </div>
   );
 }

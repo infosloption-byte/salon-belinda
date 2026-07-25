@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Trash2, X, FileDown, Eye, ArrowLeft } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
 import {
   addJobItem,
   addJobPayment,
@@ -485,15 +486,21 @@ export function Jobs() {
   const [jobs, setJobs] = useState<PaginatedJobs | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   function load() {
-    fetchJobs({ status: statusFilter || undefined })
+    fetchJobs({ status: statusFilter || undefined, page })
       .then((res) => setJobs(res.jobs))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load jobs.'));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [statusFilter, view]);
+  useEffect(load, [statusFilter, view, page]);
+
+  function handleStatusFilterChange(status: string) {
+    setStatusFilter(status);
+    setPage(1);
+  }
 
   if (view === 'create') {
     return (
@@ -527,7 +534,7 @@ export function Jobs() {
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+        <select value={statusFilter} onChange={(e) => handleStatusFilterChange(e.target.value)}
           className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold">
           <option value="">All statuses</option>
           {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -562,6 +569,14 @@ export function Jobs() {
           </button>
         ))}
       </div>
+
+      <Pagination
+        currentPage={jobs?.current_page ?? 1}
+        lastPage={jobs?.last_page ?? 1}
+        total={jobs?.total ?? 0}
+        onPageChange={setPage}
+        itemLabel="job"
+      />
     </div>
   );
 }

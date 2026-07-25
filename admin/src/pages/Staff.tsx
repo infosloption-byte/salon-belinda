@@ -1,28 +1,40 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, Trash2, Pencil, Power, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { createStaff, deleteStaff, fetchStaff, toggleStaffActive, updateStaff, type Staff as StaffMember } from '../lib/api';
+import { createStaff, deleteStaff, fetchStaff, toggleStaffActive, updateStaff, type PaginatedStaff, type Staff as StaffMember } from '../lib/api';
 import { RosterWidget } from '../components/staff/RosterWidget';
 import { StaffDetailPanel } from '../components/staff/StaffDetailPanel';
+import { Pagination } from '../components/ui/Pagination';
 
 export function Staff() {
-  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [staff, setStaff] = useState<PaginatedStaff | null>(null);
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive'>('active');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<StaffMember | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
-  function load() {
+  function load(targetPage = page) {
     setIsLoading(true);
-    fetchStaff({ status: statusFilter })
-      .then((res) => setStaff(res.staff.data))
+    fetchStaff({ status: statusFilter, page: targetPage })
+      .then((res) => setStaff(res.staff))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load staff.'))
       .finally(() => setIsLoading(false));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [statusFilter]);
+  useEffect(() => load(1), [statusFilter]);
+
+  function handleStatusFilterChange(status: 'active' | 'inactive') {
+    setStatusFilter(status);
+    setPage(1);
+  }
+
+  function goToPage(p: number) {
+    setPage(p);
+    load(p);
+  }
 
   async function handleAdd(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -95,7 +107,7 @@ export function Staff() {
           {(['active', 'inactive'] as const).map((s) => (
             <button
               key={s}
-              onClick={() => setStatusFilter(s)}
+              onClick={() => handleStatusFilterChange(s)}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize ${
                 statusFilter === s ? 'bg-wine text-paper' : 'border border-ink/10 text-ink hover:bg-paper-dim'
               }`}
@@ -126,11 +138,11 @@ export function Staff() {
 
       {isLoading ? (
         <p className="text-sm text-muted">Loading staff…</p>
-      ) : staff.length === 0 ? (
+      ) : !staff || staff.data.length === 0 ? (
         <p className="mirror-card p-6 text-center text-sm text-muted">No {statusFilter} staff.</p>
       ) : (
         <div className="mirror-card divide-y divide-ink/5">
-          {staff.map((member) =>
+          {staff.data.map((member) =>
             editing?.id === member.id ? (
               <form
                 key={member.id}
@@ -185,6 +197,14 @@ export function Staff() {
           )}
         </div>
       )}
+
+      <Pagination
+        currentPage={staff?.current_page ?? 1}
+        lastPage={staff?.last_page ?? 1}
+        total={staff?.total ?? 0}
+        onPageChange={goToPage}
+        itemLabel="staff member"
+      />
     </div>
   );
 }

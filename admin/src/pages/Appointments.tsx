@@ -1,5 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { Trash2, X, List, CalendarDays, Clock3 } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
 import {
   assignAppointmentStaff,
   deleteAppointment,
@@ -32,10 +33,11 @@ export function Appointments() {
   const [statusFilter, setStatusFilter] = useState('');
   const [waitlistedOnly, setWaitlistedOnly] = useState(false);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
-  function load() {
+  function load(targetPage = page) {
     setIsLoading(true);
-    fetchAppointments({ status: statusFilter || undefined, q: search || undefined, waitlisted: waitlistedOnly || undefined })
+    fetchAppointments({ status: statusFilter || undefined, q: search || undefined, waitlisted: waitlistedOnly || undefined, page: targetPage })
       .then((res) => {
         setAppointments(res.appointments);
         setStaffList(res.staffList);
@@ -46,7 +48,17 @@ export function Appointments() {
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [statusFilter, waitlistedOnly]);
+  useEffect(() => load(1), [statusFilter, waitlistedOnly]);
+
+  function handleSearch() {
+    setPage(1);
+    load(1);
+  }
+
+  function goToPage(p: number) {
+    setPage(p);
+    load(p);
+  }
 
   async function handleStatusChange(e: ChangeEvent<HTMLSelectElement>, appointment: Appointment) {
     const status = e.target.value as AppointmentStatus;
@@ -129,7 +141,7 @@ export function Appointments() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && load()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
           />
         </label>
@@ -146,7 +158,7 @@ export function Appointments() {
             ))}
           </select>
         </label>
-        <button onClick={load} className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
+        <button onClick={handleSearch} className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
           Search
         </button>
       </div>
@@ -222,9 +234,13 @@ export function Appointments() {
       </div>
 
       {appointments && appointments.last_page > 1 && (
-        <p className="text-center text-xs text-muted">
-          Page {appointments.current_page} of {appointments.last_page} ({appointments.total} total)
-        </p>
+        <Pagination
+          currentPage={appointments.current_page}
+          lastPage={appointments.last_page}
+          total={appointments.total}
+          onPageChange={goToPage}
+          itemLabel="appointment"
+        />
       )}
         </>
       )}

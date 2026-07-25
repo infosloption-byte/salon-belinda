@@ -261,8 +261,8 @@ export interface PaginatedProducts {
   total: number;
 }
 
-export function fetchProducts(category?: string): Promise<{ products: PaginatedProducts; categories: ProductCategoryItem[] }> {
-  return api.get(`/admin/products${category ? `?category=${encodeURIComponent(category)}` : ''}`);
+export function fetchProducts(params?: { category?: string; page?: number }): Promise<{ products: PaginatedProducts; categories: ProductCategoryItem[] }> {
+  return api.get(`/admin/products${toQuery(params)}`);
 }
 
 export function createProduct(formData: FormData) {
@@ -275,45 +275,6 @@ export function updateProduct(id: number, formData: FormData) {
 
 export function deleteProduct(id: number) {
   return api.del<{ message: string }>(`/admin/products/${id}`);
-}
-
-// --- Stock movement ledger — SALON-OPS-ENHANCEMENTS.md, "Inventory" (Tier 3) ---
-
-export type StockMovementType = 'sale' | 'restock' | 'adjustment' | 'correction';
-
-export interface StockMovement {
-  id: number;
-  product_id: number;
-  type: StockMovementType;
-  quantity_change: number;
-  balance_after: number;
-  reason: string | null;
-  reference_type: string | null;
-  reference_id: number | null;
-  created_by: number | null;
-  creator?: { id: number; name: string } | null;
-  created_at: string;
-}
-
-export interface PaginatedStockMovements {
-  data: StockMovement[];
-  current_page: number;
-  last_page: number;
-  total: number;
-}
-
-export function fetchStockMovements(productId: number, page = 1): Promise<{ movements: PaginatedStockMovements }> {
-  return api.get(`/admin/products/${productId}/stock-movements?page=${page}`);
-}
-
-export function createStockMovement(
-  productId: number,
-  data: { type: 'restock' | 'adjustment'; quantity_change: number; reason?: string }
-) {
-  return api.post<{ movement: StockMovement; product: Product; message: string }>(
-    `/admin/products/${productId}/stock-movements`,
-    data
-  );
 }
 
 export function createProductCategory(name: string) {
@@ -420,6 +381,7 @@ export function fetchAppointments(params?: {
   date_to?: string;
   staff_id?: string;
   waitlisted?: boolean;
+  page?: number;
 }): Promise<{ appointments: PaginatedAppointments; staffList: AppointmentStaffOption[]; waitlistedCount: number }> {
   const query = new URLSearchParams(
     Object.entries(params ?? {})
@@ -581,9 +543,8 @@ export interface ActiveStaffMember {
   is_active: boolean;
 }
 
-export function fetchJobs(params?: { status?: string; q?: string; from?: string; to?: string }): Promise<{ jobs: PaginatedJobs }> {
-  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
-  return api.get(`/admin/jobs${query ? `?${query}` : ''}`);
+export function fetchJobs(params?: { status?: string; q?: string; from?: string; to?: string; page?: number }): Promise<{ jobs: PaginatedJobs }> {
+  return api.get(`/admin/jobs${toQuery(params)}`);
 }
 
 export function fetchJobCreateData(params?: { q?: string; customer_id?: number; appointment_id?: number }): Promise<{
@@ -694,9 +655,8 @@ export interface PaginatedStaff {
   total: number;
 }
 
-export function fetchStaff(params?: { status?: string; q?: string }): Promise<{ staff: PaginatedStaff }> {
-  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
-  return api.get(`/admin/staff${query ? `?${query}` : ''}`);
+export function fetchStaff(params?: { status?: string; q?: string; page?: number }): Promise<{ staff: PaginatedStaff }> {
+  return api.get(`/admin/staff${toQuery(params)}`);
 }
 
 export function createStaff(data: { name: string; role_title?: string; phone?: string; commission_percent: number }) {
@@ -717,23 +677,12 @@ export function toggleStaffActive(id: number) {
 
 // --- Customers ---
 
-export const CUSTOMER_TAGS: Record<string, string> = {
-  vip: 'VIP',
-  bridal: 'Bridal',
-  regular: 'Regular',
-  allergy_sensitive: 'Allergy Sensitive',
-};
-
 export interface Customer {
   id: number;
   name: string;
   phone: string;
   email: string | null;
   notes: string | null;
-  tags: string[] | null;
-  date_of_birth: string | null;
-  anniversary_date: string | null;
-  points_balance: number;
   jobs_count?: number;
 }
 
@@ -751,74 +700,24 @@ export interface PaginatedCustomers {
   total: number;
 }
 
-export function fetchCustomers(q?: string): Promise<{ customers: PaginatedCustomers; isAdmin: boolean; availableTags: Record<string, string> }> {
-  const query = q ? `?q=${encodeURIComponent(q)}` : '';
-  return api.get(`/admin/customers${query}`);
+export function fetchCustomers(params?: { q?: string; page?: number }): Promise<{ customers: PaginatedCustomers; isAdmin: boolean }> {
+  return api.get(`/admin/customers${toQuery(params)}`);
 }
 
 export function fetchCustomer(id: number): Promise<{ customer: Customer; jobs: CustomerJob[]; visitCount: number; totalSpent: number; lastVisit: string | null }> {
   return api.get(`/admin/customers/${id}`);
 }
 
-interface CustomerFormData {
-  name: string;
-  phone: string;
-  email?: string;
-  notes?: string;
-  tags?: string[];
-  date_of_birth?: string;
-  anniversary_date?: string;
-}
-
-export function createCustomer(data: CustomerFormData) {
+export function createCustomer(data: { name: string; phone: string; email?: string; notes?: string }) {
   return api.post<{ customer: Customer; message: string }>('/admin/customers', data);
 }
 
-export function updateCustomer(id: number, data: CustomerFormData) {
+export function updateCustomer(id: number, data: { name: string; phone: string; email?: string; notes?: string }) {
   return api.put<{ customer: Customer; message: string }>(`/admin/customers/${id}`, data);
 }
 
 export function deleteCustomer(id: number) {
   return api.del<{ message: string }>(`/admin/customers/${id}`);
-}
-
-// --- Customer points ledger — SALON-OPS-ENHANCEMENTS.md, "Customers" (Tier 3) ---
-
-export type CustomerPointType = 'earned' | 'redeemed' | 'adjustment';
-
-export interface CustomerPoint {
-  id: number;
-  customer_id: number;
-  type: CustomerPointType;
-  points: number;
-  balance_after: number;
-  reason: string | null;
-  reference_type: string | null;
-  reference_id: number | null;
-  created_by: number | null;
-  creator?: { id: number; name: string } | null;
-  created_at: string;
-}
-
-export interface PaginatedCustomerPoints {
-  data: CustomerPoint[];
-  current_page: number;
-  last_page: number;
-  total: number;
-}
-
-export function fetchCustomerPoints(customerId: number, page = 1): Promise<{ ledger: PaginatedCustomerPoints; pointsBalance: number }> {
-  return api.get(`/admin/customers/${customerId}/points?page=${page}`);
-}
-
-export function createCustomerPoint(
-  customerId: number,
-  data: { type: CustomerPointType; points: number; reason?: string }
-) {
-  return api.post<{ entry: CustomerPoint; customer: Customer; message: string }>(
-    `/admin/customers/${customerId}/points`,
-    data
-  );
 }
 
 // --- Users (dashboard logins) + My Account ---
@@ -928,9 +827,9 @@ export function fetchOrders(params?: {
   q?: string;
   date_from?: string;
   date_to?: string;
+  page?: number;
 }): Promise<{ orders: PaginatedOrders }> {
-  const query = new URLSearchParams(Object.entries(params ?? {}).filter(([, v]) => v) as [string, string][]).toString();
-  return api.get(`/admin/orders${query ? `?${query}` : ''}`);
+  return api.get(`/admin/orders${toQuery(params)}`);
 }
 
 export function fetchOrder(id: number): Promise<{ order: Order }> {

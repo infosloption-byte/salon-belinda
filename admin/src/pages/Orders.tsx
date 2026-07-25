@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Download, Eye, X } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
 import {
   downloadOrderInvoice,
   fetchOrder,
@@ -9,6 +10,7 @@ import {
   updateOrderStatus,
   type Order,
   type OrderStatus,
+  type PaginatedOrders,
 } from '../lib/api';
 
 const STATUSES: OrderStatus[] = ['pending', 'processing', 'completed', 'cancelled'];
@@ -25,28 +27,43 @@ function formatCurrency(n: number) {
 }
 
 export function Orders() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<PaginatedOrders | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Order | null>(null);
+  const [page, setPage] = useState(1);
 
-  function load() {
+  function load(targetPage = page) {
     setIsLoading(true);
-    fetchOrders({ status: statusFilter || undefined, q: search || undefined })
-      .then((res) => setOrders(res.orders.data))
+    fetchOrders({ status: statusFilter || undefined, q: search || undefined, page: targetPage })
+      .then((res) => setOrders(res.orders))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load orders.'))
       .finally(() => setIsLoading(false));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(load, [statusFilter]);
+  useEffect(() => load(1), [statusFilter]);
+
+  function handleSearch() {
+    setPage(1);
+    load(1);
+  }
+
+  function goToPage(p: number) {
+    setPage(p);
+    load(p);
+  }
+
+  function replaceOrder(updated: Order) {
+    setOrders((prev) => (prev ? { ...prev, data: prev.data.map((o) => (o.id === updated.id ? updated : o)) } : prev));
+  }
 
   async function handleStatusChange(order: Order, status: OrderStatus) {
     try {
       const res = await updateOrderStatus(order.id, status);
-      setOrders((prev) => prev.map((o) => (o.id === order.id ? res.order : o)));
+      replaceOrder(res.order);
       if (selected?.id === order.id) setSelected(res.order);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update order status.');
@@ -56,7 +73,7 @@ export function Orders() {
   async function handleMarkPaid(order: Order) {
     try {
       const res = await markOrderPaid(order.id);
-      setOrders((prev) => prev.map((o) => (o.id === order.id ? res.order : o)));
+      replaceOrder(res.order);
       if (selected?.id === order.id) setSelected(res.order);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to mark order as paid.');
@@ -89,7 +106,7 @@ export function Orders() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && load()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="w-full rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
           />
         </label>
@@ -97,7 +114,10 @@ export function Orders() {
           <span className="mb-1 block text-xs text-muted">Status</span>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
             className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
           >
             <option value="">All</option>
@@ -106,18 +126,18 @@ export function Orders() {
             ))}
           </select>
         </label>
-        <button onClick={load} className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
+        <button onClick={handleSearch} className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
           Search
         </button>
       </div>
 
       {isLoading ? (
         <p className="text-sm text-muted">Loading orders…</p>
-      ) : orders.length === 0 ? (
+      ) : !orders || orders.data.length === 0 ? (
         <p className="mirror-card p-6 text-center text-sm text-muted">No orders found.</p>
       ) : (
         <div className="mirror-card divide-y divide-ink/5">
-          {orders.map((order) => (
+          {orders.data.map((order) => (
             <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
               <button onClick={() => openDetail(order)} className="flex-1 text-left">
                 <p className="text-sm font-medium text-ink">{order.order_number} · {order.customer_name}</p>
@@ -147,6 +167,14 @@ export function Orders() {
           ))}
         </div>
       )}
+
+      <Pagination
+        currentPage={orders?.current_page ?? 1}
+        lastPage={orders?.last_page ?? 1}
+        total={orders?.total ?? 0}
+        onPageChange={goToPage}
+        itemLabel="order"
+      />
 
       {selected && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40 p-4" onClick={() => setSelected(null)}>
