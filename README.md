@@ -1,84 +1,59 @@
-# Salon SaaS — Monorepo
+# Demo data seeders
 
-Independently deployable apps, converting from a single-brand salon platform into a
-white-label, multi-tenant SaaS. See `SAAS-ROADMAP.md` for the full conversion plan.
-
-```
-frontend/   React + TS + Vite — the public marketing/booking site
-shop/       React + TS + Vite — the online shop (products, cart, checkout)
-backend/    Laravel 11 — API + (currently) a server-rendered Blade admin panel,
-            being split into a pure API (see roadmap Phase 2)
-```
-
-The shop is intentionally a **separate app**, not a route inside `frontend`. This keeps deploys,
-scaling, and future backend wiring independent — the marketing site's "Shop" nav link just opens
-the shop in a new tab.
-
-## Local development
+Drop these 9 files into `backend/database/seeders/` (same paths as in this
+zip), then:
 
 ```bash
-cd frontend && cp .env.example .env && npm install && npm run dev   # http://localhost:5173
-cd shop      && cp .env.example .env && npm install && npm run dev  # http://localhost:5174
-cd backend   && cp .env.example .env && composer install && php artisan migrate --seed && php artisan serve  # http://localhost:8000
+cd backend
+composer install               # make sure dev deps are installed — fakerphp/faker
+                                # is require-dev only, needed for these seeders
+php artisan migrate             # if you haven't already applied the Tier 3
+                                # customer/product migrations from last time
+php artisan db:seed             # base data — staff, services, products, etc.
+                                # (skip if you already have this)
+php artisan db:seed --class="Database\Seeders\DemoDataSeeder"
 ```
 
-Each frontend app's `.env` sets its own salon branding (`VITE_SALON_NAME`, `VITE_SALON_ADDRESS`,
-etc. — see `.env.example` in each app) plus where to find the other apps:
+`DemoDataSeeder` is deliberately **not** wired into the default
+`DatabaseSeeder::run()` — it's a separate, explicit opt-in so a normal
+`php artisan migrate:fresh --seed` doesn't get flooded with fake data. It
+also refuses to run if `APP_ENV=production`.
 
-- `frontend/.env` → `VITE_SHOP_URL=http://localhost:5174`, `VITE_API_URL=http://localhost:8000/api`
-- `shop/.env` → `VITE_MAIN_SITE_URL=http://localhost:5173`, `VITE_API_URL=http://localhost:8000/api`
+## What gets created
 
-This branding config is a **stop-gap for single-tenant deployments**. Once the platform is
-multi-tenant, it's replaced by a runtime fetch to a tenant-config API endpoint, keyed off the
-subdomain, so a salon owner can edit their own branding without a rebuild — see
-`SAAS-ROADMAP.md` Phase 4.
+| Seeder | Coverage |
+|---|---|
+| `CustomerDemoSeeder` | ~70 customers — tags, points (populated later by jobs), a few birthdays/anniversaries landing in the next few days (so the reminder command has something to send immediately), the rest spread across the year |
+| `StaffShiftDemoSeeder` | Rota for every staff member: 3 weeks back, this week, 2 weeks ahead, with days off |
+| `AppointmentDemoSeeder` | Past (completed/cancelled/no-show), today (mixed), and next 3 weeks (pending/confirmed, some waitlisted) |
+| `SalonJobDemoSeeder` | Past jobs (mostly completed + fully paid + points auto-awarded, some cancelled), today's jobs (in-progress with deposits, or completed), future scheduled jobs — items/commission/totals all computed the same way the real controllers do |
+| `StockMovementDemoSeeder` | Manual restocks + occasional breakage/write-off adjustments over the last 90 days, run before orders so there's stock to sell |
+| `OrderDemoSeeder` | Past 60 days + a few placed today, decrementing stock via the same path checkout uses — a few products are deliberately left low/out of stock |
+| `ContactMessageDemoSeeder` | ~35 contact form submissions, status weighted by age (recent = new, older = replied) |
+| `ActivityLogDemoSeeder` | Runs last — backfills a plausible admin activity feed referencing the customers/jobs/products the other seeders created |
 
-## Production: subdomain routing
+## After seeding
 
-Master nginx (or equivalent) container routing by `Host` header to per-app containers on a shared
-network:
+- `php artisan customers:send-milestone-reminders --dry-run` — see which
+  birthday/anniversary emails would go out today, without actually sending.
+- Products → pick any product → the ledger icon shows its full stock
+  history (restocks, sales, adjustments).
+- Customers → expand any customer → Points tab shows the auto-awarded
+  points from their completed jobs.
+- Reports (Low Stock, Revenue, etc.) should now have real numbers instead
+  of near-empty tables.
 
-```nginx
-# Main site
-server {
-    server_name yoursalon.example.com www.yoursalon.example.com;
-    location / { proxy_pass http://frontend_container:PORT; }
-}
+## A couple of honest caveats
 
-# Shop, on its own subdomain
-server {
-    server_name shop.yoursalon.example.com;
-    location / { proxy_pass http://shop_container:PORT; }
-}
-
-# API
-server {
-    server_name api.yoursalon.example.com;
-    location / { proxy_pass http://backend_container:PORT; }
-}
-```
-
-Then in each frontend app's production build-time env:
-
-- `frontend`: `VITE_SHOP_URL=https://shop.yoursalon.example.com`, `VITE_API_URL=https://api.yoursalon.example.com/api`
-- `shop`: `VITE_MAIN_SITE_URL=https://yoursalon.example.com`, `VITE_API_URL=https://api.yoursalon.example.com/api`
-
-`frontend` and `shop` are static Vite builds (`npm run build` → `dist/`), served by nginx directly
-or from small containers — no app server needed for either. `backend` is a Laravel app (PHP-FPM
-or `php artisan serve` behind nginx).
-
-See `docker-compose.yml` for a working example wiring all three together, and
-`SAAS-ROADMAP.md` for how this evolves into `{tenant}.yoursalon.com` wildcard subdomains once
-multi-tenancy lands.
-
-## Backend → frontend/shop API contract
-
-- `GET  /api/services`, `/api/gallery`, `/api/albums`, `/api/testimonials` — public site content
-- `POST /api/appointments`, `/api/contact`, `POST /api/testimonials` — public site actions
-- `GET  /api/products`, `/api/products/{slug}` — shop catalog
-- `POST /api/orders`, `GET /api/orders/{orderNumber}` — shop checkout + order lookup
-
-Admin operations (staff, customers, orders management, reports, etc.) currently live behind
-session-authenticated Blade views at `/admin/*` in `backend`. These are being rebuilt as a
-token-authenticated (`laravel/sanctum`) JSON API plus a new standalone `admin/` React app — see
-`SAAS-ROADMAP.md` Phase 2.
+- **Stock ledger chronology isn't perfectly interleaved.** Each movement's
+  `balance_after` is correct for the moment it happened *in the seeder's
+  execution order*, but timestamps are backdated somewhat independently
+  afterwards — so if you sort the ledger strictly by date, the running
+  balance won't always look perfectly monotonic. Fine for volume/feature
+  testing; don't treat it as a real point-in-time reconciliation.
+- **Orders don't have a "future" state** — there's nothing in this app
+  that schedules a shop order ahead of time, so `OrderDemoSeeder` only
+  covers past + today.
+- Re-running `DemoDataSeeder` **adds more data** rather than replacing it
+  (none of these seeders clear tables first). For a clean slate, run
+  `php artisan migrate:fresh --seed` first, then re-run `DemoDataSeeder`.
