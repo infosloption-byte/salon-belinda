@@ -55,8 +55,16 @@ class ProductController extends Controller
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
         $data['images'] = $this->mergeImages($request, $product->images ?? [], $data['images']);
 
+        $stockBefore = $product->stock_count;
+
         $product->update($data);
         ActivityLogger::log('product.updated', "Updated product \"{$product->name}\"", $product);
+
+        // The edit form lets stock_count be typed directly rather than
+        // going through the dedicated restock/adjustment endpoint — still
+        // log it on the ledger as a 'correction' so the history is
+        // complete, just distinguishable from a deliberate stock movement.
+        $product->logCorrection($product->stock_count - $stockBefore, $request->user()?->id);
 
         return response()->json(['product' => $product, 'message' => 'Product updated.']);
     }

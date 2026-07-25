@@ -97,7 +97,7 @@ class OrderController extends Controller
                     'line_total' => $line['line_total'],
                 ]);
 
-                $line['product']->decrementStock($line['quantity']);
+                $line['product']->decrementStock($line['quantity'], 'order', $order->id);
             }
 
             // Card payments: no gateway connected yet, so PaymentGatewayStub

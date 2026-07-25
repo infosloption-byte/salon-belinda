@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Plus, Trash2, Pencil, X } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, Pencil, X } from 'lucide-react';
 import {
   createProduct,
   createProductCategory,
@@ -12,6 +12,7 @@ import {
   type Product,
   type ProductCategoryItem,
 } from '../lib/api';
+import { StockLedgerPanel } from '../components/products/StockLedgerPanel';
 
 function formatPrice(cents: number) {
   return `LKR ${cents.toLocaleString('en-US')}`;
@@ -153,6 +154,7 @@ export function Products() {
   const [editingCategory, setEditingCategory] = useState<ProductCategoryItem | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [expandedLedger, setExpandedLedger] = useState<number | null>(null);
 
   function load() {
     setIsLoading(true);
@@ -200,6 +202,12 @@ export function Products() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete category.');
     }
+  }
+
+  function handleStockChanged(updated: Product) {
+    setProducts((prev) =>
+      prev ? { ...prev, data: prev.data.map((p) => (p.id === updated.id ? updated : p)) } : prev
+    );
   }
 
   async function handleDeleteProduct(product: Product) {
@@ -315,6 +323,15 @@ export function Products() {
                   <p className="text-xs text-muted">{product.category}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    onClick={() => setExpandedLedger((v) => (v === product.id ? null : product.id))}
+                    title="Stock ledger"
+                    className={`rounded-lg border p-1.5 hover:bg-paper-dim ${
+                      expandedLedger === product.id ? 'border-gold text-gold' : 'border-ink/10 text-ink'
+                    }`}
+                  >
+                    <ClipboardList size={14} />
+                  </button>
                   <button onClick={() => setEditingProduct(product)} className="rounded-lg border border-ink/10 p-1.5 text-ink hover:bg-paper-dim">
                     <Pencil size={14} />
                   </button>
@@ -340,6 +357,11 @@ export function Products() {
                   {product.in_stock ? `${product.stock_count} in stock` : 'Out of stock'}
                 </span>
               </div>
+              {expandedLedger === product.id && (
+                <div className="-mx-4 -mb-4 mt-4">
+                  <StockLedgerPanel product={product} onStockChanged={handleStockChanged} />
+                </div>
+              )}
             </div>
           )
         )}

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\Admin\StaffController as AdminStaffController;
 use App\Http\Controllers\Api\Admin\StaffShiftController as AdminStaffShiftController;
+use App\Http\Controllers\Api\Admin\StockMovementController as AdminStockMovementController;
 use App\Http\Controllers\Api\Admin\TestimonialController as AdminTestimonialController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\AppointmentController;
@@ -116,6 +117,10 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::post('products/categories', [AdminProductCategoryController::class, 'store'])->name('products.categories.store');
             Route::put('products/categories/{productCategory}', [AdminProductCategoryController::class, 'update'])->name('products.categories.update');
             Route::delete('products/categories/{productCategory}', [AdminProductCategoryController::class, 'destroy'])->name('products.categories.destroy');
+
+            // Stock movement ledger — SALON-OPS-ENHANCEMENTS.md, "Inventory" (Tier 3)
+            Route::get('products/{product}/stock-movements', [AdminStockMovementController::class, 'index'])->name('products.stockMovements.index');
+            Route::post('products/{product}/stock-movements', [AdminStockMovementController::class, 'store'])->name('products.stockMovements.store');
 
             // Gallery
             Route::get('gallery', [AdminGalleryController::class, 'index'])->name('gallery.index');

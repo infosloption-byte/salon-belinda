@@ -49,7 +49,7 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 
 ### Inventory
 
-- [ ] **(Tier 3)** Stock is a single counter, no movement ledger (no record of *why* stock changed — sold, used in a service, damaged, restocked). New `stock_movements` table; refactor `Product::decrementStock()` and any other stock-writing path to log a reason instead of just mutating the counter.
+- [x] **(Tier 3)** Stock movement ledger — done 2026-07-25. New `stock_movements` table records every stock change with a reason: `Product::decrementStock()` (public checkout) now logs a `sale` movement tagged with the order, `ProductController::update()` logs a `correction` movement when `stock_count` is edited directly on the product form, and a new `Product::applyMovement()` behind `GET/POST /admin/products/{product}/stock-movements` lets an admin log a deliberate `restock` or `adjustment` with an optional reason. Note: doesn't yet cover stock consumed by a service (that's the separate Tier 4 "inventory decrement on service use" item — this ledger is ready to log it once that hook exists).
 - [x] **(Tier 1)** Reorder-point-per-product — done 2026-07-25. Nullable `reorder_point` column on `products`; `Product::scopeLowStock()` is the single source of truth (per-product override, falls back to the old hardcoded `<=10`), used by both the Low Stock report and the new dashboard alert. Editable in the admin Products form; low-stock products get an amber indicator in the product grid.
 - [ ] **(Tier 4)** No supplier/purchase-order tracking. Biggest item on the whole list — a full new CRUD subsystem (suppliers, POs, PO line items) with its own admin pages.
 
@@ -88,7 +88,7 @@ For actual salon-operations impact (not the SaaS pivot):
      - [x] Reporting: month-over-month comparison — 2026-07-25
      - [x] Jobs: job-level discount — 2026-07-25
    - **Tier 3 — moderate (new table, but isolated):**
-     - [ ] Inventory movement ledger
+     - [x] Inventory movement ledger — 2026-07-25. New `stock_movements` table (`product_id`, `type` — `sale`/`restock`/`adjustment`/`correction`, signed `quantity_change`, `balance_after`, `reason`, loose `reference_type`/`reference_id`, `created_by`). Logged automatically from the three places stock already changes — `Product::decrementStock()` (public checkout, type `sale`, tagged with the order) and `ProductController::update()` (raw stock_count edit on the product form, type `correction`) — plus a new deliberate-entry path: `Product::applyMovement()` behind `GET/POST /admin/products/{product}/stock-movements` for admin-triggered restocks and adjustments (adjustment can go either direction — restock write-offs use adjustment with a negative quantity, restock itself is validated positive-only so the type alone tells you the direction). Admin UI: a ledger toggle (clipboard icon) on each Products card expands a `StockLedgerPanel` — paginated history plus a restock/adjustment form with an optional reason.
      - [ ] Customers: tags → points → birthday/anniversary reminders (in that sub-order)
    - **Tier 4 — bigger lifts (touches core pricing/commission logic, or a new subsystem):**
      - [ ] Jobs: inventory decrement on service use

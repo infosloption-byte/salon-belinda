@@ -277,6 +277,45 @@ export function deleteProduct(id: number) {
   return api.del<{ message: string }>(`/admin/products/${id}`);
 }
 
+// --- Stock movement ledger — SALON-OPS-ENHANCEMENTS.md, "Inventory" (Tier 3) ---
+
+export type StockMovementType = 'sale' | 'restock' | 'adjustment' | 'correction';
+
+export interface StockMovement {
+  id: number;
+  product_id: number;
+  type: StockMovementType;
+  quantity_change: number;
+  balance_after: number;
+  reason: string | null;
+  reference_type: string | null;
+  reference_id: number | null;
+  created_by: number | null;
+  creator?: { id: number; name: string } | null;
+  created_at: string;
+}
+
+export interface PaginatedStockMovements {
+  data: StockMovement[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchStockMovements(productId: number, page = 1): Promise<{ movements: PaginatedStockMovements }> {
+  return api.get(`/admin/products/${productId}/stock-movements?page=${page}`);
+}
+
+export function createStockMovement(
+  productId: number,
+  data: { type: 'restock' | 'adjustment'; quantity_change: number; reason?: string }
+) {
+  return api.post<{ movement: StockMovement; product: Product; message: string }>(
+    `/admin/products/${productId}/stock-movements`,
+    data
+  );
+}
+
 export function createProductCategory(name: string) {
   return api.post<{ category: ProductCategoryItem; message: string }>('/admin/products/categories', { name });
 }
