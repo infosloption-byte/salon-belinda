@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\JobPayment;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\SalonJob;
 use App\Models\Testimonial;
 use Illuminate\Http\JsonResponse;
@@ -70,8 +71,42 @@ class DashboardController extends Controller
                 'time' => $log->created_at->toIso8601String(),
             ]);
 
+        // Proactive alerts — same underlying data as the Outstanding
+        // Balances and Low Stock reports, just surfaced here so nobody has
+        // to open a report to notice. Deliberately count-only (no full job
+        // list) since the point is a nudge, not a duplicate report.
+        $overdueBalanceCount = SalonJob::where('balance_due', '>', 0)
+            ->where('status', '!=', 'cancelled')
+            ->where('job_date', '<=', now()->subDays(30)->toDateString())
+            ->count();
+
+        $lowStockCount = Product::query()->lowStock()->count();
+
+        $alerts = [];
+        if ($overdueBalanceCount > 0) {
+            $alerts[] = [
+                'type' => 'outstanding_balance',
+                'severity' => 'warning',
+                'message' => $overdueBalanceCount === 1
+                    ? '1 job has an outstanding balance over 30 days old.'
+                    : "{$overdueBalanceCount} jobs have an outstanding balance over 30 days old.",
+                'count' => $overdueBalanceCount,
+            ];
+        }
+        if ($lowStockCount > 0) {
+            $alerts[] = [
+                'type' => 'low_stock',
+                'severity' => 'warning',
+                'message' => $lowStockCount === 1
+                    ? '1 product is at or below its reorder point.'
+                    : "{$lowStockCount} products are at or below their reorder point.",
+                'count' => $lowStockCount,
+            ];
+        }
+
         return response()->json([
             'role' => 'admin',
+            'alerts' => $alerts,
             'stats' => [
                 'todayAppointments' => Appointment::whereDate('date', today())->count(),
                 'pendingAppointments' => Appointment::where('status', 'pending')->count(),

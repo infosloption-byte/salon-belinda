@@ -150,9 +150,17 @@ export interface DashboardActivity {
   time: string;
 }
 
+export interface DashboardAlert {
+  type: string;
+  severity: 'warning' | 'info';
+  message: string;
+  count: number;
+}
+
 export interface DashboardResponse {
   role: 'admin' | 'staff';
   redirectTo?: string;
+  alerts?: DashboardAlert[];
   stats?: DashboardStats;
   recentActivity?: DashboardActivity[];
 }
@@ -239,6 +247,7 @@ export interface Product {
   images: string[];
   in_stock: boolean;
   stock_count: number;
+  reorder_point: number | null;
   rating: string | null;
   review_count: number;
   best_seller: boolean;
@@ -490,6 +499,7 @@ export interface JobPaymentRow {
   id: number;
   job_id: number;
   amount: number;
+  tip_amount: number;
   method: PaymentMethod;
   paid_at: string;
   note: string | null;
@@ -507,6 +517,7 @@ export interface SalonJob {
   subtotal: number;
   total_paid: number;
   balance_due: number;
+  total_tips: number;
   customer?: JobCustomer;
   items?: JobItemRow[];
   payments?: JobPaymentRow[];
@@ -571,7 +582,7 @@ export function removeJobItem(jobId: number, itemId: number) {
   return api.del<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/items/${itemId}`);
 }
 
-export function addJobPayment(jobId: number, data: { amount: number; method: PaymentMethod; paid_at?: string; note?: string }) {
+export function addJobPayment(jobId: number, data: { amount: number; tip_amount?: number; method: PaymentMethod; paid_at?: string; note?: string }) {
   return api.post<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/payments`, data);
 }
 
@@ -687,7 +698,7 @@ export function fetchCustomers(q?: string): Promise<{ customers: PaginatedCustom
   return api.get(`/admin/customers${query}`);
 }
 
-export function fetchCustomer(id: number): Promise<{ customer: Customer; jobs: CustomerJob[]; visitCount: number; totalSpent: number }> {
+export function fetchCustomer(id: number): Promise<{ customer: Customer; jobs: CustomerJob[]; visitCount: number; totalSpent: number; lastVisit: string | null }> {
   return api.get(`/admin/customers/${id}`);
 }
 

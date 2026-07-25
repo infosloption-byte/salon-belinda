@@ -102,6 +102,7 @@
                     <th>Date</th>
                     <th>Method</th>
                     <th class="num">Amount</th>
+                    <th class="num">Tip</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,6 +111,7 @@
                         <td>{{ $payment->paid_at->format('d M Y, h:i A') }}</td>
                         <td>{{ str_replace('_', ' ', ucfirst($payment->method)) }}</td>
                         <td class="num">LKR {{ number_format($payment->amount) }}</td>
+                        <td class="num">{{ $payment->tip_amount > 0 ? 'LKR '.number_format($payment->tip_amount) : '—' }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -125,6 +127,12 @@
             <td class="label">Paid</td>
             <td class="value">LKR {{ number_format($job->total_paid) }}</td>
         </tr>
+        @if ($job->total_tips > 0)
+            <tr>
+                <td class="label">Tips (not included in balance)</td>
+                <td class="value">LKR {{ number_format($job->total_tips) }}</td>
+            </tr>
+        @endif
         <tr class="{{ $job->balance_due > 0 ? 'balance' : 'grand' }}">
             <td class="label">{{ $job->balance_due > 0 ? 'Balance Due' : 'Total' }}</td>
             <td class="value">LKR {{ number_format($job->balance_due > 0 ? $job->balance_due : $job->subtotal) }}</td>

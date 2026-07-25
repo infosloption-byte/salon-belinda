@@ -82,6 +82,9 @@ class CustomerController extends Controller
             'jobs' => $jobs,
             'visitCount' => $jobs->count(),
             'totalSpent' => $jobs->sum('total_paid'),
+            // job_date is a `date` cast, so this sorts/compares correctly even
+            // though $jobsQuery may be staff-scoped above.
+            'lastVisit' => $jobs->max('job_date')?->toDateString(),
         ]);
     }
 

@@ -80,6 +80,9 @@ function ProductForm({ product, categories, onCancel, onSaved }: ProductFormProp
       <input name="stock_count" type="number" min={0} required placeholder="Stock count" defaultValue={product?.stock_count}
         className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
 
+      <input name="reorder_point" type="number" min={0} placeholder="Reorder point (default: 10)" defaultValue={product?.reorder_point ?? ''}
+        className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+
       <input name="price" type="number" min={0} required placeholder="Price (LKR)" defaultValue={product?.price}
         className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
 
@@ -325,7 +328,15 @@ export function Products() {
               )}
               <div className="mt-3 flex items-center justify-between text-sm">
                 <span className="text-ink">{formatPrice(product.price)}</span>
-                <span className={product.in_stock ? 'text-emerald-600' : 'text-danger'}>
+                <span
+                  className={
+                    !product.in_stock
+                      ? 'text-danger'
+                      : product.stock_count <= (product.reorder_point ?? 10)
+                        ? 'text-amber-600'
+                        : 'text-emerald-600'
+                  }
+                >
                   {product.in_stock ? `${product.stock_count} in stock` : 'Out of stock'}
                 </span>
               </div>

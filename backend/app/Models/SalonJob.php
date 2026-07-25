@@ -18,6 +18,7 @@ class SalonJob extends Model
         'subtotal',
         'total_paid',
         'balance_due',
+        'total_tips',
     ];
 
     protected function casts(): array
@@ -60,11 +61,13 @@ class SalonJob extends Model
     {
         $subtotal = (int) $this->items()->sum('final_price');
         $totalPaid = (int) $this->payments()->sum('amount');
+        $totalTips = (int) $this->payments()->sum('tip_amount');
 
         $this->forceFill([
             'subtotal' => $subtotal,
             'total_paid' => $totalPaid,
             'balance_due' => $subtotal - $totalPaid,
+            'total_tips' => $totalTips,
         ])->save();
     }
 }

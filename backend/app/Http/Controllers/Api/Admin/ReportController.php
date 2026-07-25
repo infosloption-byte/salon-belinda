@@ -101,7 +101,7 @@ class ReportController extends Controller
     {
         $products = Product::query()
             ->orderBy('stock_count')
-            ->where('stock_count', '<=', 10)
+            ->lowStock()
             ->get();
 
         return response()->json(['products' => $products]);

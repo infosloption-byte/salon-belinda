@@ -9,6 +9,7 @@ class JobPayment extends Model
     protected $fillable = [
         'job_id',
         'amount',
+        'tip_amount',
         'method',
         'paid_at',
         'recorded_by',
@@ -19,6 +20,8 @@ class JobPayment extends Model
     {
         return [
             'paid_at' => 'datetime',
+            'amount' => 'integer',
+            'tip_amount' => 'integer',
         ];
     }
 

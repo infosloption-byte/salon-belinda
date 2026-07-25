@@ -27,4 +27,9 @@ class Customer extends Model
     {
         return $this->jobs()->count();
     }
+
+    public function lastVisit(): ?string
+    {
+        return $this->jobs()->max('job_date');
+    }
 }

@@ -22,7 +22,7 @@ export function Customers() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
-  const [detail, setDetail] = useState<{ jobs: CustomerJob[]; visitCount: number; totalSpent: number } | null>(null);
+  const [detail, setDetail] = useState<{ jobs: CustomerJob[]; visitCount: number; totalSpent: number; lastVisit: string | null } | null>(null);
 
   function load() {
     setIsLoading(true);
@@ -87,7 +87,7 @@ export function Customers() {
     setExpanded(customer.id);
     try {
       const res = await fetchCustomer(customer.id);
-      setDetail({ jobs: res.jobs, visitCount: res.visitCount, totalSpent: res.totalSpent });
+      setDetail({ jobs: res.jobs, visitCount: res.visitCount, totalSpent: res.totalSpent, lastVisit: res.lastVisit });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load customer history.');
     }
@@ -196,6 +196,7 @@ export function Customers() {
                       <>
                         <p className="mb-2 text-xs text-muted">
                           {detail.visitCount} visits · {formatCurrency(detail.totalSpent)} total spent
+                          {detail.lastVisit && <> · last visit {detail.lastVisit}</>}
                         </p>
                         {detail.jobs.length === 0 ? (
                           <p className="text-xs text-muted">No job history yet.</p>

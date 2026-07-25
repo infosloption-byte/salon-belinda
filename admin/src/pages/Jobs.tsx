@@ -227,6 +227,7 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
     try {
       await addJobPayment(jobId, {
         amount: Number(form.get('amount')),
+        tip_amount: Number(form.get('tip_amount') || 0),
         method: String(form.get('method')) as 'cash' | 'card' | 'bank_transfer',
         note: String(form.get('note') || '') || undefined,
       });
@@ -361,6 +362,7 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
         {addingPayment && (
           <form onSubmit={handleAddPayment} className="mb-4 grid grid-cols-1 gap-3 rounded-lg border border-ink/10 p-4 sm:grid-cols-3">
             <input name="amount" type="number" min={1} required placeholder="Amount (LKR)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
+            <input name="tip_amount" type="number" min={0} placeholder="Tip (optional)" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold" />
             <select name="method" defaultValue="cash" className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold">
               <option value="cash">Cash</option>
               <option value="card">Card</option>
@@ -377,7 +379,10 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
           {(job.payments ?? []).map((p) => (
             <div key={p.id} className="flex items-center justify-between gap-3 py-2">
               <div>
-                <p className="text-sm text-ink">{money(p.amount)} · <span className="capitalize">{p.method.replace('_', ' ')}</span></p>
+                <p className="text-sm text-ink">
+                  {money(p.amount)} · <span className="capitalize">{p.method.replace('_', ' ')}</span>
+                  {p.tip_amount > 0 && <span className="text-emerald-600"> · +{money(p.tip_amount)} tip</span>}
+                </p>
                 {p.note && <p className="text-xs text-muted">{p.note}</p>}
               </div>
               <button onClick={() => handleRemovePayment(p.id)} className="rounded-lg border border-ink/10 p-1.5 text-danger hover:bg-danger-bg">
@@ -389,7 +394,7 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
         </div>
       </div>
 
-      <div className="mirror-card grid grid-cols-3 gap-3 p-4 text-center">
+      <div className="mirror-card grid grid-cols-2 gap-3 p-4 text-center sm:grid-cols-4">
         <div>
           <p className="text-xs text-muted">Subtotal</p>
           <p className="text-sm font-medium text-ink">{money(job.subtotal)}</p>
@@ -397,6 +402,10 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
         <div>
           <p className="text-xs text-muted">Paid</p>
           <p className="text-sm font-medium text-emerald-600">{money(job.total_paid)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted">Tips</p>
+          <p className="text-sm font-medium text-ink">{money(job.total_tips)}</p>
         </div>
         <div>
           <p className="text-xs text-muted">Balance due</p>

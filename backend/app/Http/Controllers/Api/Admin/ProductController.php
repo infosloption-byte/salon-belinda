@@ -75,6 +75,10 @@ class ProductController extends Controller
 
     private function validated(Request $request, ?int $ignoreId = null): array
     {
+        if ($request->input('reorder_point') === '') {
+            $request->merge(['reorder_point' => null]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:150'],
             'slug' => ['nullable', 'string', 'max:180', 'unique:products,slug,'.($ignoreId ?? 'NULL').',id'],
@@ -89,6 +93,7 @@ class ProductController extends Controller
             'remove_images' => ['nullable', 'array'],
             'remove_images.*' => ['string'],
             'stock_count' => ['required', 'integer', 'min:0'],
+            'reorder_point' => ['nullable', 'integer', 'min:0'],
             'best_seller' => ['nullable', 'boolean'],
             'is_new' => ['nullable', 'boolean'],
         ]);

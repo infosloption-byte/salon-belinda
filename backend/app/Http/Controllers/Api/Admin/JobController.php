@@ -220,6 +220,7 @@ class JobController extends Controller
 
         $data = $request->validate([
             'amount' => ['required', 'integer', 'min:1'],
+            'tip_amount' => ['nullable', 'integer', 'min:0'],
             'method' => ['required', 'in:cash,card,bank_transfer'],
             'paid_at' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:150'],
@@ -228,6 +229,7 @@ class JobController extends Controller
         JobPayment::create([
             'job_id' => $job->id,
             'amount' => $data['amount'],
+            'tip_amount' => $data['tip_amount'] ?? 0,
             'method' => $data['method'],
             'paid_at' => $data['paid_at'] ?? now(),
             'recorded_by' => Auth::id(),
@@ -235,7 +237,8 @@ class JobController extends Controller
         ]);
 
         $job->recalculateTotals();
-        ActivityLogger::log('job.payment_recorded', 'Recorded LKR '.number_format($data['amount'])." payment ({$data['method']}) on job #{$job->id}", $job);
+        $tipNote = ($data['tip_amount'] ?? 0) > 0 ? ' + LKR '.number_format($data['tip_amount']).' tip' : '';
+        ActivityLogger::log('job.payment_recorded', 'Recorded LKR '.number_format($data['amount'])."{$tipNote} payment ({$data['method']}) on job #{$job->id}", $job);
 
         return response()->json(['job' => $job->fresh(['items.staff', 'items.service', 'payments.recordedBy']), 'message' => 'Payment recorded.'], 201);
     }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { downloadCsv } from '../lib/csv';
 import {
   fetchAppointmentsReport,
   fetchBestSellersReport,
@@ -108,9 +110,27 @@ function RevenuePanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(load, []);
 
+  function exportCsv() {
+    if (!report) return;
+    downloadCsv(
+      `revenue-${from}-to-${to}`,
+      report.combined.map((row) => ({
+        date: row.day,
+        shop_orders: row.orders_count,
+        shop_revenue: row.shop,
+        salon_payments: row.payments_count,
+        salon_revenue: row.salon,
+        total: row.total,
+      })),
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+        <ExportCsvButton onExport={exportCsv} disabled={!report || report.combined.length === 0} />
+      </div>
       {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
       {isLoading ? (
         <p className="text-sm text-muted">Loading…</p>
@@ -171,6 +191,19 @@ function RevenuePanel() {
   );
 }
 
+function ExportCsvButton({ onExport, disabled }: { onExport: () => void; disabled?: boolean }) {
+  return (
+    <button
+      onClick={onExport}
+      disabled={disabled}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-ink/10 px-3 py-2 text-sm text-ink hover:bg-paper-dim disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <Download size={14} />
+      Export CSV
+    </button>
+  );
+}
+
 function BestSellersPanel() {
   const initial = defaultDates(89);
   const [from, setFrom] = useState(initial.from);
@@ -190,9 +223,19 @@ function BestSellersPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(load, []);
 
+  function exportCsv() {
+    downloadCsv(
+      `best-sellers-${from}-to-${to}`,
+      rows.map((row) => ({ product: row.product_name, units_sold: row.units_sold, revenue: row.revenue })),
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+        <ExportCsvButton onExport={exportCsv} disabled={rows.length === 0} />
+      </div>
       {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
       {isLoading ? (
         <p className="text-sm text-muted">Loading…</p>
@@ -244,8 +287,18 @@ function LowStockPanel() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  function exportCsv() {
+    downloadCsv(
+      'low-stock',
+      products.map((p) => ({ product: p.name, category: p.category, stock: p.stock_count, reorder_point: p.reorder_point ?? 10 })),
+    );
+  }
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <ExportCsvButton onExport={exportCsv} disabled={products.length === 0} />
+      </div>
       {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
       {isLoading ? (
         <p className="text-sm text-muted">Loading…</p>
@@ -257,12 +310,13 @@ function LowStockPanel() {
                 <th className="p-4">Product</th>
                 <th className="p-4">Category</th>
                 <th className="p-4">Stock</th>
+                <th className="p-4">Reorder Point</th>
               </tr>
             </thead>
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="p-8 text-center text-sm text-muted">
+                  <td colSpan={4} className="p-8 text-center text-sm text-muted">
                     Nothing low on stock right now.
                   </td>
                 </tr>
@@ -280,6 +334,7 @@ function LowStockPanel() {
                         {p.stock_count}
                       </span>
                     </td>
+                    <td className="p-4 text-muted">{p.reorder_point ?? 10}</td>
                   </tr>
                 ))
               )}
@@ -314,9 +369,19 @@ function AppointmentsReportPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(load, []);
 
+  function exportCsv() {
+    downloadCsv(`appointments-${from}-to-${to}`, [
+      ...byService.map((row) => ({ breakdown: 'by_service', label: row.service_name, count: row.total })),
+      ...byStatus.map((row) => ({ breakdown: 'by_status', label: row.status, count: row.total })),
+    ]);
+  }
+
   return (
     <div className="space-y-4">
-      <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+        <ExportCsvButton onExport={exportCsv} disabled={byService.length === 0 && byStatus.length === 0} />
+      </div>
       {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
       {isLoading ? (
         <p className="text-sm text-muted">Loading…</p>
@@ -396,12 +461,30 @@ function OutstandingBalancesPanel() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  function exportCsv() {
+    downloadCsv(
+      'outstanding-balances',
+      jobs.map((job) => ({
+        job_date: job.job_date,
+        customer: job.customer?.name ?? '',
+        phone: job.customer?.phone ?? '',
+        status: job.status,
+        total: job.subtotal,
+        paid: job.total_paid,
+        balance_due: job.balance_due,
+      })),
+    );
+  }
+
   return (
     <div className="space-y-4">
       {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
-      <div className="mirror-card max-w-xs p-5">
-        <p className="text-xs uppercase tracking-wide text-muted">Total Outstanding</p>
-        <p className="mt-2 font-display text-2xl text-wine">{formatCurrency(total)}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="mirror-card max-w-xs p-5">
+          <p className="text-xs uppercase tracking-wide text-muted">Total Outstanding</p>
+          <p className="mt-2 font-display text-2xl text-wine">{formatCurrency(total)}</p>
+        </div>
+        <ExportCsvButton onExport={exportCsv} disabled={jobs.length === 0} />
       </div>
       {isLoading ? (
         <p className="text-sm text-muted">Loading…</p>
@@ -474,9 +557,39 @@ function StaffCommissionPanel({ isAdminRole }: { isAdminRole: boolean }) {
 
   const own = report?.summary?.[0];
 
+  function exportCsv() {
+    if (!report) return;
+    if (report.staffId && report.detail) {
+      downloadCsv(
+        `staff-commission-detail-${from}-to-${to}`,
+        report.detail.map((item) => ({
+          job_date: item.job?.job_date ?? '',
+          customer: item.job?.customer?.name ?? '',
+          treatment: item.service_name,
+          price: item.final_price,
+          commission: item.commission_amount,
+        })),
+      );
+    } else {
+      downloadCsv(
+        `staff-commission-summary-${from}-to-${to}`,
+        report.summary.map((row) => ({
+          staff: row.name,
+          role: row.role_title,
+          services: row.services_count,
+          revenue: row.revenue,
+          commission: row.commission,
+        })),
+      );
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={() => load()} />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={() => load()} />
+        <ExportCsvButton onExport={exportCsv} disabled={!report || report.summary.length === 0} />
+      </div>
       {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
       {isLoading ? (
         <p className="text-sm text-muted">Loading…</p>

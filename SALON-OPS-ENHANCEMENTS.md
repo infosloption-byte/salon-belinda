@@ -33,13 +33,13 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 
 - [x] Search by name/phone/email already works server-side (good — that's already there).
 - [ ] **(Tier 3)** No loyalty/points, no customer tags (VIP, bridal, allergy notes as structured data rather than a free-text `notes` field), no birthday/anniversary reminders — all common salon retention levers. Bundled sub-work, roughly in order: tags (quick pivot/enum) → points (small ledger) → birthday/anniversary reminders (needs a scheduled command + Mailable, the biggest sub-item here).
-- [ ] **(Tier 1 — quick win)** No visit-history rollup on a customer's profile (total spend, last visit, lifetime jobs) beyond drilling into their job list manually. `Customer::totalSpent()` and `Customer::visitCount()` already exist on the model unused — just needs a `lastVisit()` addition and wiring into the customer detail API + admin UI. No migration needed.
+- [x] **(Tier 1)** Visit-history rollup on a customer's profile (total spend, last visit, lifetime jobs) — done 2026-07-25. `Customer::lastVisit()` added alongside the existing `totalSpent()`/`visitCount()`; wired into `CustomerController::show()` and the admin Customers page (shows "N visits · total spent · last visit" in the expanded row).
 
 ### Jobs (walk-in/POS)
 
 - [ ] **(Tier 2)** Discounts are per-item only — no job-level discount. New `discount_type`/`discount_value` columns on `jobs_salon`, folded into `SalonJob::recalculateTotals()`. Small, contained.
 - [ ] **(Tier 4)** No **service package/bundle pricing** (e.g., a fixed-price bridal package covering hair+makeup+nails instead of three separately-discounted line items). Split out from the job-level-discount item above — this one needs a new pricing entity (bundles of services at a fixed price) plugged into the Jobs POS flow, discounting, and per-line commission attribution. The bigger of the two "discounts" gaps.
-- [ ] **(Tier 1 — quick win)** No tip field for staff. One column on `job_payments`, included in `recalculateTotals()`, add the input to the Jobs POS UI.
+- [x] **(Tier 1)** Tip field for staff — done 2026-07-25. `job_payments.tip_amount` (per-payment) + cached `jobs_salon.total_tips`, deliberately excluded from `total_paid`/`balance_due` (a tip isn't part of the service price owed). Surfaced in the admin Jobs payment form/list, the totals summary, and the PDF receipt.
 - [ ] **(Tier 4)** No inventory decrement — a hair-color service consuming stock doesn't touch `products.stock_count`, so your low-stock report can't actually reflect real usage from services, only shop sales. Needs a new service→product consumption mapping table, then a hook into `JobItem`'s save lifecycle. Also affects low-stock report accuracy once live.
 - [ ] **(Tier 4)** No support for a second staff member assisting on one item (common for bridal jobs). `job_items.staff_id` is a single FK feeding directly into commission math and the `staffCommission` report — this needs a pivot table and a rethink of how commission splits, not just a UI add.
 
@@ -50,14 +50,14 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 ### Inventory
 
 - [ ] **(Tier 3)** Stock is a single counter, no movement ledger (no record of *why* stock changed — sold, used in a service, damaged, restocked). New `stock_movements` table; refactor `Product::decrementStock()` and any other stock-writing path to log a reason instead of just mutating the counter.
-- [ ] **(Tier 1 — quick win)** No reorder-point-per-product. One nullable column on `products`; tweak `ReportController::lowStock()` to compare against it instead of the hardcoded `<= 10`.
+- [x] **(Tier 1)** Reorder-point-per-product — done 2026-07-25. Nullable `reorder_point` column on `products`; `Product::scopeLowStock()` is the single source of truth (per-product override, falls back to the old hardcoded `<=10`), used by both the Low Stock report and the new dashboard alert. Editable in the admin Products form; low-stock products get an amber indicator in the product grid.
 - [ ] **(Tier 4)** No supplier/purchase-order tracking. Biggest item on the whole list — a full new CRUD subsystem (suppliers, POs, PO line items) with its own admin pages.
 
 ## Admin/reporting enhancements
 
 - [ ] **(Tier 2)** Reports cover revenue, best-sellers, low-stock, appointments, outstanding balances, staff commission — solid coverage. Missing three, all straightforward extensions of the existing `ReportController` date-range pattern: **repeat-customer/retention rate**, busiest-hours heatmap (useful for staffing — note appointments with unparseable free-text `time` need excluding, same as the calendar view already does), and month-over-month comparison (growth %) rather than just an absolute range.
-- [ ] **(Tier 1 — quick win)** No CSV/Excel export on any report — only the invoice/receipt PDFs export. Your accountant will want CSV, not just PDF. Every report already returns clean structured data; just a stream-download endpoint reusing the same queries.
-- [ ] **(Tier 1 — quick win)** No dashboard alerting (e.g., "3 jobs have an outstanding balance over 30 days old" surfaced proactively rather than requiring someone to open the report). No new data needed — just surfaces the existing `outstandingBalances` and `lowStock` queries as a Dashboard widget.
+- [x] **(Tier 1)** CSV/Excel export on reports — done 2026-07-25. Client-side only (`admin/src/lib/csv.ts`), no backend endpoint needed — every report already returns clean structured data, just serialized and downloaded from what's already loaded. Wired into all six report panels.
+- [x] **(Tier 1)** Dashboard alerting — done 2026-07-25. `DashboardController::index()` returns an `alerts` array (overdue 30+ day outstanding balances, low-stock products via the same `Product::scopeLowStock()`), rendered as banner cards at the top of the Dashboard, linking through to Reports.
 
 ## Backend technical health
 
@@ -77,11 +77,11 @@ For actual salon-operations impact (not the SaaS pivot):
 2. [x] **Staff shift/schedule table** — unblocks both the booking fix above and better staff reporting. **Done 2026-07-24** along with the other two Staff items (qualification mapping, performance stats) — see Staff section above.
 3. [ ] **Customers / Jobs / Inventory / Reporting gaps** — re-sorted 2026-07-24 by actual implementation effort (checked against the current schema/models/controllers), not by category. Work top-down within each tier; flip boxes in the sections above as items land.
    - **Tier 1 — quick wins, no new schema or trivial one-column additions:**
-     - [ ] Customer visit-history rollup (model helpers already exist, just needs wiring)
-     - [ ] CSV/Excel export on reports (reuses existing report queries)
-     - [ ] Inventory reorder-point per product (one column + a report tweak)
-     - [ ] Dashboard alerting (reuses existing outstanding-balance/low-stock queries)
-     - [ ] Jobs: tip field (one column + totals + UI)
+     - [x] Customer visit-history rollup (model helpers already exist, just needs wiring) — 2026-07-25
+     - [x] CSV/Excel export on reports (reuses existing report queries) — 2026-07-25. Client-side only (`lib/csv.ts`), no backend endpoint — every report already returns clean structured data.
+     - [x] Inventory reorder-point per product (one column + a report tweak) — 2026-07-25. `Product::scopeLowStock()` is now the single source of truth for both the Low Stock report and the dashboard alert below.
+     - [x] Dashboard alerting (reuses existing outstanding-balance/low-stock queries) — 2026-07-25
+     - [x] Jobs: tip field — 2026-07-25. Tracked per-payment (`job_payments.tip_amount`) and cached as `jobs_salon.total_tips`, deliberately kept separate from `total_paid`/`balance_due` so it doesn't distort what a customer still owes for services.
    - **Tier 2 — small, contained (new column or query, no new domain):**
      - [ ] Reporting: retention rate
      - [ ] Reporting: busiest-hours heatmap

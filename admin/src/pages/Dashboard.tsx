@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { CalendarCheck, Users, ShoppingBag, Wallet } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CalendarCheck, Users, ShoppingBag, Wallet, AlertTriangle } from 'lucide-react';
 import { StatCard } from '../components/ui/StatCard';
-import { fetchDashboard, type DashboardActivity, type DashboardStats } from '../lib/api';
+import { fetchDashboard, type DashboardActivity, type DashboardAlert, type DashboardStats } from '../lib/api';
 
 function formatCurrency(n: number) {
   return `LKR ${n.toLocaleString('en-US')}`;
@@ -17,6 +18,7 @@ function formatTime(iso: string) {
 
 export function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [alerts, setAlerts] = useState<DashboardAlert[]>([]);
   const [activity, setActivity] = useState<DashboardActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +35,7 @@ export function Dashboard() {
           return;
         }
         setStats(res.stats ?? null);
+        setAlerts(res.alerts ?? []);
         setActivity(res.recentActivity ?? []);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load dashboard.'))
@@ -82,6 +85,22 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {alerts.length > 0 && (
+        <div className="space-y-2">
+          {alerts.map((alert) => (
+            <Link
+              key={alert.type}
+              to="/reports"
+              className="mirror-card flex items-center gap-3 border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-900 hover:bg-amber-100"
+            >
+              <AlertTriangle size={18} className="shrink-0 text-amber-600" />
+              <span>{alert.message}</span>
+              <span className="ml-auto whitespace-nowrap text-xs underline">View report &rarr;</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <StatCard key={c.label} {...c} />
