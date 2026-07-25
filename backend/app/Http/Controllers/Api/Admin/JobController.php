@@ -266,6 +266,34 @@ class JobController extends Controller
         return response()->json(['job' => $job->fresh(), 'message' => 'Job status updated.']);
     }
 
+    /**
+     * Job-level discount, separate from the per-item discounts set via
+     * addItem(). Applied on top of the item subtotal in
+     * SalonJob::recalculateTotals().
+     */
+    public function updateDiscount(Request $request, SalonJob $job): JsonResponse
+    {
+        $this->authorizeJobAccess($job);
+
+        $data = $request->validate([
+            'discount_type' => ['required', 'in:none,percent,fixed'],
+            'discount_value' => array_filter([
+                'nullable', 'numeric', 'min:0',
+                $request->input('discount_type') === 'percent' ? 'max:100' : null,
+            ]),
+        ]);
+
+        $job->update([
+            'discount_type' => $data['discount_type'],
+            'discount_value' => $data['discount_type'] === 'none' ? 0 : ($data['discount_value'] ?? 0),
+        ]);
+        $job->recalculateTotals();
+
+        ActivityLogger::log('job.discount_updated', "Set job #{$job->id} discount to {$data['discount_type']}", $job);
+
+        return response()->json(['job' => $job->fresh(['items.staff', 'items.service', 'payments.recordedBy']), 'message' => 'Discount updated.']);
+    }
+
     public function receiptPreview(SalonJob $job): Response
     {
         $this->authorizeJobAccess($job);

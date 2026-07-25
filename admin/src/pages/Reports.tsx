@@ -5,15 +5,19 @@ import { downloadCsv } from '../lib/csv';
 import {
   fetchAppointmentsReport,
   fetchBestSellersReport,
+  fetchBusiestHoursReport,
   fetchLowStockReport,
   fetchOutstandingBalancesReport,
+  fetchRetentionReport,
   fetchRevenueReport,
   fetchStaffCommissionReport,
   type AppointmentsByServiceRow,
   type AppointmentsByStatusRow,
   type BestSellerRow,
+  type BusiestHoursRow,
   type OutstandingBalanceJob,
   type Product,
+  type RetentionReport,
   type RevenueReport,
   type StaffCommissionReport,
 } from '../lib/api';
@@ -26,7 +30,15 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-type ReportKey = 'revenue' | 'best-sellers' | 'low-stock' | 'appointments' | 'outstanding-balances' | 'staff-commission';
+type ReportKey =
+  | 'revenue'
+  | 'best-sellers'
+  | 'low-stock'
+  | 'appointments'
+  | 'outstanding-balances'
+  | 'staff-commission'
+  | 'busiest-hours'
+  | 'retention';
 
 const ADMIN_TABS: { key: ReportKey; label: string; blurb: string }[] = [
   { key: 'revenue', label: 'Revenue', blurb: 'Daily paid revenue and order counts over a date range.' },
@@ -42,6 +54,16 @@ const ADMIN_TABS: { key: ReportKey; label: string; blurb: string }[] = [
     key: 'staff-commission',
     label: 'Staff Commission',
     blurb: 'Services performed, revenue generated, and commission earned per staff member.',
+  },
+  {
+    key: 'busiest-hours',
+    label: 'Busiest Hours',
+    blurb: 'Bookings by hour of day — useful for staffing decisions.',
+  },
+  {
+    key: 'retention',
+    label: 'Retention',
+    blurb: 'New vs. returning customers, and the repeat-customer rate over a date range.',
   },
 ];
 
@@ -136,7 +158,7 @@ function RevenuePanel() {
         <p className="text-sm text-muted">Loading…</p>
       ) : report ? (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div className="mirror-card p-5">
               <p className="text-xs uppercase tracking-wide text-muted">Total Revenue</p>
               <p className="mt-2 font-display text-2xl text-wine">{formatCurrency(report.totalRevenue)}</p>
@@ -148,6 +170,20 @@ function RevenuePanel() {
             <div className="mirror-card p-5">
               <p className="text-xs uppercase tracking-wide text-muted">Salon (Jobs)</p>
               <p className="mt-2 font-display text-2xl text-ink">{formatCurrency(report.totalSalonRevenue)}</p>
+            </div>
+            <div className="mirror-card p-5">
+              <p className="text-xs uppercase tracking-wide text-muted">vs. Previous Period</p>
+              {report.growthPercent === null ? (
+                <p className="mt-2 font-display text-2xl text-ink">—</p>
+              ) : (
+                <p className={`mt-2 font-display text-2xl ${report.growthPercent >= 0 ? 'text-emerald-600' : 'text-danger'}`}>
+                  {report.growthPercent >= 0 ? '+' : ''}
+                  {report.growthPercent}%
+                </p>
+              )}
+              <p className="mt-1 text-xs text-muted">
+                {formatCurrency(report.previousTotalRevenue)} ({formatDate(report.previousFrom)}–{formatDate(report.previousTo)})
+              </p>
             </div>
           </div>
 
@@ -716,6 +752,150 @@ function StaffCommissionPanel({ isAdminRole }: { isAdminRole: boolean }) {
   );
 }
 
+function BusiestHoursPanel() {
+  const initial = defaultDates(29);
+  const [from, setFrom] = useState(initial.from);
+  const [to, setTo] = useState(initial.to);
+  const [hours, setHours] = useState<BusiestHoursRow[]>([]);
+  const [excludedCount, setExcludedCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    setIsLoading(true);
+    fetchBusiestHoursReport({ date_from: from, date_to: to })
+      .then((res) => {
+        setHours(res.hours);
+        setExcludedCount(res.excludedCount);
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load busiest-hours report.'))
+      .finally(() => setIsLoading(false));
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, []);
+
+  const maxCount = Math.max(1, ...hours.map((h) => h.count));
+  const busiest = hours.length ? hours.reduce((a, b) => (b.count > a.count ? b : a)) : null;
+
+  function exportCsv() {
+    downloadCsv(
+      `busiest-hours-${from}-to-${to}`,
+      hours.map((row) => ({ hour: row.label, bookings: row.count })),
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+        <ExportCsvButton onExport={exportCsv} disabled={hours.length === 0} />
+      </div>
+      {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
+      {isLoading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : (
+        <>
+          {busiest && busiest.count > 0 && (
+            <div className="mirror-card max-w-xs p-5">
+              <p className="text-xs uppercase tracking-wide text-muted">Busiest Hour</p>
+              <p className="mt-2 font-display text-2xl text-wine">{busiest.label}</p>
+              <p className="mt-1 text-xs text-muted">{busiest.count} bookings</p>
+            </div>
+          )}
+          <div className="mirror-card space-y-2 p-4">
+            {hours.every((h) => h.count === 0) ? (
+              <p className="p-4 text-center text-sm text-muted">No bookings with a parseable time in this range.</p>
+            ) : (
+              hours.map((row) => (
+                <div key={row.hour} className="flex items-center gap-3">
+                  <span className="w-14 shrink-0 text-xs text-muted">{row.label}</span>
+                  <div className="h-4 flex-1 overflow-hidden rounded-full bg-paper-dim">
+                    <div
+                      className="h-full rounded-full bg-wine"
+                      style={{ width: `${(row.count / maxCount) * 100}%` }}
+                    />
+                  </div>
+                  <span className="w-8 shrink-0 text-right text-xs text-ink">{row.count}</span>
+                </div>
+              ))
+            )}
+          </div>
+          {excludedCount > 0 && (
+            <p className="text-xs text-muted">
+              {excludedCount} booking{excludedCount === 1 ? '' : 's'} excluded — time couldn't be parsed.
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function RetentionPanel() {
+  const initial = defaultDates(29);
+  const [from, setFrom] = useState(initial.from);
+  const [to, setTo] = useState(initial.to);
+  const [report, setReport] = useState<RetentionReport | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    setIsLoading(true);
+    fetchRetentionReport({ date_from: from, date_to: to })
+      .then(setReport)
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load retention report.'))
+      .finally(() => setIsLoading(false));
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, []);
+
+  function exportCsv() {
+    if (!report) return;
+    downloadCsv(`retention-${from}-to-${to}`, [
+      {
+        total_customers: report.totalCustomers,
+        returning_customers: report.returningCustomers,
+        new_customers: report.newCustomers,
+        retention_rate_percent: report.retentionRate,
+      },
+    ]);
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <DateRangeForm from={from} to={to} onFrom={setFrom} onTo={setTo} onSubmit={load} />
+        <ExportCsvButton onExport={exportCsv} disabled={!report || report.totalCustomers === 0} />
+      </div>
+      {error && <p className="mirror-card p-4 text-sm text-danger">{error}</p>}
+      {isLoading ? (
+        <p className="text-sm text-muted">Loading…</p>
+      ) : report ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <div className="mirror-card p-5">
+            <p className="text-xs uppercase tracking-wide text-muted">Retention Rate</p>
+            <p className="mt-2 font-display text-2xl text-wine">{report.retentionRate}%</p>
+          </div>
+          <div className="mirror-card p-5">
+            <p className="text-xs uppercase tracking-wide text-muted">Customers Seen</p>
+            <p className="mt-2 font-display text-2xl text-ink">{report.totalCustomers}</p>
+          </div>
+          <div className="mirror-card p-5">
+            <p className="text-xs uppercase tracking-wide text-muted">Returning</p>
+            <p className="mt-2 font-display text-2xl text-ink">{report.returningCustomers}</p>
+          </div>
+          <div className="mirror-card p-5">
+            <p className="text-xs uppercase tracking-wide text-muted">New</p>
+            <p className="mt-2 font-display text-2xl text-ink">{report.newCustomers}</p>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function Reports() {
   const { user } = useAuth();
   const isAdminRole = user?.role === 'admin';
@@ -765,6 +945,8 @@ export function Reports() {
       {active === 'appointments' && <AppointmentsReportPanel />}
       {active === 'outstanding-balances' && <OutstandingBalancesPanel />}
       {active === 'staff-commission' && <StaffCommissionPanel isAdminRole />}
+      {active === 'busiest-hours' && <BusiestHoursPanel />}
+      {active === 'retention' && <RetentionPanel />}
     </div>
   );
 }

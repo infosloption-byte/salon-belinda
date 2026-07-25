@@ -71,6 +71,7 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::post('jobs', [AdminJobController::class, 'store'])->name('jobs.store');
             Route::get('jobs/{job}', [AdminJobController::class, 'show'])->name('jobs.show');
             Route::patch('jobs/{job}/status', [AdminJobController::class, 'updateStatus'])->name('jobs.status');
+            Route::patch('jobs/{job}/discount', [AdminJobController::class, 'updateDiscount'])->name('jobs.discount');
             Route::post('jobs/{job}/items', [AdminJobController::class, 'addItem'])->name('jobs.items.store');
             Route::delete('jobs/{job}/items/{item}', [AdminJobController::class, 'removeItem'])->name('jobs.items.destroy');
             Route::post('jobs/{job}/payments', [AdminJobController::class, 'addPayment'])->name('jobs.payments.store');
@@ -187,6 +188,8 @@ Route::prefix('admin')->name('api.admin.')->group(function () {
             Route::get('reports/low-stock', [AdminReportController::class, 'lowStock'])->name('reports.lowStock');
             Route::get('reports/appointments', [AdminReportController::class, 'appointments'])->name('reports.appointments');
             Route::get('reports/outstanding-balances', [AdminReportController::class, 'outstandingBalances'])->name('reports.outstandingBalances');
+            Route::get('reports/busiest-hours', [AdminReportController::class, 'busiestHours'])->name('reports.busiestHours');
+            Route::get('reports/retention-rate', [AdminReportController::class, 'retentionRate'])->name('reports.retentionRate');
 
             // Activity Log
             Route::get('activity-log', [AdminActivityLogController::class, 'index'])->name('activity-log.index');

@@ -37,7 +37,7 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 
 ### Jobs (walk-in/POS)
 
-- [ ] **(Tier 2)** Discounts are per-item only — no job-level discount. New `discount_type`/`discount_value` columns on `jobs_salon`, folded into `SalonJob::recalculateTotals()`. Small, contained.
+- [x] **(Tier 2)** Discounts are per-item only — no job-level discount. New `discount_type`/`discount_value` columns on `jobs_salon`, folded into `SalonJob::recalculateTotals()`. Small, contained. — done 2026-07-25. Job-level discount applies on top of the item subtotal (independent of per-item discounts already baked into each item's `final_price`); appended `discount_amount`/`total_after_discount` accessors on the model so every endpoint serializing a job carries them for free. New `PATCH /admin/jobs/{job}/discount` endpoint, admin UI in the Jobs detail panel ("Job Discount" card next to Treatments/Payments), and the PDF receipt now shows a discount line + "Total after discount" when one's applied.
 - [ ] **(Tier 4)** No **service package/bundle pricing** (e.g., a fixed-price bridal package covering hair+makeup+nails instead of three separately-discounted line items). Split out from the job-level-discount item above — this one needs a new pricing entity (bundles of services at a fixed price) plugged into the Jobs POS flow, discounting, and per-line commission attribution. The bigger of the two "discounts" gaps.
 - [x] **(Tier 1)** Tip field for staff — done 2026-07-25. `job_payments.tip_amount` (per-payment) + cached `jobs_salon.total_tips`, deliberately excluded from `total_paid`/`balance_due` (a tip isn't part of the service price owed). Surfaced in the admin Jobs payment form/list, the totals summary, and the PDF receipt.
 - [ ] **(Tier 4)** No inventory decrement — a hair-color service consuming stock doesn't touch `products.stock_count`, so your low-stock report can't actually reflect real usage from services, only shop sales. Needs a new service→product consumption mapping table, then a hook into `JobItem`'s save lifecycle. Also affects low-stock report accuracy once live.
@@ -55,7 +55,7 @@ Done 2026-07-24 (backend + admin UI), all three items from the original gap anal
 
 ## Admin/reporting enhancements
 
-- [ ] **(Tier 2)** Reports cover revenue, best-sellers, low-stock, appointments, outstanding balances, staff commission — solid coverage. Missing three, all straightforward extensions of the existing `ReportController` date-range pattern: **repeat-customer/retention rate**, busiest-hours heatmap (useful for staffing — note appointments with unparseable free-text `time` need excluding, same as the calendar view already does), and month-over-month comparison (growth %) rather than just an absolute range.
+- [x] **(Tier 2)** Reports cover revenue, best-sellers, low-stock, appointments, outstanding balances, staff commission — solid coverage. Missing three, all straightforward extensions of the existing `ReportController` date-range pattern: **repeat-customer/retention rate**, busiest-hours heatmap (useful for staffing — note appointments with unparseable free-text `time` need excluding, same as the calendar view already does), and month-over-month comparison (growth %) rather than just an absolute range. — done 2026-07-25. `revenue()` now compares against the immediately-preceding period of equal length (`growthPercent`, null rather than 0% with nothing to compare against); new `busiestHours()` buckets appointments by hour reusing the exact same free-text time parser as `AppointmentsCalendar.tsx` (unparseable times excluded and counted, not dropped silently); new `retentionRate()` splits customers with a visit in range into new vs. returning. Two new Reports tabs (Busiest Hours, Retention) plus the Revenue panel's new growth card.
 - [x] **(Tier 1)** CSV/Excel export on reports — done 2026-07-25. Client-side only (`admin/src/lib/csv.ts`), no backend endpoint needed — every report already returns clean structured data, just serialized and downloaded from what's already loaded. Wired into all six report panels.
 - [x] **(Tier 1)** Dashboard alerting — done 2026-07-25. `DashboardController::index()` returns an `alerts` array (overdue 30+ day outstanding balances, low-stock products via the same `Product::scopeLowStock()`), rendered as banner cards at the top of the Dashboard, linking through to Reports.
 
@@ -83,10 +83,10 @@ For actual salon-operations impact (not the SaaS pivot):
      - [x] Dashboard alerting (reuses existing outstanding-balance/low-stock queries) — 2026-07-25
      - [x] Jobs: tip field — 2026-07-25. Tracked per-payment (`job_payments.tip_amount`) and cached as `jobs_salon.total_tips`, deliberately kept separate from `total_paid`/`balance_due` so it doesn't distort what a customer still owes for services.
    - **Tier 2 — small, contained (new column or query, no new domain):**
-     - [ ] Reporting: retention rate
-     - [ ] Reporting: busiest-hours heatmap
-     - [ ] Reporting: month-over-month comparison
-     - [ ] Jobs: job-level discount
+     - [x] Reporting: retention rate — 2026-07-25
+     - [x] Reporting: busiest-hours heatmap — 2026-07-25
+     - [x] Reporting: month-over-month comparison — 2026-07-25
+     - [x] Jobs: job-level discount — 2026-07-25
    - **Tier 3 — moderate (new table, but isolated):**
      - [ ] Inventory movement ledger
      - [ ] Customers: tags → points → birthday/anniversary reminders (in that sub-order)

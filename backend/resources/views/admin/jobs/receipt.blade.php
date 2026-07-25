@@ -123,6 +123,19 @@
             <td class="label">Subtotal</td>
             <td class="value">LKR {{ number_format($job->subtotal) }}</td>
         </tr>
+        @if ($job->discount_type !== 'none' && $job->discount_amount > 0)
+            <tr>
+                <td class="label">
+                    Discount
+                    ({{ $job->discount_type === 'percent' ? rtrim(rtrim(number_format($job->discount_value, 2), '0'), '.').'%' : 'LKR '.number_format($job->discount_value) }})
+                </td>
+                <td class="value">&minus; LKR {{ number_format($job->discount_amount) }}</td>
+            </tr>
+            <tr>
+                <td class="label">Total after discount</td>
+                <td class="value">LKR {{ number_format($job->total_after_discount) }}</td>
+            </tr>
+        @endif
         <tr>
             <td class="label">Paid</td>
             <td class="value">LKR {{ number_format($job->total_paid) }}</td>
@@ -135,7 +148,7 @@
         @endif
         <tr class="{{ $job->balance_due > 0 ? 'balance' : 'grand' }}">
             <td class="label">{{ $job->balance_due > 0 ? 'Balance Due' : 'Total' }}</td>
-            <td class="value">LKR {{ number_format($job->balance_due > 0 ? $job->balance_due : $job->subtotal) }}</td>
+            <td class="value">LKR {{ number_format($job->balance_due > 0 ? $job->balance_due : $job->total_after_discount) }}</td>
         </tr>
     </table>
 

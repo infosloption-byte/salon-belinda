@@ -12,8 +12,10 @@ import {
   quickRegisterCustomer,
   removeJobItem,
   removeJobPayment,
+  updateJobDiscount,
   updateJobStatus,
   type ActiveStaffMember,
+  type DiscountType,
   type JobCustomer,
   type JobStatus,
   type PaginatedJobs,
@@ -176,6 +178,7 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
   const [error, setError] = useState<string | null>(null);
   const [addingItem, setAddingItem] = useState(false);
   const [addingPayment, setAddingPayment] = useState(false);
+  const [editingDiscount, setEditingDiscount] = useState(false);
 
   function load() {
     fetchJob(jobId)
@@ -257,6 +260,22 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
       onChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update status.');
+    }
+  }
+
+  async function handleUpdateDiscount(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    try {
+      await updateJobDiscount(jobId, {
+        discount_type: String(form.get('discount_type')) as DiscountType,
+        discount_value: form.get('discount_value') ? Number(form.get('discount_value')) : undefined,
+      });
+      setEditingDiscount(false);
+      load();
+      onChanged();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update discount.');
     }
   }
 
@@ -394,11 +413,53 @@ function JobDetail({ jobId, onBack, onChanged }: { jobId: number; onBack: () => 
         </div>
       </div>
 
+      <div className="mirror-card p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-display text-base text-ink">Job Discount</h3>
+          <button onClick={() => setEditingDiscount((v) => !v)} className="flex items-center gap-1 rounded-lg border border-ink/10 px-3 py-1.5 text-xs hover:bg-paper-dim">
+            {job.discount_type === 'none' ? 'Add discount' : 'Edit discount'}
+          </button>
+        </div>
+
+        {editingDiscount ? (
+          <form onSubmit={handleUpdateDiscount} className="grid grid-cols-1 gap-3 rounded-lg border border-ink/10 p-4 sm:grid-cols-3">
+            <select name="discount_type" defaultValue={job.discount_type} className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold">
+              <option value="none">No discount</option>
+              <option value="percent">Percent off</option>
+              <option value="fixed">Fixed amount off</option>
+            </select>
+            <input
+              name="discount_value"
+              type="number"
+              min={0}
+              defaultValue={job.discount_type !== 'none' ? job.discount_value : ''}
+              placeholder="Discount value"
+              className="rounded-lg border border-ink/10 bg-paper px-3 py-2 text-sm outline-none focus:border-gold"
+            />
+            <button type="submit" className="rounded-lg bg-wine px-4 py-2 text-sm font-medium text-paper hover:bg-wine-light">
+              Save
+            </button>
+          </form>
+        ) : (
+          <p className="text-sm text-muted">
+            {job.discount_type === 'none'
+              ? 'No job-level discount applied.'
+              : `${job.discount_type === 'percent' ? `${job.discount_value}% off` : `${money(Number(job.discount_value))} off`} the subtotal — ${money(job.discount_amount)} discounted.`}
+          </p>
+        )}
+      </div>
+
       <div className="mirror-card grid grid-cols-2 gap-3 p-4 text-center sm:grid-cols-4">
         <div>
           <p className="text-xs text-muted">Subtotal</p>
           <p className="text-sm font-medium text-ink">{money(job.subtotal)}</p>
         </div>
+        {job.discount_type !== 'none' && (
+          <div>
+            <p className="text-xs text-muted">After Discount</p>
+            <p className="text-sm font-medium text-ink">{money(job.total_after_discount)}</p>
+          </div>
+        )}
         <div>
           <p className="text-xs text-muted">Paid</p>
           <p className="text-sm font-medium text-emerald-600">{money(job.total_paid)}</p>

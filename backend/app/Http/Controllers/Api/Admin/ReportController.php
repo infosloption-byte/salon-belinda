@@ -11,6 +11,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\SalonJob;
 use App\Models\Staff;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,12 +64,46 @@ class ReportController extends Controller
             ];
         })->values();
 
+        $totalRevenue = (float) $shopDaily->sum('total') + (float) $salonDaily->sum('total');
+
+        // Month-over-month style comparison: rather than assuming calendar
+        // months (a range doesn't have to be one), compare against the
+        // immediately-preceding period of the same length, so "last 30
+        // days vs the 30 days before that" works the same as "July vs
+        // June" if the user picks calendar-month bounds.
+        $periodDays = Carbon::parse($from)->diffInDays(Carbon::parse($to)) + 1;
+        $previousTo = Carbon::parse($from)->subDay()->toDateString();
+        $previousFrom = Carbon::parse($from)->subDays($periodDays)->toDateString();
+
+        $previousShopTotal = (float) Order::query()
+            ->where('payment_status', 'paid')
+            ->whereDate('created_at', '>=', $previousFrom)
+            ->whereDate('created_at', '<=', $previousTo)
+            ->sum('total');
+
+        $previousSalonTotal = (float) JobPayment::query()
+            ->whereDate('paid_at', '>=', $previousFrom)
+            ->whereDate('paid_at', '<=', $previousTo)
+            ->sum('amount');
+
+        $previousTotalRevenue = $previousShopTotal + $previousSalonTotal;
+
+        // Null (not 0%) when there's nothing to compare against — a jump
+        // from zero reads as a division error, not real growth.
+        $growthPercent = $previousTotalRevenue > 0
+            ? round((($totalRevenue - $previousTotalRevenue) / $previousTotalRevenue) * 100, 1)
+            : null;
+
         return response()->json([
             'combined' => $combined,
-            'totalRevenue' => (float) $shopDaily->sum('total') + (float) $salonDaily->sum('total'),
+            'totalRevenue' => $totalRevenue,
             'totalShopRevenue' => (float) $shopDaily->sum('total'),
             'totalSalonRevenue' => (float) $salonDaily->sum('total'),
             'totalOrders' => (int) $shopDaily->sum('orders_count'),
+            'previousTotalRevenue' => $previousTotalRevenue,
+            'previousFrom' => $previousFrom,
+            'previousTo' => $previousTo,
+            'growthPercent' => $growthPercent,
             'from' => $from,
             'to' => $to,
         ]);
@@ -144,6 +179,134 @@ class ReportController extends Controller
             ->get();
 
         return response()->json(['jobs' => $jobs, 'totalOutstanding' => (int) $jobs->sum('balance_due')]);
+    }
+
+    /**
+     * Bookings by hour of day — useful for staffing decisions (when do we
+     * actually need people on the floor). `appointments.time` is a
+     * free-text column (predates the booking-engine work — see
+     * SALON-OPS-ENHANCEMENTS.md), so parse defensively same as the
+     * calendar view's frontend parser and exclude what can't be parsed
+     * rather than guessing.
+     */
+    public function busiestHours(Request $request): JsonResponse
+    {
+        $from = $request->query('date_from') ?: now()->subDays(29)->toDateString();
+        $to = $request->query('date_to') ?: now()->toDateString();
+
+        $times = Appointment::query()
+            ->whereDate('date', '>=', $from)
+            ->whereDate('date', '<=', $to)
+            ->pluck('time');
+
+        $counts = array_fill(0, 24, 0);
+        $excludedCount = 0;
+
+        foreach ($times as $time) {
+            $hour = self::parseHour($time);
+            if ($hour === null) {
+                $excludedCount++;
+
+                continue;
+            }
+            $counts[$hour]++;
+        }
+
+        $hours = collect($counts)->map(fn ($count, $hour) => [
+            'hour' => $hour,
+            'label' => self::formatHourLabel($hour),
+            'count' => $count,
+        ])->values();
+
+        return response()->json([
+            'hours' => $hours,
+            'excludedCount' => $excludedCount,
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
+    /**
+     * Same "free-text time" parsing rules as AppointmentsCalendar.tsx's
+     * parseTimeToMinutes(), just returning the hour bucket instead of
+     * total minutes — kept in step with that frontend parser rather than
+     * trusting a stricter format the data doesn't actually guarantee.
+     */
+    private static function parseHour(?string $time): ?int
+    {
+        if (! $time) {
+            return null;
+        }
+
+        if (! preg_match('/^\s*(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM|am|pm)?\s*$/', $time, $m)) {
+            return null;
+        }
+
+        $hour = (int) $m[1];
+        $minute = (int) $m[2];
+        $meridiem = isset($m[3]) ? strtoupper($m[3]) : null;
+
+        if ($meridiem === 'PM' && $hour < 12) {
+            $hour += 12;
+        }
+        if ($meridiem === 'AM' && $hour === 12) {
+            $hour = 0;
+        }
+
+        if ($hour > 23 || $minute > 59) {
+            return null;
+        }
+
+        return $hour;
+    }
+
+    private static function formatHourLabel(int $hour): string
+    {
+        $period = $hour < 12 ? 'AM' : 'PM';
+        $display = $hour % 12 === 0 ? 12 : $hour % 12;
+
+        return "{$display} {$period}";
+    }
+
+    /**
+     * Repeat-customer rate: of everyone with a completed visit in the
+     * range, what share had already visited before the range started.
+     * "Visit" means a non-cancelled job — a cancelled job never happened,
+     * so it shouldn't count as a first or repeat visit either way.
+     */
+    public function retentionRate(Request $request): JsonResponse
+    {
+        $from = $request->query('date_from') ?: now()->subDays(29)->toDateString();
+        $to = $request->query('date_to') ?: now()->toDateString();
+
+        $customerIds = SalonJob::query()
+            ->where('status', '!=', 'cancelled')
+            ->whereDate('job_date', '>=', $from)
+            ->whereDate('job_date', '<=', $to)
+            ->distinct()
+            ->pluck('customer_id');
+
+        $totalCustomers = $customerIds->count();
+
+        $returningCustomerIds = SalonJob::query()
+            ->where('status', '!=', 'cancelled')
+            ->whereIn('customer_id', $customerIds)
+            ->whereDate('job_date', '<', $from)
+            ->distinct()
+            ->pluck('customer_id');
+
+        $returningCustomers = $returningCustomerIds->count();
+        $newCustomers = $totalCustomers - $returningCustomers;
+        $retentionRate = $totalCustomers > 0 ? round(($returningCustomers / $totalCustomers) * 100, 1) : 0.0;
+
+        return response()->json([
+            'totalCustomers' => $totalCustomers,
+            'returningCustomers' => $returningCustomers,
+            'newCustomers' => $newCustomers,
+            'retentionRate' => $retentionRate,
+            'from' => $from,
+            'to' => $to,
+        ]);
     }
 
     public function staffCommission(Request $request): JsonResponse

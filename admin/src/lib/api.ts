@@ -518,6 +518,10 @@ export interface SalonJob {
   total_paid: number;
   balance_due: number;
   total_tips: number;
+  discount_type: DiscountType;
+  discount_value: string;
+  discount_amount: number;
+  total_after_discount: number;
   customer?: JobCustomer;
   items?: JobItemRow[];
   payments?: JobPaymentRow[];
@@ -592,6 +596,10 @@ export function removeJobPayment(jobId: number, paymentId: number) {
 
 export function updateJobStatus(jobId: number, status: JobStatus) {
   return api.patch<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/status`, { status });
+}
+
+export function updateJobDiscount(jobId: number, data: { discount_type: DiscountType; discount_value?: number }) {
+  return api.patch<{ job: SalonJob; message: string }>(`/admin/jobs/${jobId}/discount`, data);
 }
 
 /**
@@ -962,12 +970,41 @@ export interface RevenueReport {
   totalShopRevenue: number;
   totalSalonRevenue: number;
   totalOrders: number;
+  previousTotalRevenue: number;
+  previousFrom: string;
+  previousTo: string;
+  growthPercent: number | null;
   from: string;
   to: string;
 }
 
 export function fetchRevenueReport(params?: DateRangeParams): Promise<RevenueReport> {
   return api.get(`/admin/reports/revenue${toQuery(params)}`);
+}
+
+export interface BusiestHoursRow {
+  hour: number;
+  label: string;
+  count: number;
+}
+
+export function fetchBusiestHoursReport(
+  params?: DateRangeParams
+): Promise<{ hours: BusiestHoursRow[]; excludedCount: number; from: string; to: string }> {
+  return api.get(`/admin/reports/busiest-hours${toQuery(params)}`);
+}
+
+export interface RetentionReport {
+  totalCustomers: number;
+  returningCustomers: number;
+  newCustomers: number;
+  retentionRate: number;
+  from: string;
+  to: string;
+}
+
+export function fetchRetentionReport(params?: DateRangeParams): Promise<RetentionReport> {
+  return api.get(`/admin/reports/retention-rate${toQuery(params)}`);
 }
 
 export interface BestSellerRow {
