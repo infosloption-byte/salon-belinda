@@ -28,15 +28,15 @@ class StaffShiftDemoSeeder extends Seeder
         foreach ($staff as $member) {
             for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
                 // Sundays off, roughly one extra random day off per week too.
-                if ($date->isSunday() || fake()->boolean(12)) {
-                    if (fake()->boolean(30)) {
+                if ($date->isSunday() || DemoRandom::boolean(12)) {
+                    if (DemoRandom::boolean(30)) {
                         StaffShift::create([
                             'staff_id' => $member->id,
                             'date' => $date->toDateString(),
                             'start_time' => null,
                             'end_time' => null,
                             'type' => 'leave',
-                            'notes' => fake()->randomElement(['Day off', 'Annual leave', 'Personal leave']),
+                            'notes' => DemoRandom::randomElement(['Day off', 'Annual leave', 'Personal leave']),
                         ]);
                     }
 
@@ -47,7 +47,7 @@ class StaffShiftDemoSeeder extends Seeder
                     'staff_id' => $member->id,
                     'date' => $date->toDateString(),
                     'start_time' => '09:00',
-                    'end_time' => fake()->randomElement(['17:00', '18:00', '19:00']),
+                    'end_time' => DemoRandom::randomElement(['17:00', '18:00', '19:00']),
                     'type' => 'work',
                     'notes' => null,
                 ]);

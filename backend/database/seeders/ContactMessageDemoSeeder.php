@@ -28,22 +28,22 @@ class ContactMessageDemoSeeder extends Seeder
     public function run(): void
     {
         foreach (range(1, 35) as $ignored) {
-            $daysAgo = fake()->numberBetween(0, 30);
+            $daysAgo = DemoRandom::numberBetween(0, 30);
             $status = match (true) {
-                $daysAgo <= 2 => fake()->randomElement(['new', 'new', 'read']),
-                $daysAgo <= 10 => fake()->randomElement(['read', 'replied']),
+                $daysAgo <= 2 => DemoRandom::randomElement(['new', 'new', 'read']),
+                $daysAgo <= 10 => DemoRandom::randomElement(['read', 'replied']),
                 default => 'replied',
             };
 
             $message = ContactMessage::create([
-                'name' => fake()->name(),
-                'email' => fake()->safeEmail(),
-                'phone' => fake()->boolean(60) ? '07'.fake()->numberBetween(1, 9).fake()->numerify('#######') : null,
-                'message' => fake()->randomElement(self::MESSAGES),
+                'name' => DemoRandom::name(),
+                'email' => DemoRandom::safeEmail(),
+                'phone' => DemoRandom::boolean(60) ? '07'.DemoRandom::numberBetween(1, 9).DemoRandom::numerify('#######') : null,
+                'message' => DemoRandom::randomElement(self::MESSAGES),
                 'status' => $status,
             ]);
 
-            $ts = Carbon::today()->subDays($daysAgo)->setTime(fake()->numberBetween(8, 21), fake()->numberBetween(0, 59));
+            $ts = Carbon::today()->subDays($daysAgo)->setTime(DemoRandom::numberBetween(8, 21), DemoRandom::numberBetween(0, 59));
             $message->forceFill(['created_at' => $ts, 'updated_at' => $ts])->save();
         }
     }

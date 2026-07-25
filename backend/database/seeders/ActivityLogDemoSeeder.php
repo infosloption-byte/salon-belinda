@@ -51,17 +51,17 @@ class ActivityLogDemoSeeder extends Seeder
         }
 
         foreach ($entries as $entry) {
-            $daysAgo = fake()->numberBetween(0, 60);
-            $ts = Carbon::today()->subDays($daysAgo)->setTime(fake()->numberBetween(8, 20), fake()->numberBetween(0, 59));
+            $daysAgo = DemoRandom::numberBetween(0, 60);
+            $ts = Carbon::today()->subDays($daysAgo)->setTime(DemoRandom::numberBetween(8, 20), DemoRandom::numberBetween(0, 59));
 
             AdminActivityLog::create([
-                'user_id' => fake()->randomElement($userIds),
+                'user_id' => DemoRandom::randomElement($userIds),
                 'action' => $entry['action'],
                 'description' => $entry['description'],
                 'subject_type' => $entry['subject_type'],
                 'subject_id' => $entry['subject_id'],
                 'properties' => null,
-                'ip_address' => fake()->ipv4(),
+                'ip_address' => DemoRandom::ipv4(),
             ])->forceFill(['created_at' => $ts, 'updated_at' => $ts])->save();
         }
     }

@@ -1,61 +1,37 @@
-# Fix: seeders vs. actual customer/points schema, plus a production guard escape hatch
+# Fix: removed the fakerphp/faker dependency entirely
 
-## 1. Schema mismatch (the original bug)
+`fake()` (Faker) is a `require-dev`-only package. Your production image is
+almost certainly built with `composer install --no-dev`, so `\Faker\Factory`
+doesn't exist there and every `fake()->...` call in the seeders blew up.
 
-Your `customers:send-occasion-reminders` / points implementation ended up
-different from the version the seeders were originally written against
-(table `customer_points` not `customer_points_ledger`, model `CustomerPoint`
-not `CustomerPointsLedger`, `Customer::earnPoints()/redeemPoints()/
-adjustPoints()` instead of `addPoints()`, points earned per-payment in
-`JobController::addPayment()` rather than on job completion, `tags` as a
-keyed array (`'vip' => 'VIP'`) instead of a plain list, and no
-`points_awarded_at` column on jobs_salon). That's a better design than my
-original, by the way — earning off the actual amount paid rather than off
-job status is more correct. The two seeder files that assumed the old
-shape needed rewriting to match:
+Rather than asking you to install dev dependencies on a production box (or
+relying on `APP_ENV`/build flags to get this right), I replaced every
+`fake()->` call across **all 9** demo seeders with a small dependency-free
+helper, `DemoRandom`, that implements the exact same method names
+(`numberBetween`, `boolean`, `randomElement`, `randomElements`,
+`randomFloat`, `numerify`, `bothify`, `safeEmail`, `name`, `ipv4`) using
+only built-in PHP (`random_int`, `array_rand`, etc). No other logic
+changed — this was a mechanical `fake()->` → `DemoRandom::` swap, so all
+the scenario coverage (past/present/future dates, tags, points, stock
+movements, etc.) is exactly what it was before.
 
-- **`CustomerDemoSeeder.php`** — one-line fix: tags now pull from
-  `array_keys(Customer::TAGS)` instead of `Customer::TAGS` directly, since
-  `TAGS` is keyed (`'vip' => 'VIP'`) and the `tags` column stores keys.
-- **`SalonJobDemoSeeder.php`** — points are now earned inside a new
-  `recordPayment()` helper, called for every `JobPayment` created (deposit
-  or final), via `Customer::earnPoints()` — mirroring
-  `JobController::addPayment()` exactly (floor(amount / currency_per_point),
-  tip excluded). Removed the old completion-triggered `awardPoints()` and
-  all `points_awarded_at` references. The backdating step now updates
-  `customer_points` via `reference_type = 'job'` / `reference_id`, not a
-  `job_id` column that doesn't exist on that table.
-
-## 2. Production guard (what just happened to you)
-
-`DemoDataSeeder` refuses to run when `APP_ENV=production` — which your
-box is, since it's a live server. That guard is intentional (fake
-customers/orders on a production database by accident would be bad), but
-you clearly want this on purpose for load/UAT testing, so **`DemoDataSeeder.php`
-now has an explicit opt-in**: set `DEMO_SEED_ALLOW_PRODUCTION=true` for
-just that one command, rather than touching `APP_ENV` in your `.env` (which
-would also flip debug-mode/error-page behavior — not something you want to
-toggle on a live box).
+This supersedes the previous two fix zips — **this one replaces all 9
+demo seeder files plus adds `DemoRandom.php`** (10 files total). You don't
+need anything from the earlier zips anymore.
 
 ## What to do
 
-Overwrite all three files below in `backend/database/seeders/`:
-
-- `CustomerDemoSeeder.php`
-- `SalonJobDemoSeeder.php`
-- `DemoDataSeeder.php`
-
-The other 6 seeders (Appointment, StaffShift, StockMovement, Order,
-ContactMessage, ActivityLog) are unaffected by either issue.
-
-Then run it with the escape hatch set for just that command:
+Overwrite `backend/database/seeders/` with everything in this zip's
+`backend/database/seeders/` folder (10 files), then:
 
 ```bash
 docker compose exec -e DEMO_SEED_ALLOW_PRODUCTION=true backend \
   php artisan db:seed --class="Database\Seeders\DemoDataSeeder"
 ```
 
-(`-e` on `docker compose exec` sets the env var only for that one process
-— it doesn't touch your container's actual `.env` file or persist
-anywhere.)
-
+If it fails partway through again, the seeders aren't wrapped in a
+transaction (deliberately — inserting hundreds of rows in one transaction
+on a live box isn't great), so whatever ran before the error will already
+be in the database. That's fine to leave in place; re-running
+`DemoDataSeeder` just adds more on top rather than erroring on duplicates,
+since nothing here has a uniqueness constraint against itself.

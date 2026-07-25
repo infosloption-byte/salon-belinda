@@ -25,20 +25,20 @@ class StockMovementDemoSeeder extends Seeder
         $adminId = User::where('is_admin', true)->value('id');
 
         foreach ($products as $product) {
-            foreach (range(1, fake()->numberBetween(2, 4)) as $ignored) {
-                $daysAgo = fake()->numberBetween(5, 90);
-                $qty = fake()->numberBetween(10, 40);
-                $movement = $product->applyMovement('restock', $qty, fake()->randomElement([
+            foreach (range(1, DemoRandom::numberBetween(2, 4)) as $ignored) {
+                $daysAgo = DemoRandom::numberBetween(5, 90);
+                $qty = DemoRandom::numberBetween(10, 40);
+                $movement = $product->applyMovement('restock', $qty, DemoRandom::randomElement([
                     'Scheduled restock', 'Supplier delivery', 'Restocked ahead of promotion',
                 ]), $adminId);
                 $this->backdate($movement, Carbon::today()->subDays($daysAgo));
             }
 
             // Occasional breakage/loss write-off.
-            if (fake()->boolean(25)) {
-                $daysAgo = fake()->numberBetween(1, 60);
-                $qty = -fake()->numberBetween(1, 5);
-                $movement = $product->applyMovement('adjustment', $qty, fake()->randomElement([
+            if (DemoRandom::boolean(25)) {
+                $daysAgo = DemoRandom::numberBetween(1, 60);
+                $qty = -DemoRandom::numberBetween(1, 5);
+                $movement = $product->applyMovement('adjustment', $qty, DemoRandom::randomElement([
                     'Damaged in storage', 'Stocktake correction', 'Sample given to customer',
                 ]), $adminId);
                 $this->backdate($movement, Carbon::today()->subDays($daysAgo));
@@ -48,7 +48,7 @@ class StockMovementDemoSeeder extends Seeder
 
     private function backdate(StockMovement $movement, Carbon $date): void
     {
-        $ts = $date->setTime(fake()->numberBetween(9, 18), 0);
+        $ts = $date->setTime(DemoRandom::numberBetween(9, 18), 0);
         $movement->forceFill(['created_at' => $ts, 'updated_at' => $ts])->save();
     }
 }

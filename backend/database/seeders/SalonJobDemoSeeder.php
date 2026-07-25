@@ -48,16 +48,16 @@ class SalonJobDemoSeeder extends Seeder
         }
 
         Customer::all()->each(function (Customer $customer) use ($services, $staff, $userIds) {
-            foreach (range(1, fake()->numberBetween(0, 5)) as $ignored) {
+            foreach (range(1, DemoRandom::numberBetween(0, 5)) as $ignored) {
                 $this->makePastJob($customer, $services, $staff, $userIds);
             }
 
-            if (fake()->boolean(35)) {
+            if (DemoRandom::boolean(35)) {
                 $this->makeTodayJob($customer, $services, $staff, $userIds);
             }
 
-            if (fake()->boolean(35)) {
-                foreach (range(1, fake()->numberBetween(1, 2)) as $ignored) {
+            if (DemoRandom::boolean(35)) {
+                foreach (range(1, DemoRandom::numberBetween(1, 2)) as $ignored) {
                     $this->makeFutureJob($customer, $services, $staff, $userIds);
                 }
             }
@@ -66,11 +66,11 @@ class SalonJobDemoSeeder extends Seeder
 
     private function makePastJob(Customer $customer, $services, $staff, array $userIds): void
     {
-        $jobDate = Carbon::today()->subDays(fake()->numberBetween(1, 90));
-        $status = fake()->randomElement(['completed', 'completed', 'completed', 'completed', 'cancelled']);
+        $jobDate = Carbon::today()->subDays(DemoRandom::numberBetween(1, 90));
+        $status = DemoRandom::randomElement(['completed', 'completed', 'completed', 'completed', 'cancelled']);
 
         $job = $this->createJob($customer, $jobDate, $status, $userIds);
-        $this->addItems($job, $services, $staff, fake()->numberBetween(1, 3));
+        $this->addItems($job, $services, $staff, DemoRandom::numberBetween(1, 3));
         $job->recalculateTotals();
 
         if ($status === 'completed') {
@@ -83,15 +83,15 @@ class SalonJobDemoSeeder extends Seeder
 
     private function makeTodayJob(Customer $customer, $services, $staff, array $userIds): void
     {
-        $status = fake()->randomElement(['in_progress', 'in_progress', 'completed']);
+        $status = DemoRandom::randomElement(['in_progress', 'in_progress', 'completed']);
         $job = $this->createJob($customer, Carbon::today(), $status, $userIds);
-        $this->addItems($job, $services, $staff, fake()->numberBetween(1, 3));
+        $this->addItems($job, $services, $staff, DemoRandom::numberBetween(1, 3));
         $job->recalculateTotals();
 
         if ($status === 'completed') {
             $this->addPayments($job, Carbon::today(), $userIds, full: true);
             $job->recalculateTotals();
-        } elseif (fake()->boolean(50)) {
+        } elseif (DemoRandom::boolean(50)) {
             // Deposit — partial payment against a job still in progress.
             // Still earns points: earning is driven by payments recorded,
             // not by job status.
@@ -102,27 +102,27 @@ class SalonJobDemoSeeder extends Seeder
 
     private function makeFutureJob(Customer $customer, $services, $staff, array $userIds): void
     {
-        $jobDate = Carbon::today()->addDays(fake()->numberBetween(1, 30));
+        $jobDate = Carbon::today()->addDays(DemoRandom::numberBetween(1, 30));
         $job = $this->createJob($customer, $jobDate, 'scheduled', $userIds);
-        $this->addItems($job, $services, $staff, fake()->numberBetween(1, 2));
+        $this->addItems($job, $services, $staff, DemoRandom::numberBetween(1, 2));
         $job->recalculateTotals();
         // No payments yet — booked ahead, nothing collected until the visit.
     }
 
     private function createJob(Customer $customer, Carbon $jobDate, string $status, array $userIds): SalonJob
     {
-        $hasDiscount = fake()->boolean(20);
-        $discountType = $hasDiscount ? fake()->randomElement(['percent', 'fixed']) : 'none';
+        $hasDiscount = DemoRandom::boolean(20);
+        $discountType = $hasDiscount ? DemoRandom::randomElement(['percent', 'fixed']) : 'none';
 
         return SalonJob::create([
             'customer_id' => $customer->id,
             'appointment_id' => null,
             'status' => $status,
             'job_date' => $jobDate->toDateString(),
-            'notes' => fake()->boolean(10) ? fake()->randomElement(['Regular visit.', 'Requested extra time.', 'First treatment of this kind.']) : null,
-            'created_by' => $userIds ? fake()->randomElement($userIds) : null,
+            'notes' => DemoRandom::boolean(10) ? DemoRandom::randomElement(['Regular visit.', 'Requested extra time.', 'First treatment of this kind.']) : null,
+            'created_by' => $userIds ? DemoRandom::randomElement($userIds) : null,
             'discount_type' => $discountType,
-            'discount_value' => $discountType === 'none' ? 0 : ($discountType === 'percent' ? fake()->numberBetween(5, 20) : fake()->numberBetween(500, 3000)),
+            'discount_value' => $discountType === 'none' ? 0 : ($discountType === 'percent' ? DemoRandom::numberBetween(5, 20) : DemoRandom::numberBetween(500, 3000)),
         ]);
     }
 
@@ -131,8 +131,8 @@ class SalonJobDemoSeeder extends Seeder
         foreach (range(1, $count) as $ignored) {
             $service = $services->random();
             $member = $staff->random();
-            $itemHasDiscount = fake()->boolean(10);
-            $discountType = $itemHasDiscount ? fake()->randomElement(['percent', 'fixed']) : 'none';
+            $itemHasDiscount = DemoRandom::boolean(10);
+            $discountType = $itemHasDiscount ? DemoRandom::randomElement(['percent', 'fixed']) : 'none';
 
             JobItem::create([
                 'job_id' => $job->id,
@@ -141,7 +141,7 @@ class SalonJobDemoSeeder extends Seeder
                 'staff_id' => $member->id,
                 'base_price' => $service->price,
                 'discount_type' => $discountType,
-                'discount_value' => $discountType === 'none' ? 0 : ($discountType === 'percent' ? fake()->numberBetween(5, 15) : fake()->numberBetween(200, 1000)),
+                'discount_value' => $discountType === 'none' ? 0 : ($discountType === 'percent' ? DemoRandom::numberBetween(5, 15) : DemoRandom::numberBetween(200, 1000)),
                 'commission_percent' => $member->commission_percent,
                 'final_price' => 0, // computed by JobItem::saving()
                 'commission_amount' => 0,
@@ -152,20 +152,20 @@ class SalonJobDemoSeeder extends Seeder
     private function addPayments(SalonJob $job, Carbon $jobDate, array $userIds, bool $full): void
     {
         $owed = $job->total_after_discount;
-        $tip = fake()->boolean(40) ? fake()->numberBetween(100, 1500) : 0;
+        $tip = DemoRandom::boolean(40) ? DemoRandom::numberBetween(100, 1500) : 0;
 
         if ($full) {
             // Sometimes split into two payments (e.g. deposit at booking,
             // balance on the day) rather than always one lump sum.
-            if (fake()->boolean(25) && $owed > 1000) {
-                $deposit = (int) round($owed * fake()->randomFloat(2, 0.2, 0.5));
-                $this->recordPayment($job, $deposit, 0, $jobDate->copy()->subDays(fake()->numberBetween(1, 5)), $userIds, 'Deposit');
+            if (DemoRandom::boolean(25) && $owed > 1000) {
+                $deposit = (int) round($owed * DemoRandom::randomFloat(2, 0.2, 0.5));
+                $this->recordPayment($job, $deposit, 0, $jobDate->copy()->subDays(DemoRandom::numberBetween(1, 5)), $userIds, 'Deposit');
                 $owed -= $deposit;
             }
 
-            $this->recordPayment($job, max(0, $owed), $tip, $jobDate->copy()->setTime(fake()->numberBetween(9, 19), fake()->randomElement([0, 15, 30, 45])), $userIds, null);
+            $this->recordPayment($job, max(0, $owed), $tip, $jobDate->copy()->setTime(DemoRandom::numberBetween(9, 19), DemoRandom::randomElement([0, 15, 30, 45])), $userIds, null);
         } else {
-            $deposit = (int) round($owed * fake()->randomFloat(2, 0.2, 0.6));
+            $deposit = (int) round($owed * DemoRandom::randomFloat(2, 0.2, 0.6));
             $this->recordPayment($job, $deposit, 0, Carbon::now(), $userIds, 'Deposit');
         }
     }
@@ -178,13 +178,13 @@ class SalonJobDemoSeeder extends Seeder
      */
     private function recordPayment(SalonJob $job, int $amount, int $tipAmount, Carbon $paidAt, array $userIds, ?string $note): void
     {
-        $recordedBy = $userIds ? fake()->randomElement($userIds) : null;
+        $recordedBy = $userIds ? DemoRandom::randomElement($userIds) : null;
 
         JobPayment::create([
             'job_id' => $job->id,
             'amount' => $amount,
             'tip_amount' => $tipAmount,
-            'method' => fake()->randomElement(['cash', 'card', 'bank_transfer']),
+            'method' => DemoRandom::randomElement(['cash', 'card', 'bank_transfer']),
             'paid_at' => $paidAt,
             'recorded_by' => $recordedBy,
             'note' => $note,
@@ -199,7 +199,7 @@ class SalonJobDemoSeeder extends Seeder
     /** Backdate created_at/updated_at so the activity feed and any created_at-ordered lists don't show every past job as "just now". */
     private function backdate(SalonJob $job, Carbon $jobDate): void
     {
-        $ts = $jobDate->copy()->setTime(fake()->numberBetween(9, 19), 0);
+        $ts = $jobDate->copy()->setTime(DemoRandom::numberBetween(9, 19), 0);
         $job->items()->update(['created_at' => $ts, 'updated_at' => $ts]);
         $job->payments()->update(['created_at' => $ts, 'updated_at' => $ts]);
         CustomerPoint::where('reference_type', 'job')->where('reference_id', $job->id)

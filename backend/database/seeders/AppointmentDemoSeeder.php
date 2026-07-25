@@ -45,9 +45,9 @@ class AppointmentDemoSeeder extends Seeder
         // cancellations and no-shows so status-based reports have variety.
         for ($d = 45; $d >= 1; $d--) {
             $date = $today->copy()->subDays($d);
-            $dailyCount = fake()->numberBetween(0, 4);
+            $dailyCount = DemoRandom::numberBetween(0, 4);
             for ($i = 0; $i < $dailyCount; $i++) {
-                $this->makeAppointment($date, $services, $staff, fake()->randomElement([
+                $this->makeAppointment($date, $services, $staff, DemoRandom::randomElement([
                     'completed', 'completed', 'completed', 'cancelled', 'no_show',
                 ]));
             }
@@ -55,18 +55,18 @@ class AppointmentDemoSeeder extends Seeder
 
         // Today — a realistic single day's book: a few already completed
         // (earlier slots), a couple confirmed/pending for later.
-        foreach (fake()->randomElements(self::TIMES, fake()->numberBetween(3, 6)) as $time) {
-            $this->makeAppointment($today, $services, $staff, fake()->randomElement(['confirmed', 'confirmed', 'pending', 'completed']), $time);
+        foreach (DemoRandom::randomElements(self::TIMES, DemoRandom::numberBetween(3, 6)) as $time) {
+            $this->makeAppointment($today, $services, $staff, DemoRandom::randomElement(['confirmed', 'confirmed', 'pending', 'completed']), $time);
         }
 
         // Future — next 21 days, pending/confirmed, with a handful
         // deliberately waitlisted (fully booked slot scenario).
         for ($d = 1; $d <= 21; $d++) {
             $date = $today->copy()->addDays($d);
-            $dailyCount = fake()->numberBetween(0, 5);
+            $dailyCount = DemoRandom::numberBetween(0, 5);
             for ($i = 0; $i < $dailyCount; $i++) {
-                $isWaitlisted = fake()->boolean(10);
-                $this->makeAppointment($date, $services, $staff, $isWaitlisted ? 'pending' : fake()->randomElement(['pending', 'confirmed']), null, $isWaitlisted);
+                $isWaitlisted = DemoRandom::boolean(10);
+                $this->makeAppointment($date, $services, $staff, $isWaitlisted ? 'pending' : DemoRandom::randomElement(['pending', 'confirmed']), null, $isWaitlisted);
             }
         }
     }
@@ -79,13 +79,13 @@ class AppointmentDemoSeeder extends Seeder
         Appointment::create([
             'service_id' => $service->id,
             'service_name' => $service->name,
-            'staff_id' => $staff->isNotEmpty() && fake()->boolean(70) ? $staff->random()->id : null,
+            'staff_id' => $staff->isNotEmpty() && DemoRandom::boolean(70) ? $staff->random()->id : null,
             'name' => $name,
-            'phone' => '07'.fake()->numberBetween(1, 9).fake()->numerify('#######'),
-            'email' => fake()->boolean(60) ? strtolower(str_replace(' ', '.', $name)).fake()->numberBetween(1, 999).'@example.com' : null,
+            'phone' => '07'.DemoRandom::numberBetween(1, 9).DemoRandom::numerify('#######'),
+            'email' => DemoRandom::boolean(60) ? strtolower(str_replace(' ', '.', $name)).DemoRandom::numberBetween(1, 999).'@example.com' : null,
             'date' => $date->toDateString(),
-            'time' => $time ?? fake()->randomElement(self::TIMES),
-            'notes' => fake()->boolean(15) ? fake()->randomElement([
+            'time' => $time ?? DemoRandom::randomElement(self::TIMES),
+            'notes' => DemoRandom::boolean(15) ? DemoRandom::randomElement([
                 'First-time visitor.', 'Please call to confirm.', 'Bringing a reference photo.',
             ]) : null,
             'status' => $status,

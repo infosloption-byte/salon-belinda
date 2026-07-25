@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
  *    with more than one tag and several with none
  *  - a handful with date_of_birth / anniversary_date landing on *today* and
  *    in the next few days, specifically so
- *    `php artisan customers:send-milestone-reminders` has something to send
+ *    `php artisan customers:send-occasion-reminders` has something to send
  *    without waiting for the calendar to line up
  *  - the rest of the birthdays/anniversaries spread across the whole year
  *  - points_balance and points history are NOT set here — SalonJobDemoSeeder
@@ -50,28 +50,28 @@ class CustomerDemoSeeder extends Seeder
             // gets a date spread across the whole year, birth years spread
             // across a plausible adult range.
             if ($i < 5) {
-                $dob = $today->copy()->addDays($i)->subYears(fake()->numberBetween(20, 45));
+                $dob = $today->copy()->addDays($i)->subYears(DemoRandom::numberBetween(20, 45));
             } else {
-                $dob = fake()->boolean(75)
-                    ? Carbon::createFromDate(fake()->numberBetween(1970, 2004), fake()->numberBetween(1, 12), fake()->numberBetween(1, 28))
+                $dob = DemoRandom::boolean(75)
+                    ? Carbon::createFromDate(DemoRandom::numberBetween(1970, 2004), DemoRandom::numberBetween(1, 12), DemoRandom::numberBetween(1, 28))
                     : null;
             }
 
             if ($i >= 5 && $i < 8) {
-                $anniversary = $today->copy()->addDays($i - 5 + 1)->subYears(fake()->numberBetween(1, 20));
+                $anniversary = $today->copy()->addDays($i - 5 + 1)->subYears(DemoRandom::numberBetween(1, 20));
             } else {
-                $anniversary = fake()->boolean(40)
-                    ? Carbon::createFromDate(fake()->numberBetween(2005, 2025), fake()->numberBetween(1, 12), fake()->numberBetween(1, 28))
+                $anniversary = DemoRandom::boolean(40)
+                    ? Carbon::createFromDate(DemoRandom::numberBetween(2005, 2025), DemoRandom::numberBetween(1, 12), DemoRandom::numberBetween(1, 28))
                     : null;
             }
 
-            $tags = fake()->randomElements(array_keys(Customer::TAGS), fake()->numberBetween(0, 2));
+            $tags = DemoRandom::randomElements(array_keys(Customer::TAGS), DemoRandom::numberBetween(0, 2));
 
             Customer::create([
                 'name' => $name,
-                'phone' => '07'.fake()->numberBetween(1, 9).fake()->numerify('#######'),
-                'email' => fake()->boolean(70) ? strtolower(str_replace(' ', '.', $name)).fake()->numberBetween(1, 999).'@example.com' : null,
-                'notes' => fake()->boolean(20) ? fake()->randomElement([
+                'phone' => '07'.DemoRandom::numberBetween(1, 9).DemoRandom::numerify('#######'),
+                'email' => DemoRandom::boolean(70) ? strtolower(str_replace(' ', '.', $name)).DemoRandom::numberBetween(1, 999).'@example.com' : null,
+                'notes' => DemoRandom::boolean(20) ? DemoRandom::randomElement([
                     'Prefers window seating.',
                     'Allergic to certain fragrance oils — check before facials.',
                     'Regular every 6 weeks.',

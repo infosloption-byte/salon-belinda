@@ -44,37 +44,37 @@ class OrderDemoSeeder extends Seeder
         // Past — 60 days back to yesterday.
         for ($d = 60; $d >= 1; $d--) {
             $date = Carbon::today()->subDays($d);
-            foreach (range(1, fake()->numberBetween(0, 3)) as $ignored) {
+            foreach (range(1, DemoRandom::numberBetween(0, 3)) as $ignored) {
                 $this->makeOrder($products, $date, $deliveryFee, $freeThreshold, isToday: false);
             }
         }
 
         // Present — a handful placed today, still working through the
         // pending/processing pipeline.
-        foreach (range(1, fake()->numberBetween(2, 5)) as $ignored) {
+        foreach (range(1, DemoRandom::numberBetween(2, 5)) as $ignored) {
             $this->makeOrder($products, Carbon::today(), $deliveryFee, $freeThreshold, isToday: true);
         }
     }
 
     private function makeOrder($products, Carbon $date, int $deliveryFee, int $freeThreshold, bool $isToday): void
     {
-        $name = fake()->randomElement(self::CUSTOMER_NAMES);
-        $fulfilment = fake()->randomElement(['delivery', 'delivery', 'pickup']);
+        $name = DemoRandom::randomElement(self::CUSTOMER_NAMES);
+        $fulfilment = DemoRandom::randomElement(['delivery', 'delivery', 'pickup']);
 
         $status = $isToday
-            ? fake()->randomElement(['pending', 'processing'])
-            : fake()->randomElement(['completed', 'completed', 'completed', 'processing', 'cancelled']);
+            ? DemoRandom::randomElement(['pending', 'processing'])
+            : DemoRandom::randomElement(['completed', 'completed', 'completed', 'processing', 'cancelled']);
         $paymentStatus = match (true) {
-            $status === 'cancelled' => fake()->randomElement(['pending', 'failed']),
+            $status === 'cancelled' => DemoRandom::randomElement(['pending', 'failed']),
             $status === 'completed' => 'paid',
-            default => fake()->randomElement(['pending', 'paid']),
+            default => DemoRandom::randomElement(['pending', 'paid']),
         };
 
-        $lineItems = $products->random(min($products->count(), fake()->numberBetween(1, 4)));
+        $lineItems = $products->random(min($products->count(), DemoRandom::numberBetween(1, 4)));
         $subtotal = 0;
         $lines = [];
         foreach ($lineItems as $product) {
-            $quantity = fake()->numberBetween(1, 3);
+            $quantity = DemoRandom::numberBetween(1, 3);
             $lineTotal = $product->price * $quantity;
             $subtotal += $lineTotal;
             $lines[] = ['product' => $product, 'quantity' => $quantity, 'line_total' => $lineTotal];
@@ -85,15 +85,15 @@ class OrderDemoSeeder extends Seeder
         $order = Order::create([
             'order_number' => Order::generateOrderNumber(),
             'customer_name' => $name,
-            'customer_phone' => '07'.fake()->numberBetween(1, 9).fake()->numerify('#######'),
-            'customer_email' => fake()->boolean(80) ? strtolower(str_replace(' ', '.', $name)).fake()->numberBetween(1, 999).'@example.com' : null,
+            'customer_phone' => '07'.DemoRandom::numberBetween(1, 9).DemoRandom::numerify('#######'),
+            'customer_email' => DemoRandom::boolean(80) ? strtolower(str_replace(' ', '.', $name)).DemoRandom::numberBetween(1, 999).'@example.com' : null,
             'fulfilment_method' => $fulfilment,
-            'address' => $fulfilment === 'delivery' ? fake()->numerify('###/').fake()->randomElement(['Galle Road', 'Negombo Road', 'High Level Road', 'Kandy Road']).', Colombo' : null,
-            'city' => $fulfilment === 'delivery' ? fake()->randomElement(['Colombo', 'Negombo', 'Gampaha', 'Kandy', 'Kalutara']) : null,
-            'notes' => fake()->boolean(10) ? 'Please call before delivery.' : null,
-            'payment_method' => fake()->randomElement(['cod', 'bank', 'card']),
+            'address' => $fulfilment === 'delivery' ? DemoRandom::numerify('###/').DemoRandom::randomElement(['Galle Road', 'Negombo Road', 'High Level Road', 'Kandy Road']).', Colombo' : null,
+            'city' => $fulfilment === 'delivery' ? DemoRandom::randomElement(['Colombo', 'Negombo', 'Gampaha', 'Kandy', 'Kalutara']) : null,
+            'notes' => DemoRandom::boolean(10) ? 'Please call before delivery.' : null,
+            'payment_method' => DemoRandom::randomElement(['cod', 'bank', 'card']),
             'payment_status' => $paymentStatus,
-            'transaction_id' => $paymentStatus === 'paid' && fake()->boolean(60) ? strtoupper(fake()->bothify('TXN-########')) : null,
+            'transaction_id' => $paymentStatus === 'paid' && DemoRandom::boolean(60) ? strtoupper(DemoRandom::bothify('TXN-########')) : null,
             'subtotal' => $subtotal,
             'delivery_fee' => $fee,
             'total' => $subtotal + $fee,
@@ -112,7 +112,7 @@ class OrderDemoSeeder extends Seeder
             $line['product']->decrementStock($line['quantity'], 'order', $order->id);
         }
 
-        $ts = $isToday ? Carbon::now()->subMinutes(fake()->numberBetween(5, 480)) : $date->copy()->setTime(fake()->numberBetween(8, 21), fake()->randomElement([0, 15, 30, 45]));
+        $ts = $isToday ? Carbon::now()->subMinutes(DemoRandom::numberBetween(5, 480)) : $date->copy()->setTime(DemoRandom::numberBetween(8, 21), DemoRandom::randomElement([0, 15, 30, 45]));
         $order->forceFill(['created_at' => $ts, 'updated_at' => $ts])->save();
         $order->items()->update(['created_at' => $ts, 'updated_at' => $ts]);
         StockMovement::where('reference_type', 'order')->where('reference_id', $order->id)
