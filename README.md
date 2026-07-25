@@ -1,4 +1,6 @@
-# Fix: seeders vs. actual customer/points schema
+# Fix: seeders vs. actual customer/points schema, plus a production guard escape hatch
+
+## 1. Schema mismatch (the original bug)
 
 Your `customers:send-occasion-reminders` / points implementation ended up
 different from the version the seeders were originally written against
@@ -24,18 +26,36 @@ shape needed rewriting to match:
   `customer_points` via `reference_type = 'job'` / `reference_id`, not a
   `job_id` column that doesn't exist on that table.
 
-Just overwrite these two files in `backend/database/seeders/` — the other
-7 seeders (Appointment, StaffShift, StockMovement, Order, ContactMessage,
-ActivityLog, DemoDataSeeder) didn't touch anything customer/points-related
-and are unaffected.
+## 2. Production guard (what just happened to you)
 
-Then, from where you ran the failed attempt:
+`DemoDataSeeder` refuses to run when `APP_ENV=production` — which your
+box is, since it's a live server. That guard is intentional (fake
+customers/orders on a production database by accident would be bad), but
+you clearly want this on purpose for load/UAT testing, so **`DemoDataSeeder.php`
+now has an explicit opt-in**: set `DEMO_SEED_ALLOW_PRODUCTION=true` for
+just that one command, rather than touching `APP_ENV` in your `.env` (which
+would also flip debug-mode/error-page behavior — not something you want to
+toggle on a live box).
+
+## What to do
+
+Overwrite all three files below in `backend/database/seeders/`:
+
+- `CustomerDemoSeeder.php`
+- `SalonJobDemoSeeder.php`
+- `DemoDataSeeder.php`
+
+The other 6 seeders (Appointment, StaffShift, StockMovement, Order,
+ContactMessage, ActivityLog) are unaffected by either issue.
+
+Then run it with the escape hatch set for just that command:
 
 ```bash
-docker compose exec backend php artisan db:seed --class="Database\Seeders\DemoDataSeeder"
+docker compose exec -e DEMO_SEED_ALLOW_PRODUCTION=true backend \
+  php artisan db:seed --class="Database\Seeders\DemoDataSeeder"
 ```
 
-(Your `migrate:fresh --seed` output above only ran the *base*
-`DatabaseSeeder` — admin user, staff, services, products, etc. — not
-`DemoDataSeeder`. That's expected: `DemoDataSeeder` is deliberately not
-wired into the default seed run, so it needs that explicit `--class` call.)
+(`-e` on `docker compose exec` sets the env var only for that one process
+— it doesn't touch your container's actual `.env` file or persist
+anywhere.)
+

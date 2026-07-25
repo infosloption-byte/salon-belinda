@@ -44,8 +44,10 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        if (app()->environment('production') && ! app()->runningUnitTests()) {
-            $this->command?->error('DemoDataSeeder generates fake customers, jobs, and orders — refusing to run with APP_ENV=production. Set APP_ENV to local/staging first if this is intentional.');
+        $allowed = filter_var(env('DEMO_SEED_ALLOW_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN);
+
+        if (app()->environment('production') && ! app()->runningUnitTests() && ! $allowed) {
+            $this->command?->error('DemoDataSeeder generates fake customers, jobs, and orders — refusing to run with APP_ENV=production. If this is intentional (e.g. seeding a production box for a load/UAT test), re-run with DEMO_SEED_ALLOW_PRODUCTION=true set for this command only.');
 
             return;
         }
@@ -61,6 +63,6 @@ class DemoDataSeeder extends Seeder
             ActivityLogDemoSeeder::class,
         ]);
 
-        $this->command?->info('Demo data seeded. Run `php artisan customers:send-milestone-reminders --dry-run` to see the birthday/anniversary reminders it set up for testing.');
+        $this->command?->info('Demo data seeded. Run `php artisan customers:send-occasion-reminders` to send today\'s birthday/anniversary reminders it set up for testing.');
     }
 }
