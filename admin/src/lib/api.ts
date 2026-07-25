@@ -289,6 +289,42 @@ export function deleteProductCategory(id: number) {
   return api.del<{ message: string }>(`/admin/products/categories/${id}`);
 }
 
+// --- Stock movements ledger (SALON-OPS-ENHANCEMENTS.md, "Inventory", Tier 3) ---
+
+export type StockMovementType = 'sale' | 'restock' | 'adjustment' | 'correction';
+
+export interface StockMovementEntry {
+  id: number;
+  product_id: number;
+  type: StockMovementType;
+  quantity_change: number;
+  balance_after: number;
+  reason: string | null;
+  created_at: string;
+  creator?: { id: number; name: string } | null;
+}
+
+export interface PaginatedStockMovements {
+  data: StockMovementEntry[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchStockMovements(productId: number, page?: number): Promise<{ movements: PaginatedStockMovements }> {
+  return api.get(`/admin/products/${productId}/stock-movements${toQuery({ page })}`);
+}
+
+export function createStockMovement(
+  productId: number,
+  data: { type: 'restock' | 'adjustment'; quantity_change: number; reason?: string }
+) {
+  return api.post<{ product: Product; movement: StockMovementEntry; message: string }>(
+    `/admin/products/${productId}/stock-movements`,
+    data
+  );
+}
+
 // --- Gallery ---
 
 export interface GalleryCategoryItem {
@@ -684,6 +720,7 @@ export interface Customer {
   email: string | null;
   notes: string | null;
   jobs_count?: number;
+  points_balance: number;
 }
 
 export interface CustomerJob {
@@ -718,6 +755,42 @@ export function updateCustomer(id: number, data: { name: string; phone: string; 
 
 export function deleteCustomer(id: number) {
   return api.del<{ message: string }>(`/admin/customers/${id}`);
+}
+
+// --- Customer points ledger (SALON-OPS-ENHANCEMENTS.md, "Customers", Tier 3) ---
+
+export type CustomerPointType = 'earned' | 'redeemed' | 'adjustment';
+
+export interface CustomerPointEntry {
+  id: number;
+  customer_id: number;
+  type: CustomerPointType;
+  points: number;
+  balance_after: number;
+  reason: string | null;
+  created_at: string;
+  creator?: { id: number; name: string } | null;
+}
+
+export interface PaginatedCustomerPoints {
+  data: CustomerPointEntry[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+export function fetchCustomerPoints(customerId: number, page?: number): Promise<{ ledger: PaginatedCustomerPoints }> {
+  return api.get(`/admin/customers/${customerId}/points${toQuery({ page })}`);
+}
+
+export function createCustomerPoint(
+  customerId: number,
+  data: { type: 'redeemed' | 'adjustment'; points: number; reason?: string }
+) {
+  return api.post<{ customer: Customer; entry: CustomerPointEntry; message: string }>(
+    `/admin/customers/${customerId}/points`,
+    data
+  );
 }
 
 // --- Users (dashboard logins) + My Account ---
