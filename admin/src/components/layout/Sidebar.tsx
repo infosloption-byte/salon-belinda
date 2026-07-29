@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -76,6 +77,49 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function Sidebar({ open = false, onClose }: SidebarProps) {
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  // Escape-to-close, focus trap while open, and focus restoration on close
+  useEffect(() => {
+    if (!open) return;
+
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    closeBtnRef.current?.focus();
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose?.();
+        return;
+      }
+
+      if (e.key !== 'Tab' || !drawerRef.current) return;
+
+      const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [open, onClose]);
+
   return (
     <>
       {/* Desktop sidebar: always visible at lg+ */}
@@ -104,6 +148,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
 
       {/* Mobile drawer */}
       <aside
+        ref={drawerRef}
         className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-wine text-paper transition-transform duration-200 ease-out lg:hidden ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
@@ -122,6 +167,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             </div>
           </div>
           <button
+            ref={closeBtnRef}
             onClick={onClose}
             aria-label="Close menu"
             className="flex h-8 w-8 items-center justify-center rounded-full text-paper/70 transition-colors hover:bg-wine-light hover:text-paper"
