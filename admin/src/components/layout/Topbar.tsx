@@ -1,14 +1,23 @@
 import { useState } from 'react';
-import { ChevronDown, LogOut, User as UserIcon } from 'lucide-react';
+import { ChevronDown, LogOut, Menu, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export function Topbar({ title }: { title: string }) {
+export function Topbar({ title, onMenuClick }: { title: string; onMenuClick?: () => void }) {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-ink/5 bg-paper/90 px-6 py-4 backdrop-blur-sm lg:pl-6">
-      <h1 className="font-display text-xl text-ink">{title}</h1>
+    <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-ink/5 bg-paper/90 px-4 py-4 backdrop-blur-sm sm:px-6 lg:pl-6">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/10 bg-paper text-ink transition-colors hover:border-gold/50 lg:hidden"
+        >
+          <Menu size={18} />
+        </button>
+        <h1 className="font-display text-xl text-ink">{title}</h1>
+      </div>
 
       <div className="relative">
         <button

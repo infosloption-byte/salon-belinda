@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -23,12 +24,13 @@ const titles: Record<string, string> = {
 export function AdminLayout() {
   const { pathname } = useLocation();
   const title = titles[pathname] ?? 'Salon Admin';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-paper-dim">
-      <Sidebar />
+      <Sidebar open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <div className="lg:pl-64">
-        <Topbar title={title} />
+        <Topbar title={title} onMenuClick={() => setMobileMenuOpen(true)} />
         <main className="p-6">
           <Outlet />
         </main>
